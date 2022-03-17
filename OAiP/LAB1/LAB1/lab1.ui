@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>LAB1Class</class>
+ <widget class="QWidget" name="LAB1Class">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1063</width>
+    <height>588</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>LAB1</string>
+  </property>
+  <widget class="QPushButton" name="Start">
+   <property name="geometry">
+    <rect>
+     <x>790</x>
+     <y>510</y>
+     <width>151</width>
+     <height>61</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Open doors</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="turnOn">
+   <property name="geometry">
+    <rect>
+     <x>580</x>
+     <y>510</y>
+     <width>151</width>
+     <height>61</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Turn on lights</string>
+   </property>
+  </widget>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources>
+  <include location="lab1.qrc"/>
+ </resources>
+ <connections/>
+</ui>
