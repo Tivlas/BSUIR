@@ -10,11 +10,13 @@
 
         public int BelongToArea(double x, double y)
         {
+        double num = x * x + y * y;
+        double diff = (x * x + y * y) * 0.00001;
             if (x * x + y * y < 49 && x * x + y * y > 9)
             {
                 return 1;
             }
-            else if (x * x + y * y == 9 || x * x + y * y == 49)
+            else if (Math.Abs(num-49)<=diff || Math.Abs(num - 9) <= diff)
             {
                 return 2;
             }
