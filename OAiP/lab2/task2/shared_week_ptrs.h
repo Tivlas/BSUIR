@@ -105,17 +105,15 @@ public:
 		return this->use_count() == 1;
 	}
 
-	void reset(T* ptr = nullptr)
-	{
-		if (ptrCB) {
-			if (ptrCB->ptr != ptr)
-			{
-				delete ptrCB->ptr;
-				ptrCB->ptr = ptr;
-			}
-		}
+
+	void reset() noexcept {
+		shared_ptr().swap(*this);
 	}
 
+	void reset(T* ptr) { 
+		shared_ptr(ptr).swap(*this);
+	}
+	
 	void swap(shared_ptr& other) noexcept {
 		std::swap(ptrCB, other.ptrCB);
 	}
@@ -243,15 +241,12 @@ public:
 		return this->use_count() == 1;
 	}
 
-	void reset(T* ptr = nullptr)
-	{
-		if (ptrCB) {
-			if (ptrCB->ptr != ptr)
-			{
-				delete ptrCB->ptr;
-				ptrCB->ptr = ptr;
-			}
-		}
+	void reset() noexcept {
+		shared_ptr().swap(*this);
+	}
+
+	void reset(T* ptr) {
+		shared_ptr(ptr).swap(*this);
 	}
 
 	void swap(shared_ptr& other) noexcept {
