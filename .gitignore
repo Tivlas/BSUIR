@@ -146,3 +146,27 @@ OAiP/lab2/task2/stdafx.h
 OAiP/lab2/task2/stdafx.cpp
 
 OAiP/lab2/task2/task2.ui
+
+Programming/lab3/.vs/
+
+Programming/lab3/task1/bin/
+
+Programming/lab3/task1/obj/
+
+*.csproj
+
+Programming/lab3/task1Tests/bin/
+
+Programming/lab3/task1Tests/obj/
+
+Programming/lab3/task3/bin/
+
+Programming/lab3/task3/obj/
+
+Programming/lab3/task3Tests/bin/
+
+Programming/lab3/task3Tests/obj/
+
+*.sln
+ /bin
+ /obj
