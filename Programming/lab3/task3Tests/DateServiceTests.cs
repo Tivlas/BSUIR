@@ -27,7 +27,7 @@ namespace dateServiceNamespace.Tests
         [TestMethod()]
         public void GetDaysSpan()
         {
-            int[] expected = { 15, 30, 4 };
+            int[] expected = { 14, 29, 3 };
             int[] actual = {
                 DateService.GetDaysSpan(14,4,2022),
                 DateService.GetDaysSpan(29, 4, 2022),

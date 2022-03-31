@@ -1,5 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-
+using System;
 namespace numbers.Tests
 {
     [TestClass()]
@@ -33,10 +33,10 @@ namespace numbers.Tests
                 Numbers.calc(27, 3.3),
                 Numbers.calc(-3, -5),
                 Numbers.calc(0, 0),
-                Numbers.calc(2.33, 2.56)
+                Math.Round(Numbers.calc(2.33, 2.56),2)
             };
 
-            double[] expected = { -12, -198, -162, 2, 0, -13.980000000000004 };
+            double[] expected = { -12, -198, -162, 2, 0, -13.98 };
             for (int j = 0; j < actual.Length; j++)
             {
                 Assert.AreEqual(expected[j], actual[j]);
