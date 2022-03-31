@@ -16,7 +16,7 @@ namespace dateServiceNamespace
         {
             DateTime givenDate = new DateTime(year, month, day);
             DateTime now = DateTime.Now;
-            int daysBetween = (int)Math.Abs((now.Date - givenDate.Date).TotalDays);
+            int daysBetween = (int)(now.Date - givenDate.Date).TotalDays;
             Console.Write("\nNumber of days between today's date and the entered date: ");
             Console.WriteLine($"{daysBetween}\n");
             return daysBetween;

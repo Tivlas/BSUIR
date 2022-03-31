@@ -1,5 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-
+using System;
 namespace dateServiceNamespace.Tests
 {
     [TestClass()]
@@ -27,11 +27,20 @@ namespace dateServiceNamespace.Tests
         [TestMethod()]
         public void GetDaysSpan()
         {
-            int[] expected = { 14, 29, 3 };
+            DateTime date1 = new(2012, 4, 14);
+            DateTime date2 = new(2022, 4, 19);
+            DateTime date3 = new(2022, 4, 3);
+            DateTime now = DateTime.Now;
+
+            int[] expected = {
+                (int)(now.Date - date1.Date).TotalDays,
+                (int)(now.Date - date2.Date).TotalDays,
+                (int)(now.Date - date3.Date).TotalDays
+            };
             int[] actual = {
-                DateService.GetDaysSpan(14,4,2022),
-                DateService.GetDaysSpan(29, 4, 2022),
-                DateService.GetDaysSpan(3,4,2022)
+                DateService.GetDaysSpan(date1.Day,date1.Month,date1.Year),
+                DateService.GetDaysSpan(date2.Day,date2.Month,date2.Year),
+                DateService.GetDaysSpan(date3.Day,date3.Month,date3.Year)
             };
             for (int i = 0; i < expected.Length; i++)
             {
