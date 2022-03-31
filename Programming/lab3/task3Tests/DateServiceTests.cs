@@ -29,7 +29,7 @@ namespace dateServiceNamespace.Tests
         {
             DateTime date1 = new(2012, 4, 14);
             DateTime date2 = new(2022, 4, 19);
-            DateTime date3 = new(2022, 4, 3);
+            DateTime date3 = new(1022, 4, 3);
             DateTime now = DateTime.Now;
 
             int[] expected = {
