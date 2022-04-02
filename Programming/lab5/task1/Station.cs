@@ -1,10 +1,31 @@
 ﻿namespace task1
 {
-    internal class Station
+    public class Station
     {
         private Ticket[]? cashRegister = null;
 
         private Passenger[]? listOfPassengers = null;
+
+        public int NumberOfTicketsInCashRegister
+        {
+            get
+            {
+                if (cashRegister == null)
+                    return 0;
+                return cashRegister.Length;
+            }
+        }
+
+        public int NumberOfPassengers
+        {
+            get
+            {
+                if (listOfPassengers == null)
+                    return 0;
+                return listOfPassengers.Length;
+            }
+        }
+
         public void addTicketToCashRegister(int price, string destination)
         {
             if (cashRegister == null)
@@ -20,6 +41,7 @@
             cashRegister[^1].Price = price;
             cashRegister[^1].Destination = destination;
         }
+
         public void addPassengerToList(uint id, string? name)
         {
             name ??= "name is unknown";
@@ -36,6 +58,7 @@
             listOfPassengers[^1].Name = name;
             listOfPassengers[^1].ID = id;
         }
+
         public void purchaseTicketForPassenger(uint id, string? destination)
         {
             destination ??= "destination is unknown";
@@ -64,22 +87,25 @@
             temp?.PurchaseTicket(Array.Find(cashRegister, x => x.Destination == destination)!.Price, destination);
             temp!.IsTicketPurchased = true;
         }
-        public void countPriceOfPassengersTickets(uint id)
+
+        public int countPriceOfPassengerTickets(uint id)
         {
             if (listOfPassengers == null)
             {
                 Console.WriteLine("There are no passengers in the list");
-                return;
+                return 0;
             }
             Passenger? temp = Array.Find(listOfPassengers, x => x.ID == id);
             if (temp == null)
             {
                 Console.WriteLine("There is no passenger with such ID");
-                return;
+                return 0;
             }
             int totalPrice = temp!.PriceOfTickets();
             Console.WriteLine($"The price of tickets for passenger with ID {id} is {totalPrice}");
+            return totalPrice;
         }
+
         public void printPassengersWithSpecificDirection(string? destination)
         {
             destination ??= "destination is unknown";

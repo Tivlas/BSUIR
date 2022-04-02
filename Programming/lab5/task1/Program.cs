@@ -38,7 +38,7 @@
             station.printPassengersWithSpecificDirection("dfafa");
 
             // count price
-            station.countPriceOfPassengersTickets(4);
+            station.countPriceOfPassengerTickets(4);
 
 
         }

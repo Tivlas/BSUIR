@@ -9,7 +9,8 @@
         private Ticket[]? tickets = null;
 
         private bool isTicketPurchased = false;
-        public int NumberOfTickets {
+        public int NumberOfTickets
+        {
             get
             {
                 if (tickets == null)

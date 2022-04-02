@@ -1,10 +1,4 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using task1;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace task1.Tests
 {
@@ -17,8 +11,8 @@ namespace task1.Tests
         {
             Passenger passenger = new Passenger();
             Assert.AreEqual(passenger.NumberOfTickets, 0);
-            
-            passenger.PurchaseTicket(10,"minsk");
+
+            passenger.PurchaseTicket(10, "minsk");
             Assert.AreEqual(passenger.NumberOfTickets, 1);
 
             passenger.PurchaseTicket(15, null);
