@@ -1,10 +1,10 @@
 ﻿namespace task1
 {
-    internal class Ticket
+    public class Ticket
     {
 
         private int price = 5;
-        public string? Direction { get; set; }
+        public string? Destination { get; set; }
         public int Price
         {
             get { return price; }
@@ -16,11 +16,11 @@
         }
 
         public Ticket() { }
-        public Ticket(int price, string direction)
+        public Ticket(int price, string? destination)
         {
             this.Price = price;
-            direction ??= "";
-            this.Direction = direction;
+            destination ??= "destination is unknown";
+            this.Destination = destination;
         }
     }
 }

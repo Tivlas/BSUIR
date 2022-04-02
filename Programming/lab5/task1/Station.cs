@@ -5,23 +5,24 @@
         private Ticket[]? cashRegister = null;
 
         private Passenger[]? listOfPassengers = null;
-        public void addTicketToCashRegister(int price, string direction)
+        public void addTicketToCashRegister(int price, string destination)
         {
             if (cashRegister == null)
             {
                 cashRegister = new Ticket[1];
                 cashRegister[^1] = new Ticket();
                 cashRegister[^1].Price = price;
-                cashRegister[^1].Direction = direction;
+                cashRegister[^1].Destination = destination;
                 return;
             }
             Array.Resize(ref cashRegister, cashRegister.Length + 1);
             cashRegister[^1] = new Ticket();
             cashRegister[^1].Price = price;
-            cashRegister[^1].Direction = direction;
+            cashRegister[^1].Destination = destination;
         }
-        public void addPassengerToList(uint id, string name)
+        public void addPassengerToList(uint id, string? name)
         {
+            name ??= "name is unknown";
             if (listOfPassengers == null)
             {
                 listOfPassengers = new Passenger[1];
@@ -35,14 +36,15 @@
             listOfPassengers[^1].Name = name;
             listOfPassengers[^1].ID = id;
         }
-        public void purchaseTicketForPassenger(uint id, string direction)
+        public void purchaseTicketForPassenger(uint id, string? destination)
         {
+            destination ??= "destination is unknown";
             if (cashRegister == null)
             {
                 Console.WriteLine("No tickets in cash register");
                 return;
             }
-            if (Array.Find(cashRegister, x => x.Direction == direction) == null)
+            if (Array.Find(cashRegister, x => x.Destination == destination) == null)
             {
                 Console.WriteLine("There is no such ticket in the cash register");
                 return;
@@ -59,7 +61,7 @@
                 Console.WriteLine("There is no passenger with such ID");
                 return;
             }
-            temp?.PurchaseTicket(Array.Find(cashRegister, x => x.Direction == direction)!.Price, direction);
+            temp?.PurchaseTicket(Array.Find(cashRegister, x => x.Destination == destination)!.Price, destination);
             temp!.IsTicketPurchased = true;
         }
         public void countPriceOfPassengersTickets(uint id)
@@ -78,16 +80,17 @@
             int totalPrice = temp!.PriceOfTickets();
             Console.WriteLine($"The price of tickets for passenger with ID {id} is {totalPrice}");
         }
-        public void printPassengersWithSpecificDirection(string direction)
+        public void printPassengersWithSpecificDirection(string? destination)
         {
+            destination ??= "destination is unknown";
             if (cashRegister == null)
             {
                 Console.WriteLine("There are no tickets in the cash register");
                 return;
             }
-            if(Array.Find(cashRegister!, x => x.Direction == direction) == null)
+            if (Array.Find(cashRegister!, x => x.Destination == destination) == null)
             {
-                Console.WriteLine($"Direction to {direction} does not exist");
+                Console.WriteLine($"Destination to {destination} does not exist");
                 return;
             }
 
@@ -96,13 +99,13 @@
                 Console.WriteLine("There are no passengers in the list");
                 return;
             }
-            Passenger[] temp = Array.FindAll(listOfPassengers, x => x.FindSpecificTicketDirection(direction) == true);
+            Passenger[] temp = Array.FindAll(listOfPassengers, x => x.FindSpecificTicketDirection(destination) == true);
             if (temp == null)
             {
-                Console.WriteLine("There are no passengers with such direction");
+                Console.WriteLine("There are no passengers with such destination");
                 return;
             }
-            Console.WriteLine($"Passengers with direction to {direction}:");
+            Console.WriteLine($"Passengers with destination to {destination}:");
             for (int i = 0; i < temp.Length; ++i)
             {
                 Console.WriteLine($"#{i}: name: {temp[i].Name},   ID: {temp[i].ID}");
@@ -112,4 +115,3 @@
     }
 }
 
- 

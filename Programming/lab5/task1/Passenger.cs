@@ -1,6 +1,6 @@
 ﻿namespace task1
 {
-    internal class Passenger
+    public class Passenger
     {
         public string? Name { get; set; }
 
@@ -9,7 +9,14 @@
         private Ticket[]? tickets = null;
 
         private bool isTicketPurchased = false;
-
+        public int NumberOfTickets {
+            get
+            {
+                if (tickets == null)
+                    return 0;
+                return tickets.Length;
+            }
+        }
         public uint ID
         {
             get { return id; }
@@ -34,16 +41,16 @@
             name ??= "name";
             Name = name;
         }
-        public void PurchaseTicket(int price, string direction)
+        public void PurchaseTicket(int price, string? destination)
         {
             if (tickets == null)
             {
                 tickets = new Ticket[1];
-                tickets[0] = new Ticket(price, direction);
+                tickets[0] = new Ticket(price, destination);
                 return;
             }
             Array.Resize(ref tickets, tickets.Length + 1);
-            tickets[^1] = new Ticket(price, direction);
+            tickets[^1] = new Ticket(price, destination);
         }
 
         public int PriceOfTickets()
@@ -68,7 +75,7 @@
             }
             for (int i = 0; i < tickets.Length; i++)
             {
-                if (tickets[i].Direction == direction)
+                if (tickets[i].Destination == direction)
                 {
                     return true;
                 }
