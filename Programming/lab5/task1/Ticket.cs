@@ -14,6 +14,8 @@
                 price = value;
             }
         }
+
+        public Ticket() { }
         public Ticket(int price, string direction)
         {
             this.Price = price;

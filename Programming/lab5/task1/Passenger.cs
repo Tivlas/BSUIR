@@ -27,6 +27,7 @@
             set { isTicketPurchased = value; }
         }
 
+        public Passenger() { }
         public Passenger(int id, string name)
         {
             ID = ID;
@@ -38,13 +39,11 @@
             if (tickets == null)
             {
                 tickets = new Ticket[1];
-                tickets[^1].Price = price; ;
-                tickets[^1].Direction = direction;
+                tickets[0] = new Ticket(price, direction);
                 return;
             }
             Array.Resize(ref tickets, tickets.Length + 1);
-            tickets[^1].Price = price;
-            tickets[^1].Direction = direction;
+            tickets[^1] = new Ticket(price, direction);
         }
 
         public int PriceOfTickets()
