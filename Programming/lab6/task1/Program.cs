@@ -26,7 +26,7 @@
             Console.WriteLine($"Number of flats: {pureApartment?.NumberOfFlats}");
             Console.WriteLine($"Number of residents: {pureApartment?.NumberOfResidents}");
             Console.WriteLine();
-            
+
             pureApartment?.PayForHeatingInSpecificFlat(1);
             pureApartment?.PayForHeatingInSpecificFlat(34);
             pureApartment?.PayForHeatingInSpecificFlat(24);

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace task1
+﻿namespace task1
 {
     internal sealed class ApartmentBuilding : Building
     {
@@ -77,17 +71,18 @@ namespace task1
                 {
                     flats[flatNumber - 1].IsHeatingPaid = true;
                     flats[flatNumber - 1].SetHeating();
-                } 
+                }
             }
         }
 
         public void PrintListOfFlatsWithHeatingOn()
         {
-            if(flats == null) {
+            if (flats == null)
+            {
                 Console.WriteLine("Flats are not created");
                 return;
             }
-            Flat[]? temp = Array.FindAll(flats, x => x.GetIsHeatingOn==true);
+            Flat[]? temp = Array.FindAll(flats, x => x.GetIsHeatingOn == true);
             if (temp != null)
             {
                 Console.WriteLine("Flats with heating on:");
@@ -111,7 +106,7 @@ namespace task1
                 }
             }
         }
-        
+
         public override void Repair()
         {
             Console.WriteLine($"Repairing the {GetType().Name} as the residents agreed and raised money\n");
