@@ -102,7 +102,6 @@
                 return 0;
             }
             int totalPrice = temp!.PriceOfTickets();
-            Console.WriteLine($"The price of tickets for passenger with ID {id} is {totalPrice}");
             return totalPrice;
         }
 

@@ -38,7 +38,8 @@
             station.printPassengersWithSpecificDirection("dfafa");
 
             // count price
-            station.countPriceOfPassengerTickets(4);
+
+            Console.WriteLine($"The price of tickets for passenger with ID {4} is { station.countPriceOfPassengerTickets(4)}");
 
 
         }
