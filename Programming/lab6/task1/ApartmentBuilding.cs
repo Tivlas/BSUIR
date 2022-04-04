@@ -1,12 +1,15 @@
 ﻿namespace task1
 {
-    internal sealed class ApartmentBuilding : Building
+    public class ApartmentBuilding : Building
     {
         private int numberOfResidents;
 
         private readonly int numberOfFlats;
 
         private Flat[]? flats = null;
+
+        public Flat[]? GetArrayOfFlats => flats;
+
         public ApartmentBuilding(string address, int numberOfEntrances, int floors, int numberOfResidents, int numberOfFlats)
         {
             Floors = floors;
@@ -22,7 +25,7 @@
             SetFlatNumber();
             Build();
         }
-
+        
         private void SetFlatNumber()
         {
             if (flats != null)
@@ -33,11 +36,12 @@
                 }
             }
         }
+        
         protected override void Build()
         {
             Console.WriteLine("Building an apartment building\n");
         }
-
+        
         public int NumberOfResidents
         {
             get
@@ -93,6 +97,7 @@
                 Console.WriteLine();
             }
         }
+        
         public new void TurnOnTheHeating()
         {
             if (flats != null)
