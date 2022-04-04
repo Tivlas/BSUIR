@@ -3,13 +3,13 @@
     public class Flat
     {
         private int flatNumber;
-        
-        
+
+
         private bool isHeatingPaid = false;
-        
+
 
         private bool isHeatingOn = false;
-        
+
         public int FlatNumber
         {
             get { return flatNumber; }
@@ -33,7 +33,7 @@
             get { return isHeatingPaid; }
             set { isHeatingPaid = value; }
         }
-        
+
         public void SetHeating()
         {
             isHeatingOn = isHeatingPaid;

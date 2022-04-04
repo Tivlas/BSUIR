@@ -25,7 +25,7 @@
             SetFlatNumber();
             Build();
         }
-        
+
         private void SetFlatNumber()
         {
             if (flats != null)
@@ -36,12 +36,12 @@
                 }
             }
         }
-        
+
         protected override void Build()
         {
             Console.WriteLine("Building an apartment building\n");
         }
-        
+
         public int NumberOfResidents
         {
             get
@@ -97,7 +97,7 @@
                 Console.WriteLine();
             }
         }
-        
+
         public new void TurnOnTheHeating()
         {
             if (flats != null)
