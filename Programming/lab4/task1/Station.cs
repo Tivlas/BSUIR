@@ -34,6 +34,11 @@
                     numberOfTicketsSold = 0;
                     return;
                 }
+                if (value > numberOfSeats)
+                {
+                    numberOfTicketsSold = numberOfSeats;
+                    return;
+                }
                 numberOfTicketsSold = value;
             }
         }
@@ -73,6 +78,17 @@
         public int countPriceOfUnsoldTickets()
         {
             return (numberOfSeats - numberOfTicketsSold) * ticket.Price;
+        }
+        public void sellTicket()
+        {
+            if (numberOfTicketsSold < numberOfSeats)
+            {
+                numberOfTicketsSold++;
+            }
+            else
+            {
+                Console.WriteLine("There are no free seats.\n");
+            }
         }
         public int ChangeTicketPrice
         {

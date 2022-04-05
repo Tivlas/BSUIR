@@ -9,8 +9,12 @@
             Station station2 = Station.getInstance("Gomel");
             Console.WriteLine(station2.StationName);
 
-            station.NumberOfSeats = 200;
-            station.TicketsSold = 134;
+            station.NumberOfSeats = 50;
+            station.TicketsSold = 47;
+            station.sellTicket();
+            station.sellTicket();
+            station.sellTicket();
+            station.sellTicket();
 
             station.StationName = "Minsk";
             Console.WriteLine(station.StationName);

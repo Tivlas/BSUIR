@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using task1;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace task1.Tests
 {
@@ -47,5 +48,22 @@ namespace task1.Tests
 
         }
 
+        [TestMethod()]
+        public void sellTicketTest()
+        {
+            Station station = Station.getInstance("Vitebsk");
+
+            station.NumberOfSeats = 50;
+            station.TicketsSold = 47;
+            station.sellTicket();
+            station.sellTicket();
+            station.sellTicket();
+            station.sellTicket();
+            station.sellTicket();
+            station.sellTicket();
+            int expected = 50;
+            int actual = station.TicketsSold;
+            Assert.AreEqual(expected, actual);
+        }
     }
 }
