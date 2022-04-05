@@ -1,6 +1,6 @@
 ﻿namespace task1
 {
-    public class Flat
+    public sealed class Flat
     {
         private int flatNumber;
 
