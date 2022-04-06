@@ -203,3 +203,27 @@ OAiP/lab2/Smart_Pointers/Smart_Pointers/x64/
 Programming/lab6/task1Tests/bin/
 
 Programming/lab6/task1Tests/obj/
+
+OAiP/lab3/.vs/lab3/v17/.suo
+
+*.db
+
+*.db-shm
+
+*.opendb
+
+OAiP/lab3/.vs/lab3/v17/ipch/
+
+*.db-wal
+
+OAiP/lab3/.vs/
+
+OAiP/lab3/x64/
+
+OAiP/lab3/task2/x64/
+
+*.ui
+
+OAiP/lab3/task2/stdafx.cpp
+
+OAiP/lab3/task2/stdafx.h
