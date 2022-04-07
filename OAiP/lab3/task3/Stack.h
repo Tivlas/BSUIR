@@ -24,7 +24,7 @@ public:
 	}
 	
 	bool empty() {
-		return elements.size() > 0 ? true : false;
+		return elements.size() == 0 ? true : false;
 	}
 };
 
