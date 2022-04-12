@@ -14,6 +14,7 @@ public:
     bool dateCompare(int day1, int month1, int year1, int day2, int month2, int year2);
     int daysPassed(int day, int month,int year);
     int duration(int day1, int month1, int year1, int day2, int month2, int year2);
+	bool depNumberValidation(const QString& depNumber);
 public slots:
     void on_quitBtn_clicked();
 	void on_addBtn_clicked();
@@ -22,9 +23,12 @@ public slots:
 	void on_printEmployeesWithSpecificDepNumberBtn_clicked();
 	void on_fireBtn_clicked();
     void on_printExperienceBtn_clicked();
+    void on_saveLastBtn_clicked();
+    void on_saveAllBtn_clicked();
+    void on_readToListBtn_clicked();
 
 private:
     Ui::task1_1Class ui;
-    QString file_name;
+    QString fileName;
 	List list; // list of employees
 };

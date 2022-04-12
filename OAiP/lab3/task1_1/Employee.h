@@ -12,11 +12,9 @@ private:
 	int s_day, s_month, s_year; // date of employment(start date)
 	Employee* next = nullptr;
 	Employee* prev = nullptr;
-	explicit Employee() {};
 public:
+	explicit Employee() {};
 	Employee(int departmentNumber, QString position, QString name, QString surname, QString patronymic, short s_day, short s_month, short s_year);
-	//Employee(const Employee&);
-	//Employee& operator=(const Employee&);
 	~Employee(){};
 	size_t getDepartmentNumber() const { return departmentNumber; }
 	QString getPosition() const { return position; }
@@ -28,14 +26,31 @@ public:
 	int getS_month() const { return s_month; }
 	int getS_year() const { return s_year; }
 	
-	//void setDepartmentNumber(size_t);
-	//void setPosition(QString);
-	//void setName(QString);
-	//void setSurname(QString);
-	//void setPatronymic(QString);
-	//void setS_day(short);
-	//void setS_month(short);
-	//void setS_year(short);
+	void setDepartmentNumber(int num) {
+		departmentNumber = num;	
+	}
+	void setPosition(QString pos) {
+		position = pos;
+	}
+	void setName(QString name) {
+		this->name = name;
+	}
+	void setSurname(QString surname) {
+		this->surname = surname;
+	}
+	void setPatronymic(QString patr) {
+		patronymic = patr;
+	}
+	void setS_day(int day) {
+		s_day = day;
+	}
+	void setS_month(int month) {
+		s_month = month;
+	}
+	void setS_year(int year) {
+		s_year = year;
+	}
+	
 	QString startDateToString() const;
 	QString getAllInformation() const;
 	Employee* getNext() {

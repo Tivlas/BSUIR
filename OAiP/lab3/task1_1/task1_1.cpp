@@ -4,8 +4,9 @@
 task1_1::task1_1(QWidget* parent)
 	: QMainWindow(parent)
 {
-	int n = 22;
 	ui.setupUi(this);
+	ui.saveLastBtn->setEnabled(false);
+	ui.saveAllBtn->setEnabled(false);
 }
 
 bool task1_1::dateValidation(const QString& date)
@@ -115,7 +116,7 @@ void task1_1::on_quitBtn_clicked() {
 
 void task1_1::on_addBtn_clicked()
 {
-
+	
 	QString name = ui.nameEdit->text();
 	if (name.isEmpty()) {
 		QMessageBox::warning(this, "Error", "Name is empty");
@@ -176,6 +177,8 @@ void task1_1::on_addBtn_clicked()
 	ui.departmentNumberEdit->clear();
 	ui.startDateEdit->clear();
 	ui.positionEdit->clear();
+	ui.saveLastBtn->setEnabled(true);
+	ui.saveAllBtn->setEnabled(true);
 }
 
 void task1_1::on_printBtn_clicked()
@@ -292,7 +295,7 @@ void task1_1::on_fireBtn_clicked()
 void task1_1::on_printExperienceBtn_clicked()
 {
 	if (!list.isEmpty()) {
-		if(ui.printExperienceEdit->text().isEmpty()) {
+		if (ui.printExperienceEdit->text().isEmpty()) {
 			QMessageBox::warning(this, "Error", "Experience is empty");
 			return;
 		}
@@ -324,6 +327,124 @@ void task1_1::on_printExperienceBtn_clicked()
 	}
 	else {
 		QMessageBox::warning(this, "Warning", "List is empty");
+	}
+}
+
+void task1_1::on_saveLastBtn_clicked()
+{
+	if (list.isEmpty()) {
+		QMessageBox::warning(this, "Warning", "First add student");
+	}
+	else {
+		fileName = QFileDialog::getOpenFileName(this, "Select the file you wanna save to", "D:/BSUIR/OAiP/lab3", "Text File (*.txt)");
+		QFile file(fileName);
+		QTextStream toFile(&file);
+
+		if (!file.open(QFile::WriteOnly | QFile::Text | QFile::Append))
+		{
+			QMessageBox::warning(this, "Warning", "The file was not opened!");
+		}
+		else
+		{
+
+			QString text = list.getTail()->getAllInformation();
+			toFile << text;
+			file.flush();
+			file.close();
+		}
+	}
+}
+
+void task1_1::on_saveAllBtn_clicked()
+{
+	if (list.isEmpty()) {
+		QMessageBox::warning(this, "Warning", "First add student");
+	}
+	else {
+		fileName = QFileDialog::getOpenFileName(this, "Select the file you wanna save to", "D:/BSUIR/OAiP/lab3", "Text File (*.txt)");
+		QFile file(fileName);
+		QTextStream toFile(&file);
+
+		if (!file.open(QFile::WriteOnly | QFile::Text))
+		{
+			QMessageBox::warning(this, "Warning", "The file was not opened!");
+		}
+		else
+		{
+			QString text = list.print();
+			toFile << text;
+			file.flush();
+			file.close();
+		}
+	}
+}
+
+void task1_1::on_readToListBtn_clicked()
+{
+	fileName = QFileDialog::getOpenFileName(this, "Open your file", "D:/BSUIR/OAiP/lab3", "Text File (*.txt)");
+	QFile file(fileName);
+	QTextStream fromFile(&file);
+	QString text = "";
+	if (!file.open(QFile::ReadOnly | QFile::Text) || fromFile.atEnd())
+	{
+		QMessageBox::warning(this, "Warning", "The file was not opened or it's empty!");
+	}
+	else
+	{
+		if (!list.getHead()) {
+			list.clear();
+			ui.saveLastBtn->setEnabled(false);
+			ui.saveAllBtn->setEnabled(false);
+		}
+		int linesCounter = 1;
+		while (!fromFile.atEnd()) {
+			Employee* cur = new Employee();
+
+			text = fromFile.readLine(); // name
+			cur->setName(text);
+
+			text = fromFile.readLine(); // surname
+			cur->setSurname(text);
+
+			text = fromFile.readLine(); // patronymic
+			cur->setPatronymic(text);
+
+			text = fromFile.readLine(); // employment date
+			if (!dateValidation(text)) {
+				QString error = "Error in line " + QString::number(linesCounter);
+				QMessageBox::critical(this, "Error", error);
+				list.clear();
+				ui.saveLastBtn->setEnabled(false);
+				ui.saveAllBtn->setEnabled(false);
+				return;
+			}
+			int s_day = text.left(2).toInt();
+			int s_month = text.mid(3, 2).toInt();
+			int s_year = text.right(4).toInt();
+			cur->setS_day(s_day);
+			cur->setS_month(s_month);
+			cur->setS_year(s_year);
+
+			text = fromFile.readLine(); // department number
+			if (!depNumberValidation(text)) {
+				QString error = "Error in line " + QString::number(linesCounter);
+				QMessageBox::critical(this, "Error", error);
+				list.clear();
+				ui.saveLastBtn->setEnabled(false);
+				ui.saveAllBtn->setEnabled(false);
+				return;
+			}
+			cur->setDepartmentNumber(text.toInt());
+
+			text = fromFile.readLine(); // position
+			cur->setPosition(text);
+
+			list.add(cur);
+			++linesCounter;
+		}
+		file.close();
+	ui.saveLastBtn->setEnabled(true);
+	ui.saveAllBtn->setEnabled(true);
 	}
 }
 
@@ -400,6 +521,25 @@ int task1_1::duration(int day1, int month1, int year1, int day2, int month2, int
 	else
 	{
 		return duration(day2, month2, year2, day1, month1, year1);
+	}
+}
+
+bool task1_1::depNumberValidation(const QString& depNumber)
+{
+	if (depNumber.isEmpty())
+	{
+		return false;
+	}
+	else
+	{
+		for (int i = 0; i < depNumber.length(); i++)
+		{
+			if (!depNumber[i].isDigit())
+			{
+				return false;
+			}
+		}
+		return true;
 	}
 }
 

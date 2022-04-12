@@ -12,6 +12,7 @@ public:
 	void remove(QString name, QString surname, QString patronymic,int departmentNumber);
 	Employee* search(QString surname);
 	bool isEmpty();
+	void clear();
 
 	QString print();
 	QString printEmployeesWithSpecificSurname(QString surname);
@@ -21,5 +22,8 @@ public:
 		return head;
 	}
 	
+	Employee* getTail() {
+		return tail;
+	}
 };
 

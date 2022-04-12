@@ -28,21 +28,28 @@ void List::add(Employee* new_employee)
 void List::remove(QString name, QString surname, QString patronymic, int departmentNumber)
 {
 	if (head == nullptr) return;
-	
+
 	Employee* cur = head;
-	for (int i = 0;cur != nullptr; ++i) {
+	for (int i = 0; cur != nullptr; ++i) {
 		if (cur->name == name && cur->surname == surname && cur->patronymic == patronymic && cur->departmentNumber == departmentNumber) {
 			if (cur->next == nullptr) {
 				tail = cur->prev;
+				tail->next = nullptr;
 			}
-			cur->prev->next = cur->next;
+			else if (cur->prev == nullptr) {
+				head = cur->next;
+				head->prev = nullptr;
+			}
+			else {
+				cur->prev->next = cur->next;
+				cur->next->prev = cur->prev;
+			}
 			delete cur;
 			return;
 		}
 		cur = cur->next;
 	}
-	throw QString ("No such employee");
-	
+	throw QString("No such employee");
 }
 
 Employee* List::search(QString surname)
@@ -60,6 +67,16 @@ Employee* List::search(QString surname)
 bool List::isEmpty()
 {
 	return head == nullptr;
+}
+
+void List::clear()
+{
+	Employee* next = nullptr;
+	while (head) {
+		next = head->next;
+		delete head;
+		head = next;
+	}
 }
 
 QString List::print()
