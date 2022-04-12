@@ -116,7 +116,7 @@ void task1_1::on_quitBtn_clicked() {
 
 void task1_1::on_addBtn_clicked()
 {
-	
+
 	QString name = ui.nameEdit->text();
 	if (name.isEmpty()) {
 		QMessageBox::warning(this, "Error", "Name is empty");
@@ -421,6 +421,22 @@ void task1_1::on_readToListBtn_clicked()
 			int s_day = text.left(2).toInt();
 			int s_month = text.mid(3, 2).toInt();
 			int s_year = text.right(4).toInt();
+			struct tm* local;
+			time_t t;
+			t = time(NULL);
+			local = localtime(&t);
+			// today's date
+			int year = local->tm_year + 1900;
+			int month = local->tm_mon + 1;
+			int day = local->tm_mday;
+			if (!dateCompare(s_day, s_month, s_year, day, month, year)) {
+				QString error = "Error in line " + QString::number(linesCounter);
+				QMessageBox::critical(this, "Error", error);
+				list.clear();
+				ui.saveLastBtn->setEnabled(false);
+				ui.saveAllBtn->setEnabled(false);
+				return;
+			}
 			cur->setS_day(s_day);
 			cur->setS_month(s_month);
 			cur->setS_year(s_year);
@@ -443,8 +459,25 @@ void task1_1::on_readToListBtn_clicked()
 			++linesCounter;
 		}
 		file.close();
-	ui.saveLastBtn->setEnabled(true);
-	ui.saveAllBtn->setEnabled(true);
+		ui.saveAllBtn->setEnabled(true);
+	}
+}
+
+void task1_1::on_sortByDepNumberBtn_clicked()
+{
+	if (!list.isEmpty())
+	{
+		if (list.isEmpty()) {
+			QMessageBox::warning(this, "Warning", "List is empty");
+		}
+		else {
+			sortByDepNumber(list, 0, list.getSize() - 1);
+			QString result = list.print();
+			ui.plainTextEdit->setPlainText(result);
+		}
+	}
+	else {
+		QMessageBox::warning(this, "Warning", "List is empty");
 	}
 }
 
@@ -540,6 +573,38 @@ bool task1_1::depNumberValidation(const QString& depNumber)
 			}
 		}
 		return true;
+	}
+}
+
+void task1_1::sortByDepNumber(List& list, int left, int right)
+{
+	int l = left;
+	int r = right;
+	int mid = list.getElement((left + right) / 2)->getDepartmentNumber();
+	while (l < r)
+	{
+		while (list.getElement(l)->getDepartmentNumber() < mid)
+		{
+			l++;
+		}
+		while (list.getElement(r)->getDepartmentNumber() > mid)
+		{
+			r--;
+		}
+		if (l <= r)
+		{
+			list.swap(l, r);
+			++l;
+			--r;
+		}
+	}
+	if (left < l)
+	{
+		sortByDepNumber(list, left, r);
+	}
+	if (r < right)
+	{
+		sortByDepNumber(list, l, right);
 	}
 }
 

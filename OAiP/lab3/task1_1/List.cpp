@@ -16,12 +16,14 @@ void List::add(Employee* new_employee)
 	{
 		head = new_employee;
 		tail = new_employee;
+		++size;
 	}
 	else
 	{
 		tail->next = new_employee;
 		new_employee->prev = tail;
 		tail = new_employee;
+		++size;
 	}
 }
 
@@ -45,6 +47,7 @@ void List::remove(QString name, QString surname, QString patronymic, int departm
 				cur->next->prev = cur->prev;
 			}
 			delete cur;
+			--size;
 			return;
 		}
 		cur = cur->next;
@@ -77,6 +80,7 @@ void List::clear()
 		delete head;
 		head = next;
 	}
+	size = 0;
 }
 
 QString List::print()
@@ -120,6 +124,58 @@ QString List::printEmployeesWithSpecificDepNumber(int depNumber)
 		throw QString("No employee with such dep. number");
 	}
 	return result;
+}
+
+Employee* List::getElement(int index)
+{
+	Employee* cur = head;
+	for (int i = 0; i < index; ++i) {
+		cur = cur->next;
+	}
+	return cur;
+}
+
+void List::swap(int i, int j)
+{
+	Employee* first = getElement(i);
+	Employee* second = getElement(j);
+	if (first->prev == nullptr) {
+		head = second;
+	}
+	else if (second->prev == nullptr) {
+		head = first;
+	}
+
+	if (second->next == nullptr) {
+		tail = first;
+	}
+	else if (first->next == nullptr) {
+		tail = second;
+	}
+	
+	Employee* temp = first->next;
+	first->next = second->next;
+	second->next = temp;
+
+	if (first->next != nullptr) {
+		first->next->prev = first;
+	}
+	if (second->next != nullptr) {
+		second->next->prev = second;
+	}
+
+	temp = first->prev;
+	first->prev = second->prev;
+	second->prev = temp;
+
+	if (first->prev != nullptr) {
+		first->prev->next = first;
+	}
+
+	if (second->prev != nullptr) {
+		second->prev->next = second;
+	}
+
 }
 
 

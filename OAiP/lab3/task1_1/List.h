@@ -5,6 +5,7 @@ class List
 private:
 	Employee* head = nullptr;
 	Employee* tail = nullptr;
+	int size;
 public:
 	List() {};
 	~List();
@@ -25,5 +26,8 @@ public:
 	Employee* getTail() {
 		return tail;
 	}
+	int getSize() { return size; }
+	Employee* getElement(int index);
+	void swap(int i, int j);
 };
 
