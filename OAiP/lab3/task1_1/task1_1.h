@@ -16,6 +16,8 @@ public:
     int duration(int day1, int month1, int year1, int day2, int month2, int year2);
 	bool depNumberValidation(const QString& depNumber);
     void sortByDepNumber(List& list,int left,int right);
+    void sortBySurname(List& list, int left, int right);
+    void sortByEmploymentDate(List& list, int left, int right);
 public slots:
     void on_quitBtn_clicked();
 	void on_addBtn_clicked();
@@ -28,7 +30,10 @@ public slots:
     void on_saveAllBtn_clicked();
     void on_readToListBtn_clicked();
     void on_sortByDepNumberBtn_clicked();
-
+    void on_sortBySurnameBtn_clicked();
+    void on_sortByEmploymentDateBtn_clicked();
+    void on_readBtn_clicked();
+    void on_overwriteBtn_clicked();
 private:
     Ui::task1_1Class ui;
     QString fileName;

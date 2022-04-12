@@ -35,6 +35,37 @@ QString Employee::startDateToString() const
 	return start_date;
 }
 
+QString Employee::startDateToStringWithoutDot() const
+{
+	QString year;
+	year.setNum(this->s_year);
+	QString month;
+	month.setNum(this->s_month);
+	QString day;
+	day.setNum(this->s_day);
+
+	if (this->s_month / 10 == 0) {
+		month.prepend('0');
+	}
+	if (this->s_day / 10 == 0) {
+		day.prepend('0');
+	}
+	if (this->s_year < 10)
+	{
+		year.prepend("000");
+	}
+	else if (this->s_year < 100)
+	{
+		year.prepend("00");
+	}
+	else if (this->s_year < 1000)
+	{
+		year.prepend('0');
+	}
+	QString start_date = year + month + day;
+	return start_date;
+}
+
 QString Employee::getAllInformation() const
 {
 	QString info = "";

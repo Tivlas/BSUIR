@@ -9,6 +9,7 @@ task1_1::task1_1(QWidget* parent)
 	ui.saveAllBtn->setEnabled(false);
 }
 
+// validation
 bool task1_1::dateValidation(const QString& date)
 {
 	int leapYear[12] = { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
@@ -48,6 +49,25 @@ bool task1_1::dateValidation(const QString& date)
 		return true;
 	}
 	return true;
+}
+
+bool task1_1::depNumberValidation(const QString& depNumber)
+{
+	if (depNumber.isEmpty())
+	{
+		return false;
+	}
+	else
+	{
+		for (int i = 0; i < depNumber.length(); i++)
+		{
+			if (!depNumber[i].isDigit())
+			{
+				return false;
+			}
+		}
+		return true;
+	}
 }
 
 bool task1_1::dateCompare(int day1, int month1, int year1, int day2, int month2, int year2)
@@ -112,6 +132,96 @@ bool task1_1::dateCompare(int day1, int month1, int year1, int day2, int month2,
 
 void task1_1::on_quitBtn_clicked() {
 	QApplication::quit();
+}
+
+// add employees to list
+void task1_1::on_readToListBtn_clicked()
+{
+	fileName = QFileDialog::getOpenFileName(this, "Open your file", "D:/BSUIR/OAiP/lab3/task1_1", "Text File (*.txt)");
+	QFile file(fileName);
+	QTextStream fromFile(&file);
+	QString text = "";
+	if (!file.open(QFile::ReadOnly | QFile::Text) || fromFile.atEnd())
+	{
+		QMessageBox::warning(this, "Warning", "The file was not opened or it's empty!");
+	}
+	else
+	{
+		if (!list.getHead()) {
+			list.clear();
+			ui.saveLastBtn->setEnabled(false);
+			ui.saveAllBtn->setEnabled(false);
+		}
+		int linesCounter = 1;
+		while (!fromFile.atEnd()) {
+			Employee* cur = new Employee();
+
+			text = fromFile.readLine(); // name
+			++linesCounter;
+			cur->setName(text);
+
+			text = fromFile.readLine(); // surname
+			++linesCounter;
+			cur->setSurname(text);
+
+			text = fromFile.readLine(); // patronymic
+			++linesCounter;
+			cur->setPatronymic(text);
+
+			text = fromFile.readLine(); // employment date
+			++linesCounter;
+			if (!dateValidation(text)) {
+				QString error = "Error in line " + QString::number(linesCounter);
+				QMessageBox::critical(this, "Error", error);
+				list.clear();
+				ui.saveLastBtn->setEnabled(false);
+				ui.saveAllBtn->setEnabled(false);
+				return;
+			}
+			int s_day = text.left(2).toInt();
+			int s_month = text.mid(3, 2).toInt();
+			int s_year = text.right(4).toInt();
+			struct tm* local;
+			time_t t;
+			t = time(NULL);
+			local = localtime(&t);
+			// today's date
+			int year = local->tm_year + 1900;
+			int month = local->tm_mon + 1;
+			int day = local->tm_mday;
+			if (!dateCompare(s_day, s_month, s_year, day, month, year)) {
+				QString error = "Error in line " + QString::number(linesCounter);
+				QMessageBox::critical(this, "Error", error);
+				list.clear();
+				ui.saveLastBtn->setEnabled(false);
+				ui.saveAllBtn->setEnabled(false);
+				return;
+			}
+			cur->setS_day(s_day);
+			cur->setS_month(s_month);
+			cur->setS_year(s_year);
+
+			text = fromFile.readLine(); // department number
+			++linesCounter;
+			if (!depNumberValidation(text)) {
+				QString error = "Error in line " + QString::number(linesCounter);
+				QMessageBox::critical(this, "Error", error);
+				list.clear();
+				ui.saveLastBtn->setEnabled(false);
+				ui.saveAllBtn->setEnabled(false);
+				return;
+			}
+			cur->setDepartmentNumber(text.toInt());
+
+			text = fromFile.readLine(); // position
+			++linesCounter;
+			cur->setPosition(text);
+
+			list.add(cur);
+		}
+		file.close();
+		ui.saveAllBtn->setEnabled(true);
+	}
 }
 
 void task1_1::on_addBtn_clicked()
@@ -181,6 +291,8 @@ void task1_1::on_addBtn_clicked()
 	ui.saveAllBtn->setEnabled(true);
 }
 
+
+// print
 void task1_1::on_printBtn_clicked()
 {
 	if (!list.isEmpty())
@@ -190,6 +302,7 @@ void task1_1::on_printBtn_clicked()
 	}
 	else {
 		QMessageBox::warning(this, "Error", "List is empty");
+		ui.plainTextEdit->setPlainText("");
 	}
 }
 
@@ -215,6 +328,7 @@ void task1_1::on_printEmployeesWithSpecificSurnameBtn_clicked()
 	}
 	else {
 		QMessageBox::warning(this, "Error", "List is empty");
+		ui.plainTextEdit->setPlainText("");
 	}
 }
 
@@ -240,9 +354,50 @@ void task1_1::on_printEmployeesWithSpecificDepNumberBtn_clicked()
 	}
 	else {
 		QMessageBox::warning(this, "Error", "List is empty");
+		ui.plainTextEdit->setPlainText("");
 	}
 }
 
+void task1_1::on_printExperienceBtn_clicked()
+{
+	if (!list.isEmpty()) {
+		if (ui.printExperienceEdit->text().isEmpty()) {
+			QMessageBox::warning(this, "Error", "Experience is empty");
+			return;
+		}
+		int experience = ui.printExperienceEdit->text().toInt();
+
+		// today's date
+		struct tm* local;
+		time_t t;
+		t = time(NULL);
+		local = localtime(&t);
+		int year = local->tm_year + 1900;
+		int month = local->tm_mon + 1;
+		int day = local->tm_mday;
+
+		QString result = "";
+		Employee* cur = list.getHead();
+		while (cur != nullptr) {
+			int dur = duration(cur->getS_day(), cur->getS_month(), cur->getS_year(), day, month, year);
+			if (dur >= experience) {
+				result += cur->getAllInformation();
+			}
+			cur = cur->getNext();
+		}
+		if (result.isEmpty()) {
+			QMessageBox::warning(this, "Warning", "There are no employees with such experience");
+			return;
+		}
+		ui.plainTextEdit->setPlainText(result);
+	}
+	else {
+		QMessageBox::warning(this, "Warning", "List is empty");
+		ui.plainTextEdit->setPlainText("");
+	}
+}
+
+// fire
 void task1_1::on_fireBtn_clicked()
 {
 	if (!list.isEmpty())
@@ -284,7 +439,6 @@ void task1_1::on_fireBtn_clicked()
 		ui.fireSurnameEdit->clear();
 		ui.firePatronymicEdit->clear();
 		ui.fireDepartmentNumberEdit->clear();
-		on_printBtn_clicked();
 	}
 	else {
 		QMessageBox::warning(this, "Warning", "List is empty");
@@ -292,51 +446,14 @@ void task1_1::on_fireBtn_clicked()
 
 }
 
-void task1_1::on_printExperienceBtn_clicked()
-{
-	if (!list.isEmpty()) {
-		if (ui.printExperienceEdit->text().isEmpty()) {
-			QMessageBox::warning(this, "Error", "Experience is empty");
-			return;
-		}
-		int experience = ui.printExperienceEdit->text().toInt();
-
-		// today's date
-		struct tm* local;
-		time_t t;
-		t = time(NULL);
-		local = localtime(&t);
-		int year = local->tm_year + 1900;
-		int month = local->tm_mon + 1;
-		int day = local->tm_mday;
-
-		QString result = "";
-		Employee* cur = list.getHead();
-		while (cur != nullptr) {
-			int dur = duration(cur->getS_day(), cur->getS_month(), cur->getS_year(), day, month, year);
-			if (dur >= experience) {
-				result += cur->getAllInformation();
-			}
-			cur = cur->getNext();
-		}
-		if (result.isEmpty()) {
-			QMessageBox::warning(this, "Warning", "There are no employees with such experience");
-			return;
-		}
-		ui.plainTextEdit->setPlainText(result);
-	}
-	else {
-		QMessageBox::warning(this, "Warning", "List is empty");
-	}
-}
-
+// save
 void task1_1::on_saveLastBtn_clicked()
 {
 	if (list.isEmpty()) {
 		QMessageBox::warning(this, "Warning", "First add student");
 	}
 	else {
-		fileName = QFileDialog::getOpenFileName(this, "Select the file you wanna save to", "D:/BSUIR/OAiP/lab3", "Text File (*.txt)");
+		fileName = QFileDialog::getOpenFileName(this, "Select the file you wanna save to", "D:/BSUIR/OAiP/lab3/task1_1", "Text File (*.txt)");
 		QFile file(fileName);
 		QTextStream toFile(&file);
 
@@ -361,7 +478,7 @@ void task1_1::on_saveAllBtn_clicked()
 		QMessageBox::warning(this, "Warning", "First add student");
 	}
 	else {
-		fileName = QFileDialog::getOpenFileName(this, "Select the file you wanna save to", "D:/BSUIR/OAiP/lab3", "Text File (*.txt)");
+		fileName = QFileDialog::getOpenFileName(this, "Select the file you wanna save to", "D:/BSUIR/OAiP/lab3/task1_1", "Text File (*.txt)");
 		QFile file(fileName);
 		QTextStream toFile(&file);
 
@@ -379,108 +496,7 @@ void task1_1::on_saveAllBtn_clicked()
 	}
 }
 
-void task1_1::on_readToListBtn_clicked()
-{
-	fileName = QFileDialog::getOpenFileName(this, "Open your file", "D:/BSUIR/OAiP/lab3", "Text File (*.txt)");
-	QFile file(fileName);
-	QTextStream fromFile(&file);
-	QString text = "";
-	if (!file.open(QFile::ReadOnly | QFile::Text) || fromFile.atEnd())
-	{
-		QMessageBox::warning(this, "Warning", "The file was not opened or it's empty!");
-	}
-	else
-	{
-		if (!list.getHead()) {
-			list.clear();
-			ui.saveLastBtn->setEnabled(false);
-			ui.saveAllBtn->setEnabled(false);
-		}
-		int linesCounter = 1;
-		while (!fromFile.atEnd()) {
-			Employee* cur = new Employee();
-
-			text = fromFile.readLine(); // name
-			cur->setName(text);
-
-			text = fromFile.readLine(); // surname
-			cur->setSurname(text);
-
-			text = fromFile.readLine(); // patronymic
-			cur->setPatronymic(text);
-
-			text = fromFile.readLine(); // employment date
-			if (!dateValidation(text)) {
-				QString error = "Error in line " + QString::number(linesCounter);
-				QMessageBox::critical(this, "Error", error);
-				list.clear();
-				ui.saveLastBtn->setEnabled(false);
-				ui.saveAllBtn->setEnabled(false);
-				return;
-			}
-			int s_day = text.left(2).toInt();
-			int s_month = text.mid(3, 2).toInt();
-			int s_year = text.right(4).toInt();
-			struct tm* local;
-			time_t t;
-			t = time(NULL);
-			local = localtime(&t);
-			// today's date
-			int year = local->tm_year + 1900;
-			int month = local->tm_mon + 1;
-			int day = local->tm_mday;
-			if (!dateCompare(s_day, s_month, s_year, day, month, year)) {
-				QString error = "Error in line " + QString::number(linesCounter);
-				QMessageBox::critical(this, "Error", error);
-				list.clear();
-				ui.saveLastBtn->setEnabled(false);
-				ui.saveAllBtn->setEnabled(false);
-				return;
-			}
-			cur->setS_day(s_day);
-			cur->setS_month(s_month);
-			cur->setS_year(s_year);
-
-			text = fromFile.readLine(); // department number
-			if (!depNumberValidation(text)) {
-				QString error = "Error in line " + QString::number(linesCounter);
-				QMessageBox::critical(this, "Error", error);
-				list.clear();
-				ui.saveLastBtn->setEnabled(false);
-				ui.saveAllBtn->setEnabled(false);
-				return;
-			}
-			cur->setDepartmentNumber(text.toInt());
-
-			text = fromFile.readLine(); // position
-			cur->setPosition(text);
-
-			list.add(cur);
-			++linesCounter;
-		}
-		file.close();
-		ui.saveAllBtn->setEnabled(true);
-	}
-}
-
-void task1_1::on_sortByDepNumberBtn_clicked()
-{
-	if (!list.isEmpty())
-	{
-		if (list.isEmpty()) {
-			QMessageBox::warning(this, "Warning", "List is empty");
-		}
-		else {
-			sortByDepNumber(list, 0, list.getSize() - 1);
-			QString result = list.print();
-			ui.plainTextEdit->setPlainText(result);
-		}
-	}
-	else {
-		QMessageBox::warning(this, "Warning", "List is empty");
-	}
-}
-
+// duration
 int task1_1::daysPassed(int day, int month, int year)
 {
 	int leapYear[12] = { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
@@ -557,25 +573,7 @@ int task1_1::duration(int day1, int month1, int year1, int day2, int month2, int
 	}
 }
 
-bool task1_1::depNumberValidation(const QString& depNumber)
-{
-	if (depNumber.isEmpty())
-	{
-		return false;
-	}
-	else
-	{
-		for (int i = 0; i < depNumber.length(); i++)
-		{
-			if (!depNumber[i].isDigit())
-			{
-				return false;
-			}
-		}
-		return true;
-	}
-}
-
+// sortings
 void task1_1::sortByDepNumber(List& list, int left, int right)
 {
 	int l = left;
@@ -608,3 +606,143 @@ void task1_1::sortByDepNumber(List& list, int left, int right)
 	}
 }
 
+void task1_1::sortBySurname(List& list, int left, int right)
+{
+	int l = left;
+	int r = right;
+	QString mid = list.getElement((left + right) / 2)->getSurname().toUpper();
+	while (l < r)
+	{
+		while (list.getElement(l)->getSurname().toUpper() < mid)
+		{
+			l++;
+		}
+		while (list.getElement(r)->getSurname().toUpper() > mid)
+		{
+			r--;
+		}
+		if (l <= r)
+		{
+			list.swap(l, r);
+			++l;
+			--r;
+		}
+	}
+	if (left < l)
+	{
+		sortBySurname(list, left, r);
+	}
+	if (r < right)
+	{
+		sortBySurname(list, l, right);
+	}
+}
+
+void task1_1::sortByEmploymentDate(List& list, int left, int right)
+{
+	int l = left;
+	int r = right;
+	QString mid = list.getElement((left + right) / 2)->startDateToStringWithoutDot();
+	while (l < r)
+	{
+		while (list.getElement(l)->startDateToStringWithoutDot() < mid)
+		{
+			l++;
+		}
+		while (list.getElement(r)->startDateToStringWithoutDot() > mid)
+		{
+			r--;
+		}
+		if (l <= r)
+		{
+			list.swap(l, r);
+			++l;
+			--r;
+		}
+	}
+	if (left < l)
+	{
+		sortByEmploymentDate(list, left, r);
+	}
+	if (r < right)
+	{
+		sortByEmploymentDate(list, l, right);
+	}
+}
+
+void task1_1::on_sortByDepNumberBtn_clicked()
+{
+	if (!list.isEmpty())
+	{
+		sortByDepNumber(list, 0, list.getSize() - 1);
+		QString result = list.print();
+		ui.plainTextEdit->setPlainText(result);
+	}
+	else {
+		QMessageBox::warning(this, "Warning", "List is empty");
+	}
+}
+
+void task1_1::on_sortBySurnameBtn_clicked()
+{
+	if (!list.isEmpty())
+	{
+		sortBySurname(list, 0, list.getSize() - 1);
+		QString result = list.print();
+		ui.plainTextEdit->setPlainText(result);
+	}
+	else {
+		QMessageBox::warning(this, "Warning", "List is empty");
+	}
+}
+
+void task1_1::on_sortByEmploymentDateBtn_clicked()
+{
+	if (!list.isEmpty())
+	{
+		sortByEmploymentDate(list, 0, list.getSize() - 1);
+		QString result = list.print();
+		ui.plainTextEdit->setPlainText(result);
+	}
+	else {
+		QMessageBox::warning(this, "Warning", "List is empty");
+	}
+}
+
+// read from file to plainTextEdit
+void task1_1::on_readBtn_clicked()
+{
+	fileName = QFileDialog::getOpenFileName(this, "Open your file", "D:/BSUIR/OAiP/lab3/task1_1", "Text File (*.txt)");
+	QFile file(fileName);
+	QTextStream fromFile(&file);
+
+	if (!file.open(QFile::ReadOnly | QFile::Text))
+	{
+		QMessageBox::warning(this, "Warning", "The file was not opened or it's empty!");
+	}
+	else
+	{
+		QString text = fromFile.readAll();
+		ui.plainTextEdit->setPlainText(text);
+		file.close();
+	}
+}
+
+void task1_1::on_overwriteBtn_clicked()
+{
+	fileName = QFileDialog::getOpenFileName(this, "Select the file you wanna save to", "D:/BSUIR/OAiP/lab3/task1_1", "Text File (*.txt)");
+	QFile file(fileName);
+	QTextStream toFile(&file);
+
+	if (!file.open(QFile::WriteOnly | QFile::Text))
+	{
+		QMessageBox::warning(this, "Warning", "The file was not opened!");
+	}
+	else
+	{
+		QString text = ui.plainTextEdit->toPlainText();
+		toFile << text;
+		file.flush();
+		file.close();
+	}
+}

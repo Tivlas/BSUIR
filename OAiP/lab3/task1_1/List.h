@@ -5,7 +5,7 @@ class List
 private:
 	Employee* head = nullptr;
 	Employee* tail = nullptr;
-	int size;
+	int size = 0;
 public:
 	List() {};
 	~List();

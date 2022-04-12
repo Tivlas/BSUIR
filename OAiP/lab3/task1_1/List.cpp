@@ -36,11 +36,17 @@ void List::remove(QString name, QString surname, QString patronymic, int departm
 		if (cur->name == name && cur->surname == surname && cur->patronymic == patronymic && cur->departmentNumber == departmentNumber) {
 			if (cur->next == nullptr) {
 				tail = cur->prev;
-				tail->next = nullptr;
+				if (tail)
+				{
+					tail->next = nullptr;
+				}
 			}
-			else if (cur->prev == nullptr) {
+			if (cur->prev == nullptr) {
 				head = cur->next;
-				head->prev = nullptr;
+				if (head)
+				{
+					head->prev = nullptr;
+				}
 			}
 			else {
 				cur->prev->next = cur->next;
@@ -152,7 +158,7 @@ void List::swap(int i, int j)
 	else if (first->next == nullptr) {
 		tail = second;
 	}
-	
+
 	Employee* temp = first->next;
 	first->next = second->next;
 	second->next = temp;
