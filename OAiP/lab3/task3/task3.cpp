@@ -6,6 +6,8 @@ task3::task3(QWidget* parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
+	this->setFixedHeight(499);
+	this->setFixedWidth(849);
 	ui.tableWidget->setHorizontalHeaderLabels(QStringList() << "Expression" << "a" << "b" << "c" << "d" << "e" << "Result");
 	ui.tableWidget->setVerticalHeaderLabels(QStringList() << "1" << "2" << "3" << "4" << "5" << "6" << "7" << "8" << "9" << "10" << "11" << "12" << "13" << "14" << "15");
 }

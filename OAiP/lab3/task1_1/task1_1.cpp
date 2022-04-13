@@ -2,11 +2,14 @@
 #include "stdafx.h"
 
 task1_1::task1_1(QWidget* parent)
+
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
 	ui.saveLastBtn->setEnabled(false);
 	ui.saveAllBtn->setEnabled(false);
+	this->setFixedHeight(585);
+	this->setFixedWidth(1074);
 }
 
 // validation
