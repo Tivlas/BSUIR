@@ -112,6 +112,60 @@ void task1_2::on_printBtn_clicked()
 	}
 }
 
+void task1_2::on_deleteOneByNameBtn_clicked()
+{
+	if (list.getActualSize() != 0)
+	{
+		QString name = ui.deleteOneByNameEdit->text();
+		if (name.isEmpty()) {
+			QMessageBox::warning(this, "Ошибка", "Поле для ввода имени не должно быть пустым");
+			return;
+		}
+		try
+		{
+			list.remove(name);
+		}
+		catch (const QString& exception)
+		{
+			QMessageBox::warning(this, "Ошибка", exception);
+			return;
+		}
+		ui.deleteOneByNameEdit->clear();
+		on_printBtn_clicked();
+	}
+	else {
+		ui.deleteOneByNameEdit->clear();
+		QMessageBox::warning(this, "Ошибка", "Список пуст");
+	}
+}
+
+void task1_2::on_deleteAllByNameBtn_clicked()
+{
+	if (list.getActualSize() != 0)
+	{
+		QString name = ui.deleteAllByNameEdit->text();
+		if (name.isEmpty()) {
+			QMessageBox::warning(this, "Ошибка", "Поле для ввода имени не должно быть пустым");
+			return;
+		}
+		try
+		{
+			list.removeAll(name);
+		}
+		catch (const QString& exception)
+		{
+			QMessageBox::warning(this, "Внимание", exception);
+			return;
+		}
+		ui.deleteAllByNameEdit->clear();
+		on_printBtn_clicked();
+	}
+	else {
+		ui.deleteAllByNameEdit->clear();
+		QMessageBox::warning(this, "Ошибка", "Список пуст");
+	}
+}
+
 void task1_2::on_quitBtn_clicked() {
 	QApplication::quit();
 }

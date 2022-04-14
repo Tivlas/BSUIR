@@ -34,7 +34,7 @@ void List::add(const Product& product) {
 }
 
 int List::find(QString name) {
-	for (int i = next[0]; i < next.size();) {
+	for (int i = next[0]; i <= next.size();) {
 		if (products[i - 1].getName() == name) {
 			return i;
 		}
@@ -45,10 +45,27 @@ int List::find(QString name) {
 
 void List::remove(QString name) {
 	int index = find(name);
-	if (products[index - 1].getNumberOfItems() > 1) {
-		products[index - 1].setNumberOfItems(products[index - 1].getNumberOfItems() - 1);
-		return;
+	if (index != -1) {
+		if (products[index - 1].getNumberOfItems() > 1) {
+			products[index - 1].setNumberOfItems(products[index - 1].getNumberOfItems() - 1);
+			return;
+		}
+		for (int i = 0; i < next.size(); ++i) {
+			if (next[i] == index) {
+				next[i] = next[index];
+				--actualSize;
+			}
+		}
+		anyFreeCells = true;
+		freeCells.push_back(index);
 	}
+	else {
+		throw QString("Товара с таким названием нет в списке");
+	}
+}
+
+void List::removeAll(QString name) {
+	int index = find(name);
 	if (index != -1) {
 		for (int i = 0; i < next.size(); ++i) {
 			if (next[i] == index) {
@@ -59,18 +76,8 @@ void List::remove(QString name) {
 		anyFreeCells = true;
 		freeCells.push_back(index);
 	}
-}
-
-void List::removeAll(QString name) {
-	int index = find(name);
-	if (index != -1) {
-		for (int i = 0; i < next.size(); ++i) {
-			if (next[i] == index) {
-				next[i] = next[index];
-			}
-		}
-		anyFreeCells = true;
-		freeCells.push_back(index);
+	else {
+		throw QString("Товаров с таким названием нет в списке");
 	}
 }
 
@@ -122,7 +129,7 @@ QString List::printByStorageTime(int storageDays) {
 	int todaysDay = local->tm_mday;
 
 	for (int i = next[0]; i < next.size();) {
-		int dur = duration(products[i-1].day, products[i - 1].month, products[i - 1].year, todaysDay, todaysMonth, todaysYear);
+		int dur = duration(products[i - 1].day, products[i - 1].month, products[i - 1].year, todaysDay, todaysMonth, todaysYear);
 		if (dur > storageDays) {
 			result += products[i - 1].getInfo();
 		}
