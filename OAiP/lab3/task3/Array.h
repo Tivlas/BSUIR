@@ -29,7 +29,7 @@ public:
 		delete[] elements;
 	}
 
-	T operator[](size_t index) const {
+	T& operator[](size_t index) const {
 		return elements[index];
 	}
 
