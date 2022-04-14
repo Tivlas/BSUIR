@@ -1,4 +1,4 @@
-#pragma once
+п»ї#pragma once
 #include <QString>
 class Product
 {
@@ -6,14 +6,14 @@ class Product
 private:
 	QString name = "";
 	int price = 0;
-	int day;
-	int month;
-	int year;  // дата поступления товара
-	int numberOfItems = 0; // количество штук определенного товара
+	int day = 1;
+	int month = 1;
+	int year = 2022;  // РґР°С‚Р° РїРѕСЃС‚СѓРїР»РµРЅРёСЏ С‚РѕРІР°СЂР°
+	int numberOfItems = 0; // РєРѕР»РёС‡РµСЃС‚РІРѕ С€С‚СѓРє РѕРїСЂРµРґРµР»РµРЅРЅРѕРіРѕ С‚РѕРІР°СЂР°
 public:
-	Product(){}
+	Product() {}
 	Product(QString name, int price, int day, int month, int year, int numberOfItems);
-	
+
 	QString getName() const {
 		return name;
 	}
@@ -50,7 +50,7 @@ public:
 	void setNumberOfItems(int numberOfItems) {
 		this->numberOfItems = numberOfItems;
 	}
-	
+
 	QString dateToString() const; // in 01.05.2022 format
 	QString dateToStringWithoutDot() const; // in 20220501 format
 

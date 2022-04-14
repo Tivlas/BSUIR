@@ -3,8 +3,10 @@
 void List::add(const Product& product) {
 	if (!anyFreeCells)
 	{
-		next[productCount] = productCount + 1;
-		products[productCount] = product;
+		//next[productCount] = productCount + 1;
+		next.push_back(productCount + 1);
+		products.push_back(product);
+		//products[productCount] = product;
 		++productCount;
 		++actualSize;
 		return;
@@ -74,7 +76,7 @@ void List::removeAll(QString name) {
 
 QString List::print() {
 	QString result = "";
-	for (int i = next[0]; i < next.size();) {
+	for (int i = next[0]; i <= next.size();) {
 		result += products[i - 1].getInfo();
 		i = next[i];
 	}

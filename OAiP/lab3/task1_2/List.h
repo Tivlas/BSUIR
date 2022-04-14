@@ -5,9 +5,9 @@
 		
 class List
 {
-	friend bool dateCompare(int day1, int month1, int year1, int day2, int month2, int year2);
+	/*friend bool dateCompare(int day1, int month1, int year1, int day2, int month2, int year2);
 	friend int daysPassed(int day, int month, int year);
-	friend int duration(int day1, int month1, int year1, int day2, int month2, int year2);
+	friend int duration(int day1, int month1, int year1, int day2, int month2, int year2);*/
 private:
 	Array<Product> products;
 	Array<int> next;
