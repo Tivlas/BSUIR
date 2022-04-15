@@ -5,9 +5,6 @@
 		
 class List
 {
-	/*friend bool dateCompare(int day1, int month1, int year1, int day2, int month2, int year2);
-	friend int daysPassed(int day, int month, int year);
-	friend int duration(int day1, int month1, int year1, int day2, int month2, int year2);*/
 private:
 	Array<Product> products;
 	Array<int> next;
@@ -22,6 +19,7 @@ public:
 	int find(QString name);
 	void remove(QString name);
 	void removeAll(QString name);
+	void clear();
 
 	int getActualSize() const {
 		return actualSize;

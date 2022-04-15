@@ -1,10 +1,10 @@
 ﻿#include "task1_2.h"
 #include "stdafx.h"
 
-task1_2::task1_2(QWidget *parent)
-    : QMainWindow(parent)
+task1_2::task1_2(QWidget* parent)
+	: QMainWindow(parent)
 {
-    ui.setupUi(this);
+	ui.setupUi(this);
 }
 
 bool task1_2::dateValidation(const QString& date)
@@ -48,20 +48,21 @@ bool task1_2::dateValidation(const QString& date)
 	return true;
 }
 
+// добавление
 void task1_2::on_addBtn_clicked()
 {
-    QString name = ui.nameEdit->text();
-    if (name.isEmpty()) {
-        QMessageBox::warning(this, "Ошибка", "Поле для ввода имени не должно быть пустым");
-        return;
-    }
+	QString name = ui.nameEdit->text();
+	if (name.isEmpty()) {
+		QMessageBox::warning(this, "Ошибка", "Поле для ввода имени не должно быть пустым");
+		return;
+	}
 
-    QString s_price = ui.priceEdit->text();
+	QString s_price = ui.priceEdit->text();
 	if (s_price.isEmpty()) {
 		QMessageBox::warning(this, "Ошибка", "Поле для ввода цены не должно быть пустым");
 		return;
 	}
-    int price = s_price.toInt();
+	int price = s_price.toInt();
 
 	QString date = ui.dateEdit->text();
 	if (!dateValidation(date)) {
@@ -99,6 +100,7 @@ void task1_2::on_addBtn_clicked()
 	ui.countEdit->clear();
 }
 
+// вывод
 void task1_2::on_printBtn_clicked()
 {
 	if (list.getActualSize() != 0)
@@ -112,6 +114,91 @@ void task1_2::on_printBtn_clicked()
 	}
 }
 
+void task1_2::on_printByPriceBtn_clicked()
+{
+	if (list.getActualSize() != 0)
+	{
+		QString s_price = ui.printByPriceEdit->text();
+		QString text;
+		if (s_price.isEmpty()) {
+			QMessageBox::warning(this, "Ошибка", "Поле для ввода цены не должно быть пустым");
+			return;
+		}
+		try
+		{
+			text = list.printProductsWithLowerPrice(s_price.toInt());
+		}
+		catch (const QString& exception)
+		{
+			QMessageBox::warning(this, "Ошибка", exception);
+			return;
+		}
+		ui.plainTextEdit->setPlainText(text);
+		ui.printByPriceEdit->clear();
+	}
+	else {
+		ui.printByPriceEdit->clear();
+		QMessageBox::warning(this, "Ошибка", "Список пуст");
+	}
+}
+
+void task1_2::on_printByNameBtn_clicked()
+{
+	if (list.getActualSize() != 0)
+	{
+		QString name = ui.printByNameEdit->text();
+		QString text;
+		if (name.isEmpty()) {
+			QMessageBox::warning(this, "Ошибка", "Поле для ввода имени не должно быть пустым");
+			return;
+		}
+		try
+		{
+			text = list.printByProductName(name);
+		}
+		catch (const QString& exception)
+		{
+			QMessageBox::warning(this, "Ошибка", exception);
+			return;
+		}
+		ui.plainTextEdit->setPlainText(text);
+		ui.printByNameEdit->clear();
+	}
+	else {
+		ui.printByNameEdit->clear();
+		QMessageBox::warning(this, "Ошибка", "Список пуст");
+	}
+}
+
+void task1_2::on_printByTimeBtn_clicked()
+{
+	if (list.getActualSize() != 0)
+	{
+		if (ui.printByTimeEdit->text().isEmpty()) {
+			QMessageBox::warning(this, "Ошибка", "Поле для ввода колчества дней не должно быть пустым");
+			return;
+		}
+		int days = ui.printByTimeEdit->text().toInt();
+		QString text;
+		try
+		{
+			text = list.printByStorageTime(days);
+		}
+		catch (const QString& exception)
+		{
+			QMessageBox::warning(this, "Ошибка", exception);
+			return;
+		}
+		ui.plainTextEdit->setPlainText(text);
+		ui.printByTimeEdit->clear();
+	}
+	else {
+		ui.printByTimeEdit->clear();
+		QMessageBox::warning(this, "Ошибка", "Список пуст");
+	}
+}
+
+// удаление
 void task1_2::on_deleteOneByNameBtn_clicked()
 {
 	if (list.getActualSize() != 0)
@@ -166,6 +253,7 @@ void task1_2::on_deleteAllByNameBtn_clicked()
 	}
 }
 
+// выход
 void task1_2::on_quitBtn_clicked() {
 	QApplication::quit();
 }

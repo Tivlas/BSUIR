@@ -3,10 +3,8 @@
 void List::add(const Product& product) {
 	if (!anyFreeCells)
 	{
-		//next[productCount] = productCount + 1;
 		next.push_back(productCount + 1);
 		products.push_back(product);
-		//products[productCount] = product;
 		++productCount;
 		++actualSize;
 		return;
@@ -81,6 +79,15 @@ void List::removeAll(QString name) {
 	}
 }
 
+void List::clear() {
+	for (int i = 0; i < next.size(); ++i) {
+		freeCells.push_back(next[i]);
+	}
+	next.forget();
+	anyFreeCells = true;
+	actualSize = 0;
+}
+
 QString List::print() {
 	QString result = "";
 	for (int i = next[0]; i <= next.size();) {
@@ -99,7 +106,7 @@ QString List::printByProductName(QString name) {
 		i = next[i];
 	}
 	if (result == "") {
-		throw "Нет таких товаров";
+		throw QString("Нет таких товаров");
 	}
 	return result;
 }
@@ -113,7 +120,7 @@ QString List::printProductsWithLowerPrice(int price) {
 		i = next[i];
 	}
 	if (result == "") {
-		throw "Нет таких товаров";
+		throw QString("Нет таких товаров");
 	}
 	return result;
 }
@@ -136,7 +143,7 @@ QString List::printByStorageTime(int storageDays) {
 		i = next[i];
 	}
 	if (result == "") {
-		throw "Нет таких товаров";
+		throw QString("Нет таких товаров");
 	}
 	return result;
 }

@@ -17,6 +17,9 @@ public slots:
     void on_printBtn_clicked();
     void on_deleteOneByNameBtn_clicked();
     void on_deleteAllByNameBtn_clicked();
+    void on_printByPriceBtn_clicked();
+    void on_printByNameBtn_clicked();
+    void on_printByTimeBtn_clicked();
 private:
     Ui::task1_2Class ui;
     QString fileName;
