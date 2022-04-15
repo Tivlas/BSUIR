@@ -148,6 +148,10 @@ QString List::printByStorageTime(int storageDays) {
 	return result;
 }
 
+QString List::getInfoAboutLast() {
+	return products[actualSize - 1].getInfo();
+}
+
 bool dateCompare(int day1, int month1, int year1, int day2, int month2, int year2) {
 	QString first_year;
 	first_year.setNum(year1);

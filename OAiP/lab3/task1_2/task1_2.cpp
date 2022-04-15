@@ -198,6 +198,58 @@ void task1_2::on_printByTimeBtn_clicked()
 	}
 }
 
+
+// сохранение
+void task1_2::on_saveLastBtn_clicked()
+{
+	if (list.getActualSize()==0) {
+		QMessageBox::warning(this, "Ошибка", "Список пуст");
+	}
+	else {
+		fileName = QFileDialog::getOpenFileName(this, "Выберите файл для сохранения", "D:/BSUIR/OAiP/lab3/task1_2", "(*.txt)");
+		QFile file(fileName);
+		QTextStream toFile(&file);
+
+		if (!file.open(QFile::WriteOnly | QFile::Text | QFile::Append))
+		{
+			QMessageBox::warning(this, "Ошибка", "Файл не был открыт");
+		}
+		else
+		{
+
+			QString text = list.getInfoAboutLast();
+			toFile << text;
+			file.flush();
+			file.close();
+		}
+	}
+}
+
+void task1_2::on_saveAllBtn_clicked()
+{
+	if (list.getActualSize() == 0) {
+		QMessageBox::warning(this, "Ошибка", "Список пуст");
+	}
+	else {
+		fileName = QFileDialog::getOpenFileName(this, "Выберите файл для сохранения", "D:/BSUIR/OAiP/lab3/task1_2", "(*.txt)");
+		QFile file(fileName);
+		QTextStream toFile(&file);
+
+		if (!file.open(QFile::WriteOnly | QFile::Text | QFile::Append))
+		{
+			QMessageBox::warning(this, "Ошибка", "Файл не был открыт");
+		}
+		else
+		{
+
+			QString text = list.print();
+			toFile << text;
+			file.flush();
+			file.close();
+		}
+	}
+}
+
 // удаление
 void task1_2::on_deleteOneByNameBtn_clicked()
 {
