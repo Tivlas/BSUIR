@@ -11,6 +11,7 @@ class task1_2 : public QMainWindow
 public:
     task1_2(QWidget *parent = Q_NULLPTR);
 	bool dateValidation(const QString& date);
+    bool amountValidation(const QString& amount);
 public slots:
     void on_quitBtn_clicked();
     void on_addBtn_clicked();
@@ -23,6 +24,9 @@ public slots:
     void on_saveLastBtn_clicked();
     void on_saveAllBtn_clicked();
     void on_readToListBtn_clicked();
+    void on_readBtn_clicked();
+    void on_overwriteBtn_clicked();
+	
 private:
     Ui::task1_2Class ui;
     QString fileName;

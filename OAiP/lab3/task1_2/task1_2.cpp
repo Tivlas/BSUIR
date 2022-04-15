@@ -5,6 +5,27 @@ task1_2::task1_2(QWidget* parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
+	ui.saveLastBtn->setEnabled(false);
+	ui.saveAllBtn->setEnabled(false);
+}
+
+bool task1_2::amountValidation(const QString& amount)
+{
+	if (amount.isEmpty())
+	{
+		return false;
+	}
+	else
+	{
+		for (int i = 0; i < amount.length(); i++)
+		{
+			if (!amount[i].isDigit())
+			{
+				return false;
+			}
+		}
+		return true;
+	}
 }
 
 bool task1_2::dateValidation(const QString& date)
@@ -98,6 +119,104 @@ void task1_2::on_addBtn_clicked()
 	ui.priceEdit->clear();
 	ui.dateEdit->clear();
 	ui.countEdit->clear();
+}
+
+void task1_2::on_readToListBtn_clicked()
+{
+	if (list.getActualSize() != 0) {
+		list.clear();
+	}
+	else {
+		fileName = QFileDialog::getOpenFileName(this, "Откройте файл", "D:/BSUIR/OAiP/lab3/task1_2", "(*.txt)");
+		QFile file(fileName);
+		QTextStream fromFile(&file);
+		QString name;
+		QString s_price;
+		QString date;
+		QString amount;
+		if (!file.open(QFile::ReadOnly | QFile::Text) || fromFile.atEnd())
+		{
+			QMessageBox::warning(this, "Внимание", "Файл не был открыт или он пустой!");
+		}
+		else
+		{
+			if (list.getActualSize() != 0) {
+				list.clear();
+				ui.saveLastBtn->setEnabled(false);
+				ui.saveAllBtn->setEnabled(false);
+			}
+			int linesCounter = 1;
+			while (!fromFile.atEnd()) {
+				
+				name = fromFile.readLine(); // name
+				++linesCounter;
+				if (name.isEmpty()) {
+					QString error = "Ошибка в строке " + QString::number(linesCounter);
+					QMessageBox::critical(this, "Ошибка", error);
+					list.clear();
+					ui.saveLastBtn->setEnabled(false);
+					ui.saveAllBtn->setEnabled(false);
+					return;
+				}
+
+				s_price = fromFile.readLine(); // s_price
+				++linesCounter;
+				if (s_price.isEmpty()) {
+					QString error = "Ошибка в строке " + QString::number(linesCounter);
+					QMessageBox::critical(this, "Ошибка", error);
+					list.clear();
+					ui.saveLastBtn->setEnabled(false);
+					ui.saveAllBtn->setEnabled(false);
+					return;
+				}
+				
+				date = fromFile.readLine(); //  date
+				++linesCounter;
+				if (!dateValidation(date)) {
+					QString error = "Ошибка в строке " + QString::number(linesCounter);
+					QMessageBox::critical(this, "Ошибка", error);
+					list.clear();
+					ui.saveLastBtn->setEnabled(false);
+					ui.saveAllBtn->setEnabled(false);
+					return;
+				}
+				int day = date.left(2).toInt();
+				int month = date.mid(3, 2).toInt();
+				int year = date.right(4).toInt();
+				struct tm* local;
+				time_t t;
+				t = time(NULL);
+				local = localtime(&t);
+				// today's date
+				int t_year = local->tm_year + 1900;
+				int t_month = local->tm_mon + 1;
+				int t_day = local->tm_mday;
+				if (!dateCompare(day, month, year, t_day, t_month, t_year)) {
+					QString error = "Ошибка в строке " + QString::number(linesCounter);
+					QMessageBox::critical(this, "Ошибка", error);
+					list.clear();
+					ui.saveLastBtn->setEnabled(false);
+					ui.saveAllBtn->setEnabled(false);
+					return;
+				}
+
+				amount = fromFile.readLine(); // amount
+				++linesCounter;
+				if (!amountValidation(amount)) {
+					QString error = "Error in line " + QString::number(linesCounter);
+					QMessageBox::critical(this, "Error", error);
+					list.clear();
+					ui.saveLastBtn->setEnabled(false);
+					ui.saveAllBtn->setEnabled(false);
+					return;
+				}
+
+				list.add(Product(name,s_price.toInt(),day,month,year,amount.toInt()));
+			}
+			file.close();
+			ui.saveAllBtn->setEnabled(true);
+		}
+	}
 }
 
 // вывод
@@ -250,6 +369,7 @@ void task1_2::on_saveAllBtn_clicked()
 	}
 }
 
+
 // удаление
 void task1_2::on_deleteOneByNameBtn_clicked()
 {
@@ -308,4 +428,42 @@ void task1_2::on_deleteAllByNameBtn_clicked()
 // выход
 void task1_2::on_quitBtn_clicked() {
 	QApplication::quit();
+}
+
+// работа с plainTextEdit
+void task1_2::on_readBtn_clicked()
+{
+	fileName = QFileDialog::getOpenFileName(this, "Выберите файл", "D:/BSUIR/OAiP/lab3/task1_2", "(*.txt)");
+	QFile file(fileName);
+	QTextStream fromFile(&file);
+
+	if (!file.open(QFile::ReadOnly | QFile::Text))
+	{
+		QMessageBox::warning(this, "Внимание", "Файл не был открыт или он пустой!");
+	}
+	else
+	{
+		QString text = fromFile.readAll();
+		ui.plainTextEdit->setPlainText(text);
+		file.close();
+	}
+}
+
+void task1_2::on_overwriteBtn_clicked()
+{
+	fileName = QFileDialog::getOpenFileName(this, "Выберите файл", "D:/BSUIR/OAiP/lab3/task1_2", "(*.txt)");
+	QFile file(fileName);
+	QTextStream toFile(&file);
+
+	if (!file.open(QFile::WriteOnly | QFile::Text))
+	{
+		QMessageBox::warning(this, "Внимание", "Файл не был открыт!");
+	}
+	else
+	{
+		QString text = ui.plainTextEdit->toPlainText();
+		toFile << text;
+		file.flush();
+		file.close();
+	}
 }
