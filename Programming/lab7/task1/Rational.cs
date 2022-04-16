@@ -72,19 +72,19 @@ namespace task1
             return result;
         }
 
-        public static Rational operator +(Rational first, int second)
+        public static Rational operator +(Rational fraction, int number)
         {
-            int numerator = first.numerator + second * first.denominator;
-            int denominator = first.denominator;
+            int numerator = fraction.numerator + number * fraction.denominator;
+            int denominator = fraction.denominator;
             Rational result = new Rational(numerator, denominator);
             result.reduceFraction();
             return result;
         }
 
-        public static Rational operator +(int first, Rational second)
+        public static Rational operator +(int number, Rational fraction)
         {
-            int numerator = first * second.denominator + second.numerator;
-            int denominator = second.denominator;
+            int numerator = number * fraction.denominator + fraction.numerator;
+            int denominator = fraction.denominator;
             Rational result = new Rational(numerator, denominator);
             result.reduceFraction();
             return result;
@@ -100,19 +100,19 @@ namespace task1
             return result;
         }
 
-        public static Rational operator -(Rational first, int second)
+        public static Rational operator -(Rational fraction, int number)
         {
-            int numerator = first.numerator - second * first.denominator;
-            int denominator = first.denominator;
+            int numerator = fraction.numerator - number * fraction.denominator;
+            int denominator = fraction.denominator;
             Rational result = new Rational(numerator, denominator);
             result.reduceFraction();
             return result;
         }
 
-        public static Rational operator -(int first, Rational second)
+        public static Rational operator -(int number, Rational fraction)
         {
-            int numerator = first * second.denominator - second.numerator;
-            int denominator = second.denominator;
+            int numerator = number * fraction.denominator - fraction.numerator;
+            int denominator = fraction.denominator;
             Rational result = new Rational(numerator, denominator);
             result.reduceFraction();
             return result;
@@ -128,19 +128,19 @@ namespace task1
             return result;
         }
 
-        public static Rational operator *(Rational first, int second)
+        public static Rational operator *(Rational fraction, int number)
         {
-            int numerator = first.numerator * second;
-            int denominator = first.denominator;
+            int numerator = fraction.numerator * number;
+            int denominator = fraction.denominator;
             Rational result = new Rational(numerator, denominator);
             result.reduceFraction();
             return result;
         }
 
-        public static Rational operator *(int first, Rational second)
+        public static Rational operator *(int number, Rational fraction)
         {
-            int numerator = first * second.numerator;
-            int denominator = second.denominator;
+            int numerator = number * fraction.numerator;
+            int denominator = fraction.denominator;
             Rational result = new Rational(numerator, denominator);
             result.reduceFraction();
             return result;
@@ -156,38 +156,38 @@ namespace task1
             return result;
         }
 
-        public static Rational operator /(Rational first, int second)
+        public static Rational operator /(Rational fraction, int number)
         {
-            int numerator = first.numerator;
-            int denominator = first.denominator * second;
+            int numerator = fraction.numerator;
+            int denominator = fraction.denominator * number;
             Rational result = new Rational(numerator, denominator);
             result.reduceFraction();
             return result;
         }
 
-        public static Rational operator /(int first, Rational second)
+        public static Rational operator /(int number, Rational fraction)
         {
-            int numerator = first * second.denominator;
-            int denominator = second.numerator;
+            int numerator = number * fraction.denominator;
+            int denominator = fraction.numerator;
             Rational result = new Rational(numerator, denominator);
             result.reduceFraction();
             return result;
         }
 
         // инкремент и декремент
-        public static Rational operator ++(Rational first)
+        public static Rational operator ++(Rational fraction)
         {
-            int numerator = first.numerator + first.denominator;
-            int denominator = first.denominator;
+            int numerator = fraction.numerator + fraction.denominator;
+            int denominator = fraction.denominator;
             Rational result = new Rational(numerator, denominator);
             result.reduceFraction();
             return result;
         }
         
-        public static Rational operator --(Rational first)
+        public static Rational operator --(Rational fraction)
         {
-            int numerator = first.numerator - first.denominator;
-            int denominator = first.denominator;
+            int numerator = fraction.numerator - fraction.denominator;
+            int denominator = fraction.denominator;
             Rational result = new Rational(numerator, denominator);
             result.reduceFraction();
             return result;
@@ -215,14 +215,25 @@ namespace task1
         }
 
         // операторы true и false
-        public static bool operator true(Rational first)
+        public static bool operator true(Rational fraction)
         {
-            return first.numerator != 0;
+            return fraction.numerator != 0;
         }
 
-        public static bool operator false(Rational first)
+        public static bool operator false(Rational fraction)
         {
-            return first.numerator == 0;
+            return fraction.numerator == 0;
+        }
+
+        // преобразование в int и обратно
+        public static explicit operator int(Rational fraction)
+        {
+            return fraction.numerator / fraction.denominator;
+        }
+        
+        public static implicit operator Rational(int number)
+        {
+            return new Rational(number, 1);
         }
 
         // преобразование в строку
