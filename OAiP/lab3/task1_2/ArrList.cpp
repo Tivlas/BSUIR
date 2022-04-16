@@ -1,6 +1,6 @@
-﻿#include "List.h"
+﻿#include "ArrList.h"
 
-void List::add(const Product& product) {
+void ArrList::add(const Product& product) {
 	if (!anyFreeCells)
 	{
 		next.push_back(productCount + 1);
@@ -44,7 +44,7 @@ void List::add(const Product& product) {
 	}
 }
 
-int List::find(QString name) {
+int ArrList::find(QString name) {
 	for (int i = next[0]; i <= next.size();) {
 		if (products[i - 1].getName() == name) {
 			return i;
@@ -54,7 +54,7 @@ int List::find(QString name) {
 	return -1; // если нет товара с таким названием
 }
 
-void List::remove(QString name) {
+void ArrList::remove(QString name) {
 	int index = find(name);
 	if (index != -1) {
 		if (products[index - 1].getNumberOfItems() > 1) {
@@ -75,7 +75,7 @@ void List::remove(QString name) {
 	}
 }
 
-void List::removeAll(QString name) {
+void ArrList::removeAll(QString name) {
 	int index = find(name);
 	if (index != -1) {
 		for (int i = 0; i < next.size(); ++i) {
@@ -92,7 +92,7 @@ void List::removeAll(QString name) {
 	}
 }
 
-void List::clear() {
+void ArrList::clear() {
 	while (freeCells.size() != 0) {
 		freeCells.pop_back();
 	}
@@ -108,7 +108,7 @@ void List::clear() {
 	actualSize = 0;
 }
 
-QString List::print() {
+QString ArrList::print() {
 	QString result = "";
 	int iterationCounter = 0;
 	for (int i = next[0]; i <= next.size() && iterationCounter < actualSize;) {
@@ -119,7 +119,7 @@ QString List::print() {
 	return result;
 }
 
-QString List::printByProductName(QString name) {
+QString ArrList::printByProductName(QString name) {
 	QString result = "";
 	int iterationCounter = 0;
 	for (int i = next[0]; i <= next.size() && iterationCounter < actualSize;) {
@@ -135,7 +135,7 @@ QString List::printByProductName(QString name) {
 	return result;
 }
 
-QString List::printProductsWithLowerPrice(int price) {
+QString ArrList::printProductsWithLowerPrice(int price) {
 	QString result = "";
 	int iterationCounter = 0;
 	for (int i = next[0]; i <= next.size() && iterationCounter < actualSize;) {
@@ -151,7 +151,7 @@ QString List::printProductsWithLowerPrice(int price) {
 	return result;
 }
 
-QString List::printByStorageTime(int storageDays) {
+QString ArrList::printByStorageTime(int storageDays) {
 	QString result = "";
 	struct tm* local;
 	time_t t;
@@ -176,11 +176,11 @@ QString List::printByStorageTime(int storageDays) {
 	return result;
 }
 
-QString List::getInfoAboutLast() {
+QString ArrList::getInfoAboutLast() {
 	return products[actualSize - 1].getInfo();
 }
 
-void List::sortByPrice() {
+void ArrList::sortByPrice() {
 	int i_iterationCounter = 0;
 	for (int i = next[0]; i <= next.size() && i_iterationCounter < actualSize;) {
 		for (int j = next[0]; j < next.size();) {

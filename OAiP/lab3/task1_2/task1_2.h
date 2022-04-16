@@ -2,7 +2,7 @@
 
 #include <QtWidgets/QMainWindow>
 #include "ui_task1_2.h"
-#include "List.h"
+#include "ArrList.h"
 
 class task1_2 : public QMainWindow
 {
@@ -31,6 +31,6 @@ public slots:
 private:
     Ui::task1_2Class ui;
     QString fileName;
-    List list;
-    List waiting;
+    ArrList list;
+    ArrList waiting;
 };

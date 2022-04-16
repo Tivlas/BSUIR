@@ -2,8 +2,8 @@
 #include "Array.h"
 #include "Product.h"
 #include <QString>
-		
-class List
+
+class ArrList
 {
 private:
 	Array<Product> products;
@@ -13,8 +13,8 @@ private:
 	int productCount = 0;// считает количество ячеек, которые были использованы хотя бы один раз
 	int actualSize = 0; // считает количество различных по имени товаров
 public:
-	List(){}
-	~List(){}
+	ArrList() {}
+	~ArrList() {}
 	void add(const Product& product);
 	int find(QString name);
 	void remove(QString name);
@@ -26,12 +26,12 @@ public:
 	int getActualSize() const {
 		return actualSize;
 	}
-	
+
 	QString print();
 	QString printByProductName(QString name);
 	QString printProductsWithLowerPrice(int price); // выводит товары с меньшей ценой
 	QString printByStorageTime(int storageDays); // выводит товары которые были на складе больше введенного количества дней
-	
+
 };
 
 bool dateCompare(int day1, int month1, int year1, int day2, int month2, int year2);

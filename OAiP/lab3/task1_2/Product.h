@@ -2,7 +2,7 @@
 #include <QString>
 class Product
 {
-	friend class List;
+	friend class ArrList;
 private:
 	QString name = "";
 	int price = 0;
