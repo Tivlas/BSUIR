@@ -467,3 +467,16 @@ void task1_2::on_overwriteBtn_clicked()
 		file.close();
 	}
 }
+
+// сортировка
+void task1_2::on_sortByPriceBtn_clicked()
+{
+	if (list.getActualSize() != 0)
+	{
+		list.sortByPrice();
+		on_printBtn_clicked();
+	}
+	else {
+		QMessageBox::warning(this, "Ошибка!", "Список пуст");
+	}
+}

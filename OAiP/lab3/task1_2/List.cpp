@@ -180,6 +180,20 @@ QString List::getInfoAboutLast() {
 	return products[actualSize - 1].getInfo();
 }
 
+void List::sortByPrice() {
+	int i_iterationCounter = 0;
+	for (int i = next[0]; i <= next.size() && i_iterationCounter < actualSize;) {
+		for (int j = next[0]; j < next.size();) {
+			if (products[j - 1].getPrice() > products[j].getPrice()) {
+				std::swap(products[j - 1], products[j]);
+			}
+			j = next[j];
+		}
+		i = next[i];
+		++i_iterationCounter;
+	}
+}
+
 bool dateCompare(int day1, int month1, int year1, int day2, int month2, int year2) {
 	QString first_year;
 	first_year.setNum(year1);

@@ -20,6 +20,7 @@ public:
 	void remove(QString name);
 	void removeAll(QString name);
 	void clear();
+	void sortByPrice();
 	QString getInfoAboutLast();
 
 	int getActualSize() const {

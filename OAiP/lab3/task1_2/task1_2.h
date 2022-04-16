@@ -26,6 +26,7 @@ public slots:
     void on_readToListBtn_clicked();
     void on_readBtn_clicked();
     void on_overwriteBtn_clicked();
+    void on_sortByPriceBtn_clicked();
 	
 private:
     Ui::task1_2Class ui;
