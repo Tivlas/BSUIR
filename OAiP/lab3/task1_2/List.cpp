@@ -10,8 +10,21 @@ void List::add(const Product& product) {
 		return;
 	}
 
-	next[freeCells[freeCells.size() - 1] - 1] = freeCells[freeCells.size() - 1];
-	products[freeCells[freeCells.size() - 1] - 1] = product;
+	int cur = freeCells[freeCells.size() - 1] - 1;
+	next[cur] = cur + 1;
+	products[cur] = product;
+	if (cur != 0)
+	{
+		/* если сначала удалили, допустим, 2ой, а потом 3ий элемент
+		то ситуация такая: next = {1,4,4,4,5}
+		но добавлять мы сначала будем 3ий и ситуация станет такой: next = {1,4,3,4,5}, а значит
+		третий элемент по сути еще забыт и не выведется
+		*/
+		while (cur != 0 && next[cur - 1] > next[cur]) {
+			next[cur - 1] = next[cur];
+			--cur;
+		}
+	}
 	++actualSize;
 	/*
 	Например:
@@ -68,9 +81,9 @@ void List::removeAll(QString name) {
 		for (int i = 0; i < next.size(); ++i) {
 			if (next[i] == index) {
 				next[i] = next[index];
-				--actualSize;
 			}
 		}
+		--actualSize;
 		anyFreeCells = true;
 		freeCells.push_back(index);
 	}
@@ -80,10 +93,17 @@ void List::removeAll(QString name) {
 }
 
 void List::clear() {
-	for (int i = 0; i < next.size(); ++i) {
-		freeCells.push_back(next[i]);
+	while (freeCells.size() != 0) {
+		freeCells.pop_back();
 	}
-	next.forget();
+	/*for (int i = 0; i < next.size(); ++i) {
+		freeCells.push_back(i+1);
+		next[i] = 1;
+	}*/
+	for (int i = next.size(); i > 0; --i) {
+		freeCells.push_back(i);
+		next[i-1] = 1;
+	}
 	anyFreeCells = true;
 	actualSize = 0;
 }

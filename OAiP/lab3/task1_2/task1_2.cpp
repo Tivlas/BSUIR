@@ -119,6 +119,7 @@ void task1_2::on_addBtn_clicked()
 	ui.priceEdit->clear();
 	ui.dateEdit->clear();
 	ui.countEdit->clear();
+	ui.saveLastBtn->setEnabled(true);
 }
 
 void task1_2::on_readToListBtn_clicked()
@@ -126,96 +127,94 @@ void task1_2::on_readToListBtn_clicked()
 	if (list.getActualSize() != 0) {
 		list.clear();
 	}
-	else {
-		fileName = QFileDialog::getOpenFileName(this, "Откройте файл", "D:/BSUIR/OAiP/lab3/task1_2", "(*.txt)");
-		QFile file(fileName);
-		QTextStream fromFile(&file);
-		QString name;
-		QString s_price;
-		QString date;
-		QString amount;
-		if (!file.open(QFile::ReadOnly | QFile::Text) || fromFile.atEnd())
-		{
-			QMessageBox::warning(this, "Внимание", "Файл не был открыт или он пустой!");
+	fileName = QFileDialog::getOpenFileName(this, "Откройте файл", "D:/BSUIR/OAiP/lab3/task1_2", "(*.txt)");
+	QFile file(fileName);
+	QTextStream fromFile(&file);
+	QString name;
+	QString s_price;
+	QString date;
+	QString amount;
+	if (!file.open(QFile::ReadOnly | QFile::Text) || fromFile.atEnd())
+	{
+		QMessageBox::warning(this, "Внимание", "Файл не был открыт или он пустой!");
+	}
+	else
+	{
+		if (list.getActualSize() != 0) {
+			list.clear();
+			ui.saveLastBtn->setEnabled(false);
+			ui.saveAllBtn->setEnabled(false);
 		}
-		else
-		{
-			if (list.getActualSize() != 0) {
+		int linesCounter = 1;
+		while (!fromFile.atEnd()) {
+
+			name = fromFile.readLine(); // name
+			++linesCounter;
+			if (name.isEmpty()) {
+				QString error = "Ошибка в строке " + QString::number(linesCounter);
+				QMessageBox::critical(this, "Ошибка", error);
 				list.clear();
 				ui.saveLastBtn->setEnabled(false);
 				ui.saveAllBtn->setEnabled(false);
+				return;
 			}
-			int linesCounter = 1;
-			while (!fromFile.atEnd()) {
-				
-				name = fromFile.readLine(); // name
-				++linesCounter;
-				if (name.isEmpty()) {
-					QString error = "Ошибка в строке " + QString::number(linesCounter);
-					QMessageBox::critical(this, "Ошибка", error);
-					list.clear();
-					ui.saveLastBtn->setEnabled(false);
-					ui.saveAllBtn->setEnabled(false);
-					return;
-				}
 
-				s_price = fromFile.readLine(); // s_price
-				++linesCounter;
-				if (s_price.isEmpty()) {
-					QString error = "Ошибка в строке " + QString::number(linesCounter);
-					QMessageBox::critical(this, "Ошибка", error);
-					list.clear();
-					ui.saveLastBtn->setEnabled(false);
-					ui.saveAllBtn->setEnabled(false);
-					return;
-				}
-				
-				date = fromFile.readLine(); //  date
-				++linesCounter;
-				if (!dateValidation(date)) {
-					QString error = "Ошибка в строке " + QString::number(linesCounter);
-					QMessageBox::critical(this, "Ошибка", error);
-					list.clear();
-					ui.saveLastBtn->setEnabled(false);
-					ui.saveAllBtn->setEnabled(false);
-					return;
-				}
-				int day = date.left(2).toInt();
-				int month = date.mid(3, 2).toInt();
-				int year = date.right(4).toInt();
-				struct tm* local;
-				time_t t;
-				t = time(NULL);
-				local = localtime(&t);
-				// today's date
-				int t_year = local->tm_year + 1900;
-				int t_month = local->tm_mon + 1;
-				int t_day = local->tm_mday;
-				if (!dateCompare(day, month, year, t_day, t_month, t_year)) {
-					QString error = "Ошибка в строке " + QString::number(linesCounter);
-					QMessageBox::critical(this, "Ошибка", error);
-					list.clear();
-					ui.saveLastBtn->setEnabled(false);
-					ui.saveAllBtn->setEnabled(false);
-					return;
-				}
-
-				amount = fromFile.readLine(); // amount
-				++linesCounter;
-				if (!amountValidation(amount)) {
-					QString error = "Error in line " + QString::number(linesCounter);
-					QMessageBox::critical(this, "Error", error);
-					list.clear();
-					ui.saveLastBtn->setEnabled(false);
-					ui.saveAllBtn->setEnabled(false);
-					return;
-				}
-
-				list.add(Product(name,s_price.toInt(),day,month,year,amount.toInt()));
+			s_price = fromFile.readLine(); // s_price
+			++linesCounter;
+			if (s_price.isEmpty()) {
+				QString error = "Ошибка в строке " + QString::number(linesCounter);
+				QMessageBox::critical(this, "Ошибка", error);
+				list.clear();
+				ui.saveLastBtn->setEnabled(false);
+				ui.saveAllBtn->setEnabled(false);
+				return;
 			}
-			file.close();
-			ui.saveAllBtn->setEnabled(true);
+
+			date = fromFile.readLine(); //  date
+			++linesCounter;
+			if (!dateValidation(date)) {
+				QString error = "Ошибка в строке " + QString::number(linesCounter);
+				QMessageBox::critical(this, "Ошибка", error);
+				list.clear();
+				ui.saveLastBtn->setEnabled(false);
+				ui.saveAllBtn->setEnabled(false);
+				return;
+			}
+			int day = date.left(2).toInt();
+			int month = date.mid(3, 2).toInt();
+			int year = date.right(4).toInt();
+			struct tm* local;
+			time_t t;
+			t = time(NULL);
+			local = localtime(&t);
+			// today's date
+			int t_year = local->tm_year + 1900;
+			int t_month = local->tm_mon + 1;
+			int t_day = local->tm_mday;
+			if (!dateCompare(day, month, year, t_day, t_month, t_year)) {
+				QString error = "Ошибка в строке " + QString::number(linesCounter);
+				QMessageBox::critical(this, "Ошибка", error);
+				list.clear();
+				ui.saveLastBtn->setEnabled(false);
+				ui.saveAllBtn->setEnabled(false);
+				return;
+			}
+
+			amount = fromFile.readLine(); // amount
+			++linesCounter;
+			if (!amountValidation(amount)) {
+				QString error = "Error in line " + QString::number(linesCounter);
+				QMessageBox::critical(this, "Error", error);
+				list.clear();
+				ui.saveLastBtn->setEnabled(false);
+				ui.saveAllBtn->setEnabled(false);
+				return;
+			}
+
+			list.add(Product(name, s_price.toInt(), day, month, year, amount.toInt()));
 		}
+		file.close();
+		ui.saveAllBtn->setEnabled(true);
 	}
 }
 
@@ -321,7 +320,7 @@ void task1_2::on_printByTimeBtn_clicked()
 // сохранение
 void task1_2::on_saveLastBtn_clicked()
 {
-	if (list.getActualSize()==0) {
+	if (list.getActualSize() == 0) {
 		QMessageBox::warning(this, "Ошибка", "Список пуст");
 	}
 	else {
@@ -354,7 +353,7 @@ void task1_2::on_saveAllBtn_clicked()
 		QFile file(fileName);
 		QTextStream toFile(&file);
 
-		if (!file.open(QFile::WriteOnly | QFile::Text | QFile::Append))
+		if (!file.open(QFile::WriteOnly | QFile::Text))
 		{
 			QMessageBox::warning(this, "Ошибка", "Файл не был открыт");
 		}

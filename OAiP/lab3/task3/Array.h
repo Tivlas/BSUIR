@@ -51,8 +51,4 @@ public:
 	size_t size() {
 		return size_;
 	}
-
-	void forget() {
-		size_ = 0;
-	}
 };
