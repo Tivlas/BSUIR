@@ -120,6 +120,7 @@ void task1_2::on_addBtn_clicked()
 	ui.dateEdit->clear();
 	ui.countEdit->clear();
 	ui.saveLastBtn->setEnabled(true);
+	on_printBtn_clicked();
 }
 
 void task1_2::on_readToListBtn_clicked()
@@ -228,7 +229,7 @@ void task1_2::on_printBtn_clicked()
 	}
 	else {
 		ui.plainTextEdit->setPlainText("");
-		QMessageBox::warning(this, "Ошибка", "Список пуст");
+		QMessageBox::warning(this, "Внимание!", "Список пуст");
 	}
 }
 
@@ -256,7 +257,7 @@ void task1_2::on_printByPriceBtn_clicked()
 	}
 	else {
 		ui.printByPriceEdit->clear();
-		QMessageBox::warning(this, "Ошибка", "Список пуст");
+		QMessageBox::warning(this, "Внимание!", "Список пуст");
 	}
 }
 
@@ -284,7 +285,7 @@ void task1_2::on_printByNameBtn_clicked()
 	}
 	else {
 		ui.printByNameEdit->clear();
-		QMessageBox::warning(this, "Ошибка", "Список пуст");
+		QMessageBox::warning(this, "Внимание!", "Список пуст");
 	}
 }
 
@@ -312,7 +313,7 @@ void task1_2::on_printByTimeBtn_clicked()
 	}
 	else {
 		ui.printByTimeEdit->clear();
-		QMessageBox::warning(this, "Ошибка", "Список пуст");
+		QMessageBox::warning(this, "Внимание!", "Список пуст");
 	}
 }
 
@@ -393,7 +394,7 @@ void task1_2::on_deleteOneByNameBtn_clicked()
 	}
 	else {
 		ui.deleteOneByNameEdit->clear();
-		QMessageBox::warning(this, "Ошибка", "Список пуст");
+		QMessageBox::warning(this, "Внимание!", "Список пуст");
 	}
 }
 
@@ -420,7 +421,7 @@ void task1_2::on_deleteAllByNameBtn_clicked()
 	}
 	else {
 		ui.deleteAllByNameEdit->clear();
-		QMessageBox::warning(this, "Ошибка", "Список пуст");
+		QMessageBox::warning(this, "Внимание!", "Список пуст");
 	}
 }
 

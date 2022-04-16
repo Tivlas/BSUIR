@@ -102,7 +102,7 @@ void List::clear() {
 	}*/
 	for (int i = next.size(); i > 0; --i) {
 		freeCells.push_back(i);
-		next[i-1] = 1;
+		next[i - 1] = 1;
 	}
 	anyFreeCells = true;
 	actualSize = 0;
@@ -110,20 +110,24 @@ void List::clear() {
 
 QString List::print() {
 	QString result = "";
-	for (int i = next[0]; i <= next.size();) {
+	int iterationCounter = 0;
+	for (int i = next[0]; i <= next.size() && iterationCounter < actualSize;) {
 		result += products[i - 1].getInfo();
 		i = next[i];
+		++iterationCounter;
 	}
 	return result;
 }
 
 QString List::printByProductName(QString name) {
 	QString result = "";
-	for (int i = next[0]; i < next.size();) {
+	int iterationCounter = 0;
+	for (int i = next[0]; i <= next.size() && iterationCounter < actualSize;) {
 		if (products[i - 1].getName() == name) {
 			result += products[i - 1].getInfo();
 		}
 		i = next[i];
+		++iterationCounter;
 	}
 	if (result == "") {
 		throw QString("Нет таких товаров");
@@ -133,11 +137,13 @@ QString List::printByProductName(QString name) {
 
 QString List::printProductsWithLowerPrice(int price) {
 	QString result = "";
-	for (int i = next[0]; i < next.size();) {
+	int iterationCounter = 0;
+	for (int i = next[0]; i <= next.size() && iterationCounter < actualSize;) {
 		if (products[i - 1].getPrice() < price) {
 			result += products[i - 1].getInfo();
 		}
 		i = next[i];
+		++iterationCounter;
 	}
 	if (result == "") {
 		throw QString("Нет таких товаров");
@@ -155,12 +161,14 @@ QString List::printByStorageTime(int storageDays) {
 	int todaysMonth = local->tm_mon + 1;
 	int todaysDay = local->tm_mday;
 
-	for (int i = next[0]; i < next.size();) {
+	int iterationCounter = 0;
+	for (int i = next[0]; i <= next.size() && iterationCounter < actualSize;) {
 		int dur = duration(products[i - 1].day, products[i - 1].month, products[i - 1].year, todaysDay, todaysMonth, todaysYear);
 		if (dur > storageDays) {
 			result += products[i - 1].getInfo();
 		}
 		i = next[i];
+		++iterationCounter;
 	}
 	if (result == "") {
 		throw QString("Нет таких товаров");
