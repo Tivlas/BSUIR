@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace task1
+﻿namespace task1
 {
     public class Rational
     {
@@ -43,20 +37,12 @@ namespace task1
         }
         public int GCD(int a, int b)
         {
-            a = Math.Abs(a);
-            b = Math.Abs(b);
-            if (a < b)
-            {
-                int temp = a;
-                a = b;
-                b = temp;
-            }
-            return b != 0 ? GCD(b, a % b) : a;
+            return b != 0 ? Math.Abs(GCD(b, a % b)) : a;
         }
 
-        public void reduceFraction()
+        public void ReduceFraction()
         {
-           
+
             int gcd = GCD(numerator, denominator);
             numerator /= gcd;
             denominator /= gcd;
@@ -68,16 +54,7 @@ namespace task1
             int numerator = first.numerator * second.denominator + second.numerator * first.denominator;
             int denominator = first.denominator * second.denominator;
             Rational result = new Rational(numerator, denominator);
-            result.reduceFraction();
-            return result;
-        }
-
-        public static Rational operator +(Rational fraction, int number)
-        {
-            int numerator = fraction.numerator + number * fraction.denominator;
-            int denominator = fraction.denominator;
-            Rational result = new Rational(numerator, denominator);
-            result.reduceFraction();
+            result.ReduceFraction();
             return result;
         }
 
@@ -86,7 +63,7 @@ namespace task1
             int numerator = number * fraction.denominator + fraction.numerator;
             int denominator = fraction.denominator;
             Rational result = new Rational(numerator, denominator);
-            result.reduceFraction();
+            result.ReduceFraction();
             return result;
         }
 
@@ -96,16 +73,7 @@ namespace task1
             int numerator = first.numerator * second.denominator - second.numerator * first.denominator;
             int denominator = first.denominator * second.denominator;
             Rational result = new Rational(numerator, denominator);
-            result.reduceFraction();
-            return result;
-        }
-
-        public static Rational operator -(Rational fraction, int number)
-        {
-            int numerator = fraction.numerator - number * fraction.denominator;
-            int denominator = fraction.denominator;
-            Rational result = new Rational(numerator, denominator);
-            result.reduceFraction();
+            result.ReduceFraction();
             return result;
         }
 
@@ -114,7 +82,7 @@ namespace task1
             int numerator = number * fraction.denominator - fraction.numerator;
             int denominator = fraction.denominator;
             Rational result = new Rational(numerator, denominator);
-            result.reduceFraction();
+            result.ReduceFraction();
             return result;
         }
 
@@ -124,16 +92,7 @@ namespace task1
             int numerator = first.numerator * second.numerator;
             int denominator = first.denominator * second.denominator;
             Rational result = new Rational(numerator, denominator);
-            result.reduceFraction();
-            return result;
-        }
-
-        public static Rational operator *(Rational fraction, int number)
-        {
-            int numerator = fraction.numerator * number;
-            int denominator = fraction.denominator;
-            Rational result = new Rational(numerator, denominator);
-            result.reduceFraction();
+            result.ReduceFraction();
             return result;
         }
 
@@ -142,7 +101,7 @@ namespace task1
             int numerator = number * fraction.numerator;
             int denominator = fraction.denominator;
             Rational result = new Rational(numerator, denominator);
-            result.reduceFraction();
+            result.ReduceFraction();
             return result;
         }
 
@@ -152,16 +111,7 @@ namespace task1
             int numerator = first.numerator * second.denominator;
             int denominator = first.denominator * second.numerator;
             Rational result = new Rational(numerator, denominator);
-            result.reduceFraction();
-            return result;
-        }
-
-        public static Rational operator /(Rational fraction, int number)
-        {
-            int numerator = fraction.numerator;
-            int denominator = fraction.denominator * number;
-            Rational result = new Rational(numerator, denominator);
-            result.reduceFraction();
+            result.ReduceFraction();
             return result;
         }
 
@@ -170,7 +120,7 @@ namespace task1
             int numerator = number * fraction.denominator;
             int denominator = fraction.numerator;
             Rational result = new Rational(numerator, denominator);
-            result.reduceFraction();
+            result.ReduceFraction();
             return result;
         }
 
@@ -180,16 +130,16 @@ namespace task1
             int numerator = fraction.numerator + fraction.denominator;
             int denominator = fraction.denominator;
             Rational result = new Rational(numerator, denominator);
-            result.reduceFraction();
+            result.ReduceFraction();
             return result;
         }
-        
+
         public static Rational operator --(Rational fraction)
         {
             int numerator = fraction.numerator - fraction.denominator;
             int denominator = fraction.denominator;
             Rational result = new Rational(numerator, denominator);
-            result.reduceFraction();
+            result.ReduceFraction();
             return result;
         }
 
@@ -230,7 +180,7 @@ namespace task1
         {
             return fraction.numerator / fraction.denominator;
         }
-        
+
         public static implicit operator Rational(int number)
         {
             return new Rational(number, 1);
@@ -242,6 +192,14 @@ namespace task1
             return numerator + "/" + denominator;
         }
 
-        
+        public override bool Equals(object? obj)
+        {
+            return base.Equals(obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 }
