@@ -31,15 +31,22 @@
             }
             set
             {
-
+                if (value == 0)
+                {
+                    denominator = 1;
+                    throw new ArgumentException("Denominator can't be zero");
+                }
                 denominator = value;
             }
         }
+
+        // НОД
         public int GCD(int a, int b)
         {
             return b != 0 ? Math.Abs(GCD(b, a % b)) : a;
         }
 
+        // сокращение дроби
         public void ReduceFraction()
         {
 
@@ -110,6 +117,12 @@
         {
             int numerator = first.numerator * second.denominator;
             int denominator = first.denominator * second.numerator;
+            if (denominator == 0)
+            {
+                numerator = 0;
+                denominator = 1;
+                throw new DivideByZeroException("Can't divide by zero");
+            }
             Rational result = new Rational(numerator, denominator);
             result.ReduceFraction();
             return result;
@@ -119,6 +132,12 @@
         {
             int numerator = number * fraction.denominator;
             int denominator = fraction.numerator;
+            if (denominator == 0)
+            {
+                numerator = 0;
+                denominator = 1;
+                throw new DivideByZeroException("Can't divide by zero");
+            }
             Rational result = new Rational(numerator, denominator);
             result.ReduceFraction();
             return result;
@@ -190,16 +209,6 @@
         public override string ToString()
         {
             return numerator + "/" + denominator;
-        }
-
-        public override bool Equals(object? obj)
-        {
-            return base.Equals(obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
         }
     }
 }
