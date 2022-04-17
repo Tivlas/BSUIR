@@ -48,7 +48,7 @@ void List::remove(QString name, QString surname, QString patronymic, int departm
 					head->prev = nullptr;
 				}
 			}
-			else {
+			else if(cur->next != nullptr && cur->prev != nullptr) {
 				cur->prev->next = cur->next;
 				cur->next->prev = cur->prev;
 			}

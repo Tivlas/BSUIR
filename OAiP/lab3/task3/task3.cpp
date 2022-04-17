@@ -30,6 +30,9 @@ bool task3::isOperator(QChar op)
 
 bool task3::infixValidation(const QString& infix)
 {
+	if (infix.size() == 0) {
+		QMessageBox::warning(this, "Warning", "String is empty!");
+	}
 	for (int i = 0; i < infix.size(); ++i) {
 		if (!isOperator(infix[i]) && infix[i] != '(' && infix[i] != ')' && infix[i] != 'a' &&
 			infix[i] != 'b' && infix[i] != 'c' && infix[i] != 'd' && infix[i] != 'e') {

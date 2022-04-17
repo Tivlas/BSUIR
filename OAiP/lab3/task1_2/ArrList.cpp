@@ -103,8 +103,8 @@ void ArrList::clear() {
 	for (int i = next.size(); i > 0; --i) {
 		freeCells.push_back(i);
 		next[i - 1] = 1;
+		anyFreeCells = true;
 	}
-	anyFreeCells = true;
 	actualSize = 0;
 }
 
