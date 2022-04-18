@@ -26,6 +26,10 @@ public:
 	bool empty() {
 		return elements.size() == 0 ? true : false;
 	}
+
+	T top() {
+		return elements[elements.size() - 1];
+	}
 };
 
 

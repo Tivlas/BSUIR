@@ -216,6 +216,7 @@ void task1_2::on_readToListBtn_clicked()
 		}
 		file.close();
 		ui.saveAllBtn->setEnabled(true);
+		on_printBtn_clicked();
 	}
 }
 

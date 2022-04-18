@@ -30,8 +30,11 @@ bool task3::isOperator(QChar op)
 
 bool task3::infixValidation(const QString& infix)
 {
+	int operatorsCounter = 0;
+	int variablesCounter = 0;
 	if (infix.size() == 0) {
-		QMessageBox::warning(this, "Warning", "String is empty!");
+		QMessageBox::warning(this, "Warning", "String must not be empty!");
+		return false;
 	}
 	for (int i = 0; i < infix.size(); ++i) {
 		if (!isOperator(infix[i]) && infix[i] != '(' && infix[i] != ')' && infix[i] != 'a' &&
@@ -52,7 +55,19 @@ bool task3::infixValidation(const QString& infix)
 				QMessageBox::warning(this, "Warning", "Operator must be followed by two operands");
 				return false;
 			}
+			++operatorsCounter;
 		}
+		if (infix[i] == 'a' || infix[i] == 'b' || infix[i] == 'c' || infix[i] == 'd' || infix[i] == 'e') {
+			++variablesCounter;
+		}
+	}
+	if (variablesCounter - operatorsCounter != 1) {
+		QMessageBox::critical(this, "Error", "The number of variables must differ from the number of\n operators by 1!");
+		return false;
+	}
+	if (!checkBrackets(infix)) {
+		QMessageBox::warning(this, "Warning", "Brackets are placed incorrectly!");
+		return false;
 	}
 	return true;
 }
@@ -68,13 +83,13 @@ bool task3::variableValidation(const QString& var)
 		QMessageBox::warning(this, "Warning", "Variable must not start with a dot");
 		return false;
 	}
-	
+
 	size_t dotCounter = 0;
 	for (int i = 0; i < var.size(); ++i) {
-		if((temp[i]<48 ||temp[i]>57) && temp[i] != '.') {
+		if ((temp[i] < 48 || temp[i]>57) && temp[i] != '.') {
 			QMessageBox::warning(this, "Warning", "Variable must contain only numbers and dot");
 			return false;
-		}	
+		}
 		if (temp[i] == '.') {
 			dotCounter++;
 			if (dotCounter > 1) {
@@ -82,6 +97,37 @@ bool task3::variableValidation(const QString& var)
 				return false;
 			}
 		}
+	}
+	return true;
+}
+
+bool task3::checkBrackets(const QString& text)
+{
+	Stack<QChar> stack;
+	QChar ch;
+	QStringList list = text.split(QLatin1Char('\n'));
+
+	for (size_t i = 0; i < list.size(); i++)
+	{
+		for (size_t j = 0; j < list[i].size();) {
+			if (list[i][j] == '(') {
+				ch = list[i][j];
+				stack.push((ch));
+				++j;
+				continue;
+			}
+
+			if (list[i][j] == ')') {
+				if (stack.empty()) {
+					return false;
+				}
+				stack.pop();
+			}
+			++j;
+		}
+	}
+	if (!stack.empty()) {
+		return false;
 	}
 	return true;
 }
@@ -187,6 +233,8 @@ void task3::on_calcBtn_clicked() {
 	for (int i = 0; i < 15; ++i) {
 		infix = ui.tableWidget->item(i, 0)->text();
 		if (!infixValidation(infix)) {
+			QString err = "Incorrect input in row " + QString::number(i + 1) + " column 1";
+			QMessageBox::critical(this, "Error", err);
 			return;
 		}
 		infixToPostfix(infix, postfix);
@@ -205,17 +253,17 @@ void task3::on_calcBtn_clicked() {
 			return;
 		}
 		double c = ui.tableWidget->item(i, 3)->text().toDouble();
-		
+
 		if (!variableValidation(ui.tableWidget->item(i, 4)->text())) {
 			return;
 		}
 		double d = ui.tableWidget->item(i, 4)->text().toDouble();
-		
+
 		if (!variableValidation(ui.tableWidget->item(i, 5)->text())) {
 			return;
 		}
 		double e = ui.tableWidget->item(i, 5)->text().toDouble();
-		
+
 		double result;
 		try {
 			result = calculateInRPN(postfix, a, b, c, d, e);

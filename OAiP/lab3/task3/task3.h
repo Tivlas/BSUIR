@@ -17,6 +17,7 @@ public:
 	double calculateInRPN(QString& postfix,double a,double b,double c, double d, double e);
 	bool infixValidation(const QString& infix);
 	bool variableValidation(const QString& var);
+	bool checkBrackets(const QString&);
 public slots:
 	void on_quitBtn_clicked();
 	void on_calcBtn_clicked();
