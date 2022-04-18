@@ -181,20 +181,23 @@ QString ArrList::getInfoAboutLast() {
 }
 
 void ArrList::sortByPrice() {
-	int i_iterationCounter = 0;
-	int j_iterationCounter = 0;
-	
-	for (int i = next[0]; i <= next.size() && i_iterationCounter < actualSize;) {
-		for (int j = next[0]; j < next.size();) {
-			if (products[j - 1].getPrice() > products[j].getPrice() && j_iterationCounter < actualSize-1) {
-				std::swap(products[j - 1], products[j]);
+	// (actualSize != 1)
+	{
+		int i_iterationCounter = 0;
+		int j_iterationCounter = 0;
+
+		for (int i = next[0]; i <= next.size() && i_iterationCounter < actualSize;) {
+			for (int j = next[0]; j < next.size() && j_iterationCounter < actualSize - 1;) {
+				if (products[j - 1].getPrice() > products[j].getPrice()) {
+					std::swap(products[j - 1], products[j]);
+				}
+				j = next[j];
+				++j_iterationCounter;
 			}
-			j = next[j];
-			++j_iterationCounter;
+			j_iterationCounter = 0;
+			i = next[i];
+			++i_iterationCounter;
 		}
-		j_iterationCounter = 0;
-		i = next[i];
-		++i_iterationCounter;
 	}
 }
 
