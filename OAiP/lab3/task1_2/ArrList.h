@@ -12,6 +12,7 @@ private:
 	bool anyFreeCells = false;// есть ли в массиве свободные ячейки
 	int productCount = 0;// считает количество ячеек, которые были использованы хотя бы один раз
 	int actualSize = 0; // считает количество различных по имени товаров
+	int lastAddedIndex = 0;
 public:
 	ArrList() {}
 	~ArrList() {}
@@ -28,6 +29,7 @@ public:
 	}
 
 	QString print();
+	QString printInInputFormat();
 	QString printByProductName(QString name);
 	QString printProductsWithLowerPrice(int price); // выводит товары с меньшей ценой
 	QString printByStorageTime(int storageDays); // выводит товары которые были на складе больше введенного количества дней

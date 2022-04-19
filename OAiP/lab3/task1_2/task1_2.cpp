@@ -363,7 +363,7 @@ void task1_2::on_saveAllBtn_clicked()
 		else
 		{
 
-			QString text = list.print();
+			QString text = list.printInInputFormat();
 			toFile << text;
 			file.flush();
 			file.close();

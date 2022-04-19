@@ -4,6 +4,7 @@ void ArrList::add(const Product& product) {
 	if (!anyFreeCells)
 	{
 		next.push_back(productCount + 1);
+		lastAddedIndex = productCount;
 		products.push_back(product);
 		++productCount;
 		++actualSize;
@@ -11,6 +12,7 @@ void ArrList::add(const Product& product) {
 	}
 
 	int cur = freeCells[freeCells.size() - 1] - 1;
+	lastAddedIndex = cur;
 	next[cur] = cur + 1;
 	products[cur] = product;
 	if (cur != 0)
@@ -96,10 +98,6 @@ void ArrList::clear() {
 	while (freeCells.size() != 0) {
 		freeCells.pop_back();
 	}
-	/*for (int i = 0; i < next.size(); ++i) {
-		freeCells.push_back(i+1);
-		next[i] = 1;
-	}*/
 	for (int i = next.size(); i > 0; --i) {
 		freeCells.push_back(i);
 		next[i - 1] = 1;
@@ -113,6 +111,18 @@ QString ArrList::print() {
 	int iterationCounter = 0;
 	for (int i = next[0]; i <= next.size() && iterationCounter < actualSize;) {
 		result += products[i - 1].getInfo();
+		i = next[i];
+		++iterationCounter;
+	}
+	return result;
+}
+
+QString ArrList::printInInputFormat()
+{
+	QString result = "";
+	int iterationCounter = 0;
+	for (int i = next[0]; i <= next.size() && iterationCounter < actualSize;) {
+		result += products[i - 1].getInfoInInputFormat();
 		i = next[i];
 		++iterationCounter;
 	}
@@ -177,27 +187,24 @@ QString ArrList::printByStorageTime(int storageDays) {
 }
 
 QString ArrList::getInfoAboutLast() {
-	return products[actualSize - 1].getInfo();
+	return products[lastAddedIndex].getInfoInInputFormat();
 }
 
 void ArrList::sortByPrice() {
-	// (actualSize != 1)
-	{
-		int i_iterationCounter = 0;
-		int j_iterationCounter = 0;
+	int i_iterationCounter = 0;
+	int j_iterationCounter = 0;
 
-		for (int i = next[0]; i <= next.size() && i_iterationCounter < actualSize;) {
-			for (int j = next[0]; j < next.size() && j_iterationCounter < actualSize - 1;) {
-				if (products[j - 1].getPrice() > products[j].getPrice()) {
-					std::swap(products[j - 1], products[j]);
-				}
-				j = next[j];
-				++j_iterationCounter;
+	for (int i = next[0]; i <= next.size() && i_iterationCounter < actualSize;) {
+		for (int j = next[0]; j < next.size() && j_iterationCounter < actualSize - 1;) {
+			if (products[j - 1].getPrice() > products[j].getPrice()) {
+				std::swap(products[j - 1], products[j]);
 			}
-			j_iterationCounter = 0;
-			i = next[i];
-			++i_iterationCounter;
+			j = next[j];
+			++j_iterationCounter;
 		}
+		j_iterationCounter = 0;
+		i = next[i];
+		++i_iterationCounter;
 	}
 }
 

@@ -55,6 +55,7 @@ public:
 	QString dateToStringWithoutDot() const; // in 20220501 format
 
 	QString getInfo();
+	QString getInfoInInputFormat();
 };
 
 
