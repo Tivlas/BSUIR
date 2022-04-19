@@ -41,7 +41,7 @@
         }
 
         // НОД
-        public int GCD(int a, int b)
+        private int GCD(int a, int b)
         {
             return b != 0 ? Math.Abs(GCD(b, a % b)) : a;
         }
