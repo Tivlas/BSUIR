@@ -9,6 +9,11 @@ void Stack::pop()
 	}
 }
 
+void Stack::clear() {
+	while (top) {
+		pop();
+	}
+}
 void Stack::push(Node* newNode)
 {
 	newNode->next = top;

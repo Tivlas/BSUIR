@@ -53,5 +53,7 @@ public:
 	void push(Node* newNode);
 
 	Node* peek();
+
+	void clear();
 };
 

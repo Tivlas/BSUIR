@@ -224,8 +224,10 @@ void task1_1::on_readToListBtn_clicked()
 		}
 		file.close();
 		ui.saveAllBtn->setEnabled(true);
+		on_printBtn_clicked();
 	}
 }
+
 
 void task1_1::on_addBtn_clicked()
 {
@@ -292,6 +294,7 @@ void task1_1::on_addBtn_clicked()
 	ui.positionEdit->clear();
 	ui.saveLastBtn->setEnabled(true);
 	ui.saveAllBtn->setEnabled(true);
+	on_printBtn_clicked();
 }
 
 
@@ -442,6 +445,7 @@ void task1_1::on_fireBtn_clicked()
 		ui.fireSurnameEdit->clear();
 		ui.firePatronymicEdit->clear();
 		ui.fireDepartmentNumberEdit->clear();
+		on_printBtn_clicked();
 	}
 	else {
 		QMessageBox::warning(this, "Warning", "List is empty");

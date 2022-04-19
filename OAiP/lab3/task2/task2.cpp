@@ -34,6 +34,7 @@ void task2::checkText(const QString& text)
 						QString::number(j + 1) + " bracket";
 
 					QMessageBox::critical(this, "Error", error);
+					stack.clear();
 					return;
 				}
 				ch = list[i][j];
@@ -56,6 +57,7 @@ void task2::checkText(const QString& text)
 				if (openIndex != closeIndex) {
 					QString error = "Error in line " + QString::number(i + 1) + " " + QString::number(j + 1) + "\n" + list[i];
 					QMessageBox::critical(this, "Error", error);
+					stack.clear();
 					return;
 				}
 				else {
@@ -70,6 +72,7 @@ void task2::checkText(const QString& text)
 			QString::number(stack.peek()->get_J_Index()) + " bracket";
 
 		QMessageBox::critical(this, "Error", error);
+		stack.clear();
 		return;
 	}
 	QMessageBox::information(this, "Success", "No errors found");

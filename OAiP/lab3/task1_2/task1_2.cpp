@@ -120,6 +120,7 @@ void task1_2::on_addBtn_clicked()
 	ui.dateEdit->clear();
 	ui.countEdit->clear();
 	ui.saveLastBtn->setEnabled(true);
+	ui.saveAllBtn->setEnabled(true);
 	on_printBtn_clicked();
 }
 
