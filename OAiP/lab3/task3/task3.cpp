@@ -85,8 +85,9 @@ bool task3::variableValidation(const QString& var)
 	}
 
 	size_t dotCounter = 0;
+	size_t minusCounter = 0;
 	for (int i = 0; i < var.size(); ++i) {
-		if ((temp[i] < 48 || temp[i]>57) && temp[i] != '.') {
+		if ((temp[i] < 48 || temp[i]>57) && temp[i] != '.' && temp[i] != '-') {
 			QMessageBox::warning(this, "Warning", "Variable must contain only numbers and dot");
 			return false;
 		}
@@ -94,6 +95,13 @@ bool task3::variableValidation(const QString& var)
 			dotCounter++;
 			if (dotCounter > 1) {
 				QMessageBox::warning(this, "Warning", "Variable must contain only one dot");
+				return false;
+			}
+		}
+		if (temp[i] == '-') {
+			minusCounter++;
+			if (minusCounter > 1 || i != 0) {
+				QMessageBox::warning(this, "Warning", "Variable must contain only one minus and\n it must be at the beginning of the number!");
 				return false;
 			}
 		}
