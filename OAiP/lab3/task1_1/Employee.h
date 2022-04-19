@@ -54,6 +54,7 @@ public:
 	QString startDateToString() const; // in 01.05.2022 format
 	QString startDateToStringWithoutDot() const; // in 20220501 format
 	QString getAllInformation() const;
+	QString getAllInformationInInputFormat() const;
 	Employee* getNext() {
 		return next;
 	}

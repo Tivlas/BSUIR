@@ -1,8 +1,8 @@
 #include "Employee.h"
 
-Employee::Employee(int departmentNumber, QString position, QString name, QString surname, QString patronymic, short s_day, short s_month, short s_year):
+Employee::Employee(int departmentNumber, QString position, QString name, QString surname, QString patronymic, short s_day, short s_month, short s_year) :
 	departmentNumber(departmentNumber), position(position), name(name),
-	surname(surname), patronymic(patronymic), s_day(s_day), s_month(s_month), s_year(s_year){}
+	surname(surname), patronymic(patronymic), s_day(s_day), s_month(s_month), s_year(s_year) {}
 
 QString Employee::startDateToString() const
 {
@@ -75,5 +75,17 @@ QString Employee::getAllInformation() const
 	info += "Date of employment: " + this->startDateToString() + "\n";
 	info += "Department number: " + QString::number(this->departmentNumber) + "\n";
 	info += "Position: " + this->position + "\n\n";
+	return info;
+}
+
+QString Employee::getAllInformationInInputFormat() const
+{
+	QString info = "";
+	info += this->name + "\n";
+	info += this->surname + "\n";
+	info += this->patronymic + "\n";
+	info += this->startDateToString() + "\n";
+	info += QString::number(this->departmentNumber) + "\n";
+	info += this->position + "\n";
 	return info;
 }

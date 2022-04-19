@@ -150,7 +150,7 @@ void task1_1::on_readToListBtn_clicked()
 	}
 	else
 	{
-		if (!list.getHead()) {
+		if (list.getHead()) {
 			list.clear();
 			ui.saveLastBtn->setEnabled(false);
 			ui.saveAllBtn->setEnabled(false);
@@ -471,7 +471,7 @@ void task1_1::on_saveLastBtn_clicked()
 		else
 		{
 
-			QString text = list.getTail()->getAllInformation();
+			QString text = list.getTail()->getAllInformationInInputFormat();
 			toFile << text;
 			file.flush();
 			file.close();
@@ -495,7 +495,7 @@ void task1_1::on_saveAllBtn_clicked()
 		}
 		else
 		{
-			QString text = list.print();
+			QString text = list.printInInputFormat();
 			toFile << text;
 			file.flush();
 			file.close();

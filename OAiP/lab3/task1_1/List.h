@@ -12,21 +12,22 @@ public:
 	void add(Employee*);
 	void remove(QString name, QString surname, QString patronymic,int departmentNumber);
 	Employee* search(QString surname);
-	bool isEmpty();
+	bool isEmpty() const;
 	void clear();
 
-	QString print();
-	QString printEmployeesWithSpecificSurname(QString surname);
-	QString printEmployeesWithSpecificDepNumber(int depNumber);
+	QString print() const;
+	QString printInInputFormat() const;
+	QString printEmployeesWithSpecificSurname(QString surname) const;
+	QString printEmployeesWithSpecificDepNumber(int depNumber) const;
 	
-	Employee* getHead() {
+	Employee* getHead() const {
 		return head;
 	}
 	
-	Employee* getTail() {
+	Employee* getTail() const {
 		return tail;
 	}
-	int getSize() { return size; }
+	int getSize() const { return size; }
 	Employee* getElement(int index);
 	void swap(int i, int j);
 };

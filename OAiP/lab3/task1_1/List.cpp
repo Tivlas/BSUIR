@@ -73,7 +73,7 @@ Employee* List::search(QString surname)
 	throw QString("This employee does not exist!");
 }
 
-bool List::isEmpty()
+bool List::isEmpty() const
 {
 	return head == nullptr;
 }
@@ -89,7 +89,7 @@ void List::clear()
 	size = 0;
 }
 
-QString List::print()
+QString List::print() const
 {
 	QString result = "";
 	Employee* cur = head;
@@ -100,7 +100,18 @@ QString List::print()
 	return result;
 }
 
-QString List::printEmployeesWithSpecificSurname(QString surname)
+QString List::printInInputFormat() const
+{
+	QString result = "";
+	Employee* cur = head;
+	while (cur != nullptr) {
+		result += cur->getAllInformationInInputFormat();
+		cur = cur->next;
+	}
+	return result;
+}
+
+QString List::printEmployeesWithSpecificSurname(QString surname) const
 {
 	QString result = "";
 	Employee* cur = head;
@@ -116,7 +127,7 @@ QString List::printEmployeesWithSpecificSurname(QString surname)
 	return result;
 }
 
-QString List::printEmployeesWithSpecificDepNumber(int depNumber)
+QString List::printEmployeesWithSpecificDepNumber(int depNumber) const
 {
 	QString result = "";
 	Employee* cur = head;
