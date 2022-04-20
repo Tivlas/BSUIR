@@ -55,7 +55,11 @@ public:
 		{
 			return;
 		}
-		if (head->next == nullptr) { return; }
+		if (head->next == nullptr) {
+			head.~shared_ptr();
+			head = std::move(shared_ptr<Node<T>>()); // equal to: = nullptr
+			return;
+		}
 		head->next->prev = std::move(weak_ptr<Node<T>>());
 
 		head = head->next;
@@ -67,7 +71,11 @@ public:
 
 		while (lastNode->next != nullptr) { lastNode = lastNode->next; }
 
-		if ((lastNode->prev).lock() == nullptr) { return; }
+		if ((lastNode->prev).lock() == nullptr) {
+			head.~shared_ptr();
+			head = std::move(shared_ptr<Node<T>>()); // equal to: = nullptr
+			return;
+		}
 		(lastNode->prev).lock()->next = std::move(shared_ptr<Node<T>>());
 
 		lastNode = (lastNode->prev).lock();
