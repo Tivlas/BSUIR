@@ -5,14 +5,15 @@ public:
 	T1 first;
 	T2 second;
 
+	MyPair() {}
+
 	MyPair(const T1& first, const T2& second) : first(first), second(second) {}
+
+	MyPair(T1&& first, T2&& second) : first(std::forward<T1>(first)), second(std::forward<T2>(second)) {}
 
 	MyPair(const MyPair& other) : first(other.first), second(other.second) {}
 
-	MyPair(MyPair&& other) {
-		first = std::move(other.first);
-		second = std::move(other.second);
-	}
+	MyPair(MyPair&& other) : first(std::move(other.first)), second(std::move(other.second)) {}
 
 	MyPair& operator=(const MyPair& other) {
 		first = other.first;
