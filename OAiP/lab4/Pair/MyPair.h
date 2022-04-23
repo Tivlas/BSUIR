@@ -37,13 +37,13 @@ public:
 };
 
 template <typename T1, typename T2>
-MyPair<T1, T2> make_pare(T1& t, T2& u) {
+MyPair<T1, T2> make_pair(T1& t, T2& u) {
 	return MyPair<T1, T2>(t, u);
 }
 
 
 template <typename T1, typename T2>
-MyPair<T1, T2> make_pare(T1&& t, T2&& u) {
+MyPair<T1, T2> make_pair(T1&& t, T2&& u) {
 	return MyPair<T1, T2>(std::forward<T1>(t), std::forward<T2>(u));
 }
 
