@@ -1,72 +1,78 @@
 #pragma once
 #include <memory>
-template <typename T, typename Alloc = std::allocator<T>>
+template <typename T>
 class Vector {
 public:
 	//====================================================
 	//================== ITERATORS =======================
 	//====================================================
-	template <bool IsConst>
-	class common_iterator {
+	class MyIterator {
 	private:
-		std::conditional_t<IsConst, const T*, T*> ptr;
+		T* ptr;
 	public:
-		common_iterator(T* ptr) : ptr(ptr) {}
+		MyIterator() {}
 
-		common_iterator<IsConst>& operator++() {
+		MyIterator(T* ptr) : ptr(ptr) {}
+
+		MyIterator& operator++() {
 			++ptr;
 			return *this;
 		}
 
-		common_iterator<IsConst>& operator--() {
+		MyIterator& operator--() {
 			--ptr;
 			return *this;
 		}
 
-		bool operator==(const common_iterator& other) const {
+		bool operator==(const MyIterator& other) const {
 			return ptr == other.ptr;
 		}
 
-		bool operator!=(const common_iterator& other) const {
+		bool operator!=(const MyIterator& other) const {
 			return ptr != other.ptr;
 		}
 
-		common_iterator<IsConst> operator+(size_t n) {
+		MyIterator operator+(size_t n) {
 			return iterator(ptr + n);
 		}
 
-		common_iterator<IsConst> operator-(size_t n) {
+		MyIterator operator-(size_t n) {
 			return iterator(ptr - n);
 		}
 
-		common_iterator<IsConst> operator+=(size_t n) {
+		MyIterator operator+=(size_t n) {
 			ptr += n;
 			return *this;
 		}
 
-		common_iterator<IsConst> operator-=(size_t n) {
+		MyIterator operator-=(size_t n) {
 			ptr -= n;
 			return *this;
 		}
 
-		std::conditional_t<IsConst, const T&, T&> operator*() {
+		T& operator*() {
 			return *ptr;
 		}
 
-		std::conditional_t<IsConst, const T*, T*> operator->() {
+		T* operator->() {
 			return ptr;
 		}
 	};
 
-	using iterator = common_iterator<false>;
-	using const_iterator = common_iterator<true>;
-	using reverse_iterator = std::reverse_iterator<iterator>;
-	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-	iterator iter;
+
+	using iterator = MyIterator;
+	//using const_iterator = MyIterator;
+	using reverse_iterator = std::reverse_iterator<MyIterator>;
+	//using const_reverse_iterator = std::reverse_iterator<MyIterator>;
+
+	/*using reverse_iterator = common_iterator<false>;
+	using const_reverse_iterator = common_iterator<true>;*/
+
+	/*iterator iter;
 	const_iterator citer;
 	reverse_iterator riter;
-	const_reverse_iterator criter;
+	const_reverse_iterator criter;*/
 
 	iterator begin() {
 		return iterator(arr);
@@ -76,13 +82,13 @@ public:
 		return iterator(arr + sz);
 	}
 
-	const_iterator cbegin() const {
+	/*const_iterator cbegin() const {
 		return const_iterator(arr);
 	}
 
 	const_iterator cend() const {
 		return const_iterator(arr + sz);
-	}
+	}*/
 
 	reverse_iterator rbegin() {
 		return reverse_iterator(arr + sz - 1);
@@ -92,45 +98,39 @@ public:
 		return reverse_iterator(arr - 1);
 	}
 
-	const_reverse_iterator crbegin() const {
-		return const_reverse_iterator(arr + sz - 1);
-	}
+	/*	const_reverse_iterator crbegin() const {
+			return const_reverse_iterator(arr + sz - 1);
+		}
 
-	const_reverse_iterator crend() const {
-		return const_reverse_iterator(arr - 1);
-	}
+		const_reverse_iterator crend() const {
+			return const_reverse_iterator(arr - 1);
+		}*/
 
 private:
 	T* arr = nullptr;
 	size_t sz = 0;
 	size_t cap = 0;
-	Alloc alloc = Alloc();
 public:
 	Vector() {}
 
-	explicit Vector(size_t n, const T& value = T(), const Alloc& alloc = Alloc()) :alloc(alloc) {
-		arr = alloc.allocate(n);
-		for (size_t i = 0; i < n; ++i) {
-			alloc.construct(arr + i, value);
-		}
+	explicit Vector(size_t n, const T& value) {
+		arr = new T[n];
 		sz = n;
 		cap = n;
 	}
 
-	Vector(const Vector& other) :alloc(other.alloc) {
-		arr = alloc.allocate(other.sz);
-		for (size_t i = 0; i < other.sz; ++i) {
-			alloc.construct(arr + i, other.arr[i]);
-		}
+	Vector(const Vector& other) {
 		sz = other.sz;
 		cap = other.cap;
+		arr = new T[other.cap];
+		for (size_t i = 0; i < other.sz; i++)
+		{
+			arr[i] = other.arr[i];
+		}
 	}
 
 	~Vector() {
-		for (size_t i = 0; i < sz; ++i) {
-			alloc.destroy(arr + i);
-		}
-		alloc.deallocate(arr, cap);
+		this->clear();
 	}
 
 	size_t size() const {
@@ -166,14 +166,14 @@ public:
 	void reserve(size_t new_cap) {
 		if (new_cap <= cap) return;
 
-		T* new_arr = alloc.allocate((int)new_cap);
+		T* new_arr = reinterpret_cast<T*>(new char[new_cap * sizeof(T)]);
 		for (size_t i = 0; i < sz; i++) {
-			alloc.construct(new_arr + i, arr[i]);
+			new(new_arr + i) T(arr[i]);
 		}
 		for (size_t i = 0; i < sz; ++i) {
-			alloc.destroy(arr + i);
+			arr[i].~T();
 		}
-		alloc.deallocate(arr, cap);
+		delete[] reinterpret_cast<char*>(arr);
 		arr = new_arr;
 		cap = new_cap;
 	}
@@ -182,12 +182,12 @@ public:
 		if (count > cap) reserve(count);
 		if (count > sz) {
 			for (size_t i = sz; i < count; i++) {
-				alloc.construct(arr + i, value);
+				new(arr + i)T(value);
 			}
 		}
 		else {
 			for (size_t i = count; i < sz; i++) {
-				alloc.destroy(arr + i);
+				arr[i].~T();
 			}
 		}
 		sz = count;
@@ -197,8 +197,7 @@ public:
 		this->clear();
 		reserve(n);
 		for (size_t i = 0; i < n; ++i) {
-			//new(arr + i) T(value);
-			alloc.construct(arr + i, value);
+			new(arr + i) T(value);
 		}
 		sz = n;
 	}
@@ -207,65 +206,65 @@ public:
 		if (sz == cap) {
 			reserve(cap * 2);
 		}
-		alloc.construct(arr + sz, std::move(value));
+		new(arr + sz) T(std::move(value));
 	}
 
 	void push_back(const T& value) {
 		if (sz == cap) {
 			reserve(cap * 2);
 		}
-		alloc.construct(arr + sz, value);
+		new(arr + sz) T(value);
 	}
 
-	template <typename... Args>
-	iterator emplace(const_iterator pos, Args&&... args) {
-		if (sz == cap) {
-			reserve(cap * 2);
-		}
-		size_t dist = std::distance(this->cbegin(), pos);
-		for (size_t i = sz; i > dist; --i) {
-			alloc.construct(arr + i, arr[i - 1]);
-		}
-		alloc.construct(arr + dist, std::forward<Args>(args)...);
-		++sz;
-		return iterator(arr + dist);
-	}
+	//template <typename... Args>
+	//iterator emplace(const_iterator pos, Args&&... args) {
+	//	if (sz == cap) {
+	//		reserve(cap * 2);
+	//	}
+	//	size_t dist = std::distance(this->cbegin(), pos);
+	//	for (size_t i = sz; i > dist; --i) {
+	//		new(arr + i) T(std::move(arr[i - 1]));
+	//	}
+	//	new(arr + dist) T(std::forward<Args>(args)...);
+	//	++sz;
+	//	return iterator(arr + dist);
+	//}
 
 	iterator erase(iterator pos) {
 		size_t dist = std::distance(this->begin(), pos);
-		alloc.destroy(arr + dist);
+		arr[dist].~T();
 		for (size_t i = dist; i < sz - 1; ++i) {
 			arr[i] = arr[i + 1];
 		}
-		alloc.destroy(arr + sz - 1);
+		arr[arr + sz - 1].~T();
 		--sz;
 		return iterator(arr + dist);
 	}
 
-	iterator erase(const_iterator pos) {
+	/*iterator erase(const_iterator pos) {
 		size_t dist = std::distance(this->cbegin(), pos);
-		alloc.destroy(arr + dist);
+		arr[dist].~T();
 		for (size_t i = dist; i < sz - 1; ++i) {
 			arr[i] = arr[i + 1];
 		}
-		alloc.destroy(arr + sz - 1);
+		arr[arr + sz - 1].~T();
 		--sz;
 		return iterator(arr + dist);
-	}
+	}*/
 
 	iterator erase(iterator first, iterator last) {  // [first, last)
 		size_t dist = std::distance(this->begin(), first);
 		size_t dist2 = std::distance(first, last);
 		// destroy [first, last)
 		for (size_t i = 0; i < dist2; ++i) {
-			alloc.destroy(arr + dist + i);
+			arr[dist + i].~T();
 		}
 
 		for (size_t i = dist; i < sz - dist2; ++i) {
 			arr[i] = arr[i + dist2];
 		}
 		for (size_t i = sz - dist2; i < sz; ++i) {
-			alloc.destroy(arr + i);
+			arr[i].~T();
 		}
 		sz -= dist2;
 		return iterator(arr + dist);
@@ -277,9 +276,9 @@ public:
 			reserve(cap * 2);
 		}
 		for (size_t i = sz; i > dist; --i) {
-			alloc.construct(arr + i, arr[i - 1]);
+			new(arr + i) T(std::move(arr[i - 1]));
 		}
-		alloc.construct(arr + dist, value);
+		new(arr + dist) T(value);
 		++sz;
 		return iterator(arr + dist);
 	}
@@ -290,9 +289,9 @@ public:
 			reserve(cap * 2);
 		}
 		for (size_t i = sz; i > dist; --i) {
-			alloc.construct(arr + i, arr[i - 1]);
+			new(arr + i) T(std::move(arr[i - 1]));
 		}
-		alloc.construct(arr + dist, std::move(value));
+		new(arr + dist) T(std::move(value));
 		++sz;
 		return iterator(arr + dist);
 	}
@@ -303,10 +302,10 @@ public:
 			reserve(cap * 2);
 		}
 		for (size_t i = sz - 1; i > dist; --i) {
-			alloc.construct(arr + i + 5, arr[i]);
+			new(arr + i + count) T(std::move(arr[i]));
 		}
 		for (size_t i = 0; i < count; ++i) {
-			alloc.construct(arr + dist + i, value);
+			new(arr + dist + i) T(value);
 		}
 		sz += count;
 		return iterator(arr + dist);
@@ -317,7 +316,7 @@ public:
 		if (sz == cap) {
 			reserve(cap * 2);
 		}
-		alloc.construct(arr + sz, std::forward<Args>(args)...);
+		new(arr + sz) T(std::forward<Args>(args)...);
 		++sz;
 	}
 
@@ -325,13 +324,13 @@ public:
 		if (sz == 0) {
 			return;
 		}
-		alloc.destroy(arr + sz - 1);
+		arr[sz - 1].~T();
 		--sz;
 	}
 
 	void clear() {
 		for (size_t i = 0; i < sz; ++i) {
-			alloc.destroy(arr + i);
+			arr[i].~T();
 		}
 		sz = 0;
 		arr = nullptr;
@@ -357,7 +356,6 @@ public:
 		std::swap(arr, other.arr);
 		std::swap(sz, other.sz);
 		std::swap(cap, other.cap);
-		std::swap(alloc, other.alloc);
 	}
 
 
