@@ -6,14 +6,14 @@ public:
 	//====================================================
 	//================== ITERATORS =======================
 	//====================================================
-	template <typename T>
+	template <typename U>
 	class MyIterator : public std::iterator<std::random_access_iterator_tag, T> {
 	private:
-		T* ptr;
+		U* ptr;
 	public:
 		MyIterator() {}
 
-		MyIterator(T* ptr) : ptr(ptr) {}
+		MyIterator(U* ptr) : ptr(ptr) {}
 
 		MyIterator operator++(int) {
 			MyIterator tmp = *this;
@@ -46,11 +46,11 @@ public:
 		}
 
 		MyIterator operator+(size_t n) {
-			return iterator(ptr + n);
+			return MyIterator(ptr + n);
 		}
 
 		MyIterator operator-(size_t n) {
-			return iterator(ptr - n);
+			return MyIterator(ptr - n);
 		}
 
 		MyIterator operator+=(size_t n) {
@@ -63,19 +63,89 @@ public:
 			return *this;
 		}
 
-		T& operator*() {
+		U& operator*() {
 			return *ptr;
 		}
 
-		T* operator->() {
+		U* operator->() {
+			return ptr;
+		}
+
+		size_t operator-(const MyIterator& other) {
+			return ptr - other.ptr;
+		}
+	};
+
+	template <typename V>
+	class MyReverseIterator {
+	private:
+		V* ptr;
+	public:
+		MyReverseIterator() {}
+
+		MyReverseIterator(V* ptr) : ptr(ptr) {}
+
+		MyReverseIterator operator++(int) {
+			MyReverseIterator tmp = *this;
+			--ptr;
+			return tmp;
+		}
+
+		MyReverseIterator& operator++() {
+			--ptr;
+			return *this;
+		}
+
+		MyReverseIterator operator--(int) {
+			MyReverseIterator tmp = *this;
+			++ptr;
+			return tmp;
+		}
+
+		MyReverseIterator& operator--() {
+			++ptr;
+			return *this;
+		}
+
+		bool operator==(const MyReverseIterator& other) const {
+			return ptr == other.ptr;
+		}
+
+		bool operator!=(const MyReverseIterator& other) const {
+			return ptr != other.ptr;
+		}
+
+		MyReverseIterator operator+(size_t n) {
+			return MyReverseIterator(ptr - n);
+		}
+
+		MyReverseIterator operator-(size_t n) {
+			return MyReverseIterator(ptr + n);
+		}
+
+		MyReverseIterator operator+=(size_t n) {
+			ptr -= n;
+			return *this;
+		}
+
+		MyReverseIterator operator-=(size_t n) {
+			ptr += n;
+			return *this;
+		}
+
+		V& operator*() {
+			return *ptr;
+		}
+
+		V* operator->() {
 			return ptr;
 		}
 	};
 
 	using iterator = MyIterator<T>;
 	using const_iterator = MyIterator<const T>;
-	using reverse_iterator = std::reverse_iterator<MyIterator<T>>;
-	using const_reverse_iterator = std::reverse_iterator<MyIterator<const T>>;
+	using reverse_iterator = MyReverseIterator<T>;
+	using const_reverse_iterator = MyReverseIterator<const T>;
 
 	iterator begin() {
 		return iterator(arr);
@@ -147,6 +217,10 @@ public:
 
 	size_t size() const {
 		return sz;
+	}
+
+	size_t max_size() const {
+		return 18446744073709551615 / sizeof(T);
 	}
 
 	size_t capacity() const {
@@ -233,10 +307,10 @@ public:
 
 	template <typename... Args>
 	iterator emplace(const_iterator pos, Args&&... args) {
+		size_t dist = pos - this->cbegin();
 		if (sz == cap) {
 			reserve(cap * 2);
 		}
-		size_t dist = std::distance(this->cbegin(), pos);
 		for (size_t i = sz; i > dist; --i) {
 			new(arr + i) T(std::move(arr[i - 1]));
 		}
@@ -245,24 +319,35 @@ public:
 		return iterator(arr + dist);
 	}
 
+	template <typename... Args>
+	void emplace_back(Args&&... args) {
+		if (sz == cap) {
+			reserve(cap * 2);
+		}
+		new(arr + sz) T(std::forward<Args>(args)...);
+		++sz;
+	}
+
 	iterator erase(iterator pos) {
-		size_t dist = std::distance(this->begin(), pos);
+		size_t dist = pos - this->begin();
+		//size_t dist = std::distance(this->begin(), pos);
 		arr[dist].~T();
 		for (size_t i = dist; i < sz - 1; ++i) {
 			arr[i] = arr[i + 1];
 		}
-		arr[arr + sz - 1].~T();
+		arr[sz - 1].~T();
 		--sz;
 		return iterator(arr + dist);
 	}
 
 	iterator erase(const_iterator pos) {
-		size_t dist = std::distance(this->cbegin(), pos);
+		size_t dist = pos - this->cbegin();
+		//size_t dist = std::distance(this->cbegin(), pos);
 		arr[dist].~T();
 		for (size_t i = dist; i < sz - 1; ++i) {
 			arr[i] = arr[i + 1];
 		}
-		arr[arr + sz - 1].~T();
+		arr[sz - 1].~T();
 		--sz;
 		return iterator(arr + dist);
 	}
@@ -326,15 +411,6 @@ public:
 		return iterator(arr + dist);
 	}
 
-	template <typename... Args>
-	void emplace_back(Args&&... args) {
-		if (sz == cap) {
-			reserve(cap * 2);
-		}
-		new(arr + sz) T(std::forward<Args>(args)...);
-		++sz;
-	}
-
 	void pop_back() {
 		if (sz == 0) {
 			return;
@@ -373,7 +449,6 @@ public:
 		std::swap(cap, other.cap);
 	}
 
-	//operator =
 	Vector& operator=(Vector&& other) {
 		clear();
 		arr = other.arr;
@@ -395,4 +470,16 @@ public:
 		return *this;
 	}
 };
+
+// operator - for iterators
+//template<typename T>
+//int operator-(const typename Vector<T>::iterator& lhs, const typename Vector<T>::iterator& rhs) {
+//	return std::distance(lhs.arr, rhs.arr);
+//}
+//
+//
+//template<typename T>
+//int operator-(const typename Vector<T>::const_iterator& lhs,const typename Vector<T>::const_iterator& rhs) {
+//	return std::distance(lhs.arr, rhs.arr);
+//}
 
