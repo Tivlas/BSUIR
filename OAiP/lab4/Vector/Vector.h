@@ -1,5 +1,4 @@
 #pragma once
-#include <memory>
 template <typename T>
 class Vector {
 public:
@@ -181,14 +180,14 @@ public:
 
 	T& at(size_t index) {
 		if (index >= sz) {
-			throw std::out_of_range("Index out of range");
+			throw std::string("Index out of range");
 		}
 		return arr[index];
 	}
 
 	const T& at(size_t index) const {
 		if (index >= sz) {
-			throw std::out_of_range("Index out of range");
+			throw std::string("Index out of range");
 		}
 		return arr[index];
 	}
@@ -267,7 +266,7 @@ public:
 	}
 
 	iterator erase(iterator pos) {
-		size_t dist = pos - this->begin();
+		size_t dist=std::distance(this->begin(), pos);
 		arr[dist].~T();
 		for (size_t i = dist; i < sz - 1; ++i) {
 			arr[i] = arr[i + 1];
@@ -278,7 +277,7 @@ public:
 	}
 
 	iterator erase(const_iterator pos) {
-		size_t dist = pos - this->cbegin();
+		size_t dist = std::distance(this->begin(), pos);
 		arr[dist].~T();
 		for (size_t i = dist; i < sz - 1; ++i) {
 			arr[i] = arr[i + 1];
