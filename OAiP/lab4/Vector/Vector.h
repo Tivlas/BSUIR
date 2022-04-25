@@ -1,6 +1,5 @@
 #pragma once
 #include <memory>
-#include<new>
 template <typename T>
 class Vector {
 public:
@@ -8,13 +7,19 @@ public:
 	//================== ITERATORS =======================
 	//====================================================
 	template <typename U>
-	class MyIterator : public std::iterator<std::random_access_iterator_tag, T> {
+	class MyIterator {
+	public:
+		using iterator_category = std::random_access_iterator_tag;
+		using value_type = U;
+		using difference_type = std::ptrdiff_t;
+		using pointer = U*;
+		using reference = U&;
 	private:
-		U* ptr;
+		pointer ptr;
 	public:
 		MyIterator() {}
 
-		MyIterator(U* ptr) : ptr(ptr) {}
+		MyIterator(pointer ptr) : ptr(ptr) {}
 
 		MyIterator operator++(int) {
 			MyIterator tmp = *this;
@@ -64,11 +69,11 @@ public:
 			return *this;
 		}
 
-		U& operator*() {
+		reference operator*() {
 			return *ptr;
 		}
 
-		U* operator->() {
+		pointer operator->() {
 			return ptr;
 		}
 
@@ -77,83 +82,17 @@ public:
 		}
 	};
 
-	template <typename V>
-	class MyReverseIterator {
-	private:
-		V* ptr;
-	public:
-		MyReverseIterator() {}
-
-		MyReverseIterator(V* ptr) : ptr(ptr) {}
-
-		MyReverseIterator operator++(int) {
-			MyReverseIterator tmp = *this;
-			--ptr;
-			return tmp;
-		}
-
-		MyReverseIterator& operator++() {
-			--ptr;
-			return *this;
-		}
-
-		MyReverseIterator operator--(int) {
-			MyReverseIterator tmp = *this;
-			++ptr;
-			return tmp;
-		}
-
-		MyReverseIterator& operator--() {
-			++ptr;
-			return *this;
-		}
-
-		bool operator==(const MyReverseIterator& other) const {
-			return ptr == other.ptr;
-		}
-
-		bool operator!=(const MyReverseIterator& other) const {
-			return ptr != other.ptr;
-		}
-
-		MyReverseIterator operator+(size_t n) {
-			return MyReverseIterator(ptr - n);
-		}
-
-		MyReverseIterator operator-(size_t n) {
-			return MyReverseIterator(ptr + n);
-		}
-
-		MyReverseIterator operator+=(size_t n) {
-			ptr -= n;
-			return *this;
-		}
-
-		MyReverseIterator operator-=(size_t n) {
-			ptr += n;
-			return *this;
-		}
-
-		V& operator*() {
-			return *ptr;
-		}
-
-		V* operator->() {
-			return ptr;
-		}
-	};
-
 	using iterator = MyIterator<T>;
 	using const_iterator = MyIterator<const T>;
-	using reverse_iterator = MyReverseIterator<T>;
-	using const_reverse_iterator = MyReverseIterator<const T>;
+	using  reverse_iterator = std::reverse_iterator<MyIterator<T>>;
+	using  const_reverse_iterator = std::reverse_iterator<MyIterator<const T>>;
 
 	iterator begin() {
 		return iterator(arr);
 	}
 
 	iterator end() {
-		return iterator(arr + sz);
+		return arr ? iterator(arr + sz) : iterator(arr);
 	}
 
 	const_iterator cbegin() const {
@@ -161,31 +100,36 @@ public:
 	}
 
 	const_iterator cend() const {
-		return const_iterator(arr + sz);
+		return arr ? const_iterator(arr + sz) : const_iterator(arr);
 	}
 
 	reverse_iterator rbegin() {
-		return reverse_iterator(arr + sz - 1);
+		return reverse_iterator(end());
 	}
 
 	reverse_iterator rend() {
-		return reverse_iterator(arr - 1);
+		return reverse_iterator(begin());
 	}
 
 	const_reverse_iterator crbegin() const {
-		return const_reverse_iterator(arr + sz - 1);
+		return const_reverse_iterator(cend());
 	}
 
 	const_reverse_iterator crend() const {
-		return const_reverse_iterator(arr - 1);
+		return const_reverse_iterator(cbegin());
 	}
+
+	//====================================================
+	//================== END OF ITERATORS =======================
+	//====================================================
 
 private:
 	T* arr = nullptr;
 	size_t sz = 0;
 	size_t cap = 0;
 public:
-	Vector() {}
+	Vector() {
+	}
 
 	explicit Vector(size_t n) {
 		sz = n;
@@ -194,11 +138,11 @@ public:
 	}
 
 	explicit Vector(size_t n, const T& value) {
-		arr = new T[n];
+		arr = reinterpret_cast<T*>(new char[n * sizeof(T)]);
 		sz = n;
 		cap = n;
 		for (size_t i = 0; i < sz; i++) {
-			arr[i] = value;
+			new(arr + i) T(value);
 		}
 	}
 
@@ -210,12 +154,6 @@ public:
 		{
 			arr[i] = other.arr[i];
 		}
-	}
-
-	~Vector() {
-		this->clear();
-		//delete[] reinterpret_cast<char*>(arr);
-		//std::destroy(arr, arr + cap);
 	}
 
 	size_t size() const {
@@ -293,30 +231,6 @@ public:
 		}
 	}
 
-	void push_back(T&& value) {
-		if (sz == cap) {
-			reserve(cap * 2);
-		}
-		new(arr + sz) T(std::move(value));
-		++sz;
-	}
-
-	void push_back(const T& value) {
-		if (sz == cap) {
-			reserve(cap * 2);
-		}
-		new(arr + sz) T(value);
-		++sz;
-	}
-
-	void pop_back() {
-		if (sz == 0) {
-			return;
-		}
-		arr[sz - 1].~T();
-		--sz;
-	}
-
 	template <typename... Args>
 	iterator emplace(const_iterator pos, Args&&... args) {
 		size_t dist = pos - this->cbegin();
@@ -333,16 +247,24 @@ public:
 
 	template <typename... Args>
 	void emplace_back(Args&&... args) {
-		if (sz == cap) {
+		if (cap == 0) reserve(1);
+		else if (sz == cap) {
 			reserve(cap * 2);
 		}
 		new(arr + sz) T(std::forward<Args>(args)...);
 		++sz;
 	}
 
+	void push_back(T&& value) {
+		emplace_back(std::move(value));
+	}
+
+	void push_back(const T& value) {
+		emplace_back(value);
+	}
+
 	iterator erase(iterator pos) {
 		size_t dist = pos - this->begin();
-		//size_t dist = std::distance(this->begin(), pos);
 		arr[dist].~T();
 		for (size_t i = dist; i < sz - 1; ++i) {
 			arr[i] = arr[i + 1];
@@ -354,7 +276,6 @@ public:
 
 	iterator erase(const_iterator pos) {
 		size_t dist = pos - this->cbegin();
-		//size_t dist = std::distance(this->cbegin(), pos);
 		arr[dist].~T();
 		for (size_t i = dist; i < sz - 1; ++i) {
 			arr[i] = arr[i + 1];
@@ -423,16 +344,6 @@ public:
 		return iterator(arr + dist);
 	}
 
-	void clear() {
-		if (sz != 0)
-		{
-			for (size_t i = 0; i < sz; ++i) {
-				//std::destroy_at(std::addressof(arr+i));
-			}
-			sz = 0;
-		}
-	}
-
 	bool empty() const {
 		return sz == 0;
 	}
@@ -455,6 +366,14 @@ public:
 		std::swap(cap, other.cap);
 	}
 
+	void pop_back() {
+		if (sz == 0) {
+			throw std::string("Vector is empty!");
+		}
+		arr[sz - 1].~T();
+		--sz;
+	}
+
 	Vector& operator=(Vector&& other) {
 		clear();
 		arr = other.arr;
@@ -474,5 +393,20 @@ public:
 		}
 		sz = other.sz;
 		return *this;
+	}
+
+	void clear() {
+		if (sz != 0)
+		{
+			for (size_t i = 0; i < sz; ++i) {
+				std::destroy_at(arr + i);
+			}
+			sz = 0;
+		}
+	}
+
+	~Vector() {
+		std::destroy(begin(), end());
+		delete[] reinterpret_cast<char*>(arr);
 	}
 };
