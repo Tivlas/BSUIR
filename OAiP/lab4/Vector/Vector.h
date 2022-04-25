@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include<new>
 template <typename T>
 class Vector {
 public:
@@ -213,6 +214,8 @@ public:
 
 	~Vector() {
 		this->clear();
+		//delete[] reinterpret_cast<char*>(arr);
+		//std::destroy(arr, arr + cap);
 	}
 
 	size_t size() const {
@@ -283,11 +286,10 @@ public:
 		this->clear();
 		sz = n;
 		if (n > cap) {
-			cap = n;
+			reserve(n);
 		}
-		arr = new T[cap];
 		for (size_t i = 0; i < sz; ++i) {
-			arr[i] = value;
+			new(arr + i)T(value);
 		}
 	}
 
@@ -296,6 +298,7 @@ public:
 			reserve(cap * 2);
 		}
 		new(arr + sz) T(std::move(value));
+		++sz;
 	}
 
 	void push_back(const T& value) {
@@ -303,6 +306,15 @@ public:
 			reserve(cap * 2);
 		}
 		new(arr + sz) T(value);
+		++sz;
+	}
+
+	void pop_back() {
+		if (sz == 0) {
+			return;
+		}
+		arr[sz - 1].~T();
+		--sz;
 	}
 
 	template <typename... Args>
@@ -401,7 +413,7 @@ public:
 		if (sz + count > cap) {
 			reserve(cap * 2);
 		}
-		for (size_t i = sz - 1; i > dist; --i) {
+		for (size_t i = sz - 1; i >= dist; --i) {
 			new(arr + i + count) T(std::move(arr[i]));
 		}
 		for (size_t i = 0; i < count; ++i) {
@@ -411,20 +423,14 @@ public:
 		return iterator(arr + dist);
 	}
 
-	void pop_back() {
-		if (sz == 0) {
-			return;
-		}
-		arr[sz - 1].~T();
-		--sz;
-	}
-
 	void clear() {
-		for (size_t i = 0; i < sz; ++i) {
-			arr[i].~T();
+		if (sz != 0)
+		{
+			for (size_t i = 0; i < sz; ++i) {
+				//std::destroy_at(std::addressof(arr+i));
+			}
+			sz = 0;
 		}
-		sz = 0;
-		arr = nullptr;
 	}
 
 	bool empty() const {
@@ -470,16 +476,3 @@ public:
 		return *this;
 	}
 };
-
-// operator - for iterators
-//template<typename T>
-//int operator-(const typename Vector<T>::iterator& lhs, const typename Vector<T>::iterator& rhs) {
-//	return std::distance(lhs.arr, rhs.arr);
-//}
-//
-//
-//template<typename T>
-//int operator-(const typename Vector<T>::const_iterator& lhs,const typename Vector<T>::const_iterator& rhs) {
-//	return std::distance(lhs.arr, rhs.arr);
-//}
-
