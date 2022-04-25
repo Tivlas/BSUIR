@@ -134,7 +134,10 @@ public:
 	explicit Vector(size_t n) {
 		sz = n;
 		cap = n;
-		arr = new T[n];
+		arr = reinterpret_cast<T*>(new char[n * sizeof(T)]);
+		for (size_t i = 0; i < sz; i++) {
+			new(arr + i) T();
+		}
 	}
 
 	explicit Vector(size_t n, const T& value) {
