@@ -12,14 +12,14 @@ Bidecimal::Bidecimal(QWidget* parent)
 bool Bidecimal::k_bit(std::string str, int k)
 {
 	int bit, i = 0;
-	int lenstr = str.size();
+	int length = str.size();
 
 	for (; i != k; i++)
 	{
-		bit = (str[lenstr - 1] - '0') % 2;
-		str[lenstr - 1] = str[lenstr - 1] - bit;
+		bit = (str[length - 1] - '0') % 2;
+		str[length - 1] = str[length - 1] - bit;
 
-		for (int j = lenstr - 1; j >= 0; j--)
+		for (int j = length - 1; j >= 0; j--)
 		{
 			if ((str[j] - '0') % 2 == 0)
 			{
@@ -29,7 +29,7 @@ bool Bidecimal::k_bit(std::string str, int k)
 			{
 				str[j] = (str[j] - '0') / 2 + '0';
 
-				if (j != lenstr - 1)
+				if (j != length - 1)
 				{
 					str[j + 1] = str[j + 1] + 5;
 				}
@@ -66,7 +66,7 @@ std::string Bidecimal::powstr(const std::string& str, int k)
 void Bidecimal::on_calcBtn_clicked() {
 	A[0] = "0";
 
-	int counterB, counterA = 1, k = 1, counterBIN = 1, tmp;
+	int counterB = 0, counterA = 1, k = 1, counterBIN = 1, tmp;
 
 	int n = ui.numberEdit->text().toInt();
 	if (n < 1 || n>10000) {
@@ -74,7 +74,6 @@ void Bidecimal::on_calcBtn_clicked() {
 		ui.numberEdit->clear();
 		return;
 	}
-
 
 	while (n >= counterBIN)
 	{
