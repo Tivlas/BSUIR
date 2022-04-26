@@ -245,7 +245,8 @@ public:
 	template <typename... Args>
 	iterator emplace(const_iterator pos, Args&&... args) {
 		size_t dist = pos - this->cbegin();
-		if (sz == cap) {
+		if (cap == 0) reserve(1);
+		else if (sz == cap) {
 			reserve(cap * 2);
 		}
 		for (size_t i = sz; i > dist; --i) {

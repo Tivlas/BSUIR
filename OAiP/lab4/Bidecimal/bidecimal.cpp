@@ -38,7 +38,7 @@ bool Bidecimal::k_bit(std::string str, int k)
 		}
 	}
 
-	return bit;
+	return (bool)bit;
 }
 
 std::string Bidecimal::powstr(const std::string& str, int k)
@@ -86,7 +86,7 @@ void Bidecimal::on_calcBtn_clicked() {
 				A[tmp] = A[i];
 				tmp++;
 			}
-		}
+		} 
 
 		counterA = tmp;
 
