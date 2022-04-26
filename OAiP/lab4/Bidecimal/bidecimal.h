@@ -14,5 +14,5 @@ public:
 
 private:
     Ui::BidecimalClass ui;
-    //Vector<std::string> A(10000);
+    Vector<std::string> A = std::move(Vector<std::string>(10000));
 };

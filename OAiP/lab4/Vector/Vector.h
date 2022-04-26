@@ -158,6 +158,15 @@ public:
 		}
 	}
 
+	Vector(Vector&& other) {
+		sz = other.sz;
+		cap = other.cap;
+		arr = other.arr;
+		other.arr = nullptr;
+		other.sz = 0;
+		other.cap = 0;
+	}
+
 	size_t size() const {
 		return sz;
 	}
