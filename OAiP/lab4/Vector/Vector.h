@@ -266,7 +266,7 @@ public:
 	}
 
 	iterator erase(iterator pos) {
-		size_t dist=std::distance(this->begin(), pos);
+		size_t dist = std::distance(this->begin(), pos);
 		arr[dist].~T();
 		for (size_t i = dist; i < sz - 1; ++i) {
 			arr[i] = arr[i + 1];
@@ -305,33 +305,15 @@ public:
 		return iterator(arr + dist);
 	}
 
-	iterator insert(iterator pos, const T& value) { // before pos
-		size_t dist = std::distance(this->begin(), pos);
-		if (sz == cap) {
-			reserve(cap * 2);
-		}
-		for (size_t i = sz; i > dist; --i) {
-			new(arr + i) T(std::move(arr[i - 1]));
-		}
-		new(arr + dist) T(value);
-		++sz;
-		return iterator(arr + dist);
+	iterator insert(const_iterator pos, const T& value) { // before pos
+		return emplace(pos, value);
 	}
 
-	iterator insert(iterator pos, T&& value) {
-		size_t dist = std::distance(this->begin(), pos);
-		if (sz == cap) {
-			reserve(cap * 2);
-		}
-		for (size_t i = sz; i > dist; --i) {
-			new(arr + i) T(std::move(arr[i - 1]));
-		}
-		new(arr + dist) T(std::move(value));
-		++sz;
-		return iterator(arr + dist);
+	iterator insert(const_iterator pos, T&& value) {
+		return emplace(pos, std::move(value));
 	}
 
-	iterator insert(iterator pos, size_t count, const T& value) { // insert count copies of value before pos
+	iterator insert(const_iterator pos, size_t count, const T& value) { // insert count copies of value before pos
 		size_t dist = std::distance(this->begin(), pos);
 		if (sz + count > cap) {
 			reserve(cap * 2);
@@ -376,7 +358,8 @@ public:
 		--sz;
 	}
 
-	Vector& operator=(Vector&& other) {
+	Vector& operator=(Vector&& other) noexcept {
+		if (this == std::addressof(other)) return *this;
 		clear();
 		arr = other.arr;
 		sz = other.sz;
@@ -388,8 +371,12 @@ public:
 	}
 
 	Vector& operator=(const Vector& other) {
+		if (this == std::addressof(other)) return *this;
 		clear();
-		reserve(other.sz);
+		if (other.cap > cap)
+		{
+			reserve(other.cap);
+		}
 		for (size_t i = 0; i < other.sz; ++i) {
 			new(arr + i) T(other.arr[i]);
 		}
