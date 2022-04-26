@@ -28,6 +28,15 @@ MyString::MyString(const MyString& other)
 	str[sz] = '\0';
 }
 
+MyString::MyString(const char other[])
+{
+	size_t sz = std::strlen(other);
+	this->str = new char[sz + 1];
+	memcpy(this->str, other, sz + 1);
+}
+
+
+
 MyString::~MyString()
 {
 	delete[] str;
@@ -171,12 +180,51 @@ size_t MyString::strxfrm(char* s1, const char* s2, size_t n)
 	return std::strxfrm(s1, s2, n);
 }
 
-char* MyString::strtok(char* s1, const char* s2)
+bool MyString::findChar(const char* str, char ch)
 {
-	
+	while (*str) {
+		if (*str == ch) {
+			return true;
+		}
+		str++;
+	}
+	return false;
 }
 
-//MyString::MyString(const char* str): str(str)
-//{
-//	
-//}
+char* MyString::strtok(char* str, const char* delim)
+{
+	//static char* storage;
+	char check1 = '\0';
+	char first = *str;
+	char* first_address = nullptr;
+	char second;
+	while (*str) {
+		first_address = str;
+		first = *str;
+		if (*str && !findChar(delim, first)) {
+			check1 = 'c';
+			break;
+		}
+		str++;
+	}
+	if (check1 == '\0') {
+		return nullptr;
+	}
+	char check2 = '\0';
+	while (*(++first_address)) {
+		second = *first_address;
+		if (*first_address && findChar(delim, second)) {
+			second = '\0';
+			check2 = 'c';
+			break;
+		}
+		first_address++;
+	}
+	if (check2 != '\0') {
+		*(str) = '\0';
+	}
+	return str;
+
+}
+
+

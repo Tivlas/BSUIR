@@ -17,8 +17,8 @@ public:
 	MyString() {}
 	MyString(size_t size);
 	MyString(size_t size, char ch);
-	//MyString(const char*);
 	MyString(const MyString&);
+	MyString(const char[]);
 	~MyString();
 
 	void* memcpy(void* s1, const void* s2, size_t n);
@@ -32,8 +32,8 @@ public:
 	int strcoll(const char* s1, const char* s2);
 	int strncmp(const char* s1, const char* s2, size_t n);
 	size_t strxfrm(char* s1, const char* s2, size_t n);
-	char* strtok(char* s1, const char* s2);
-
+	bool findChar(const char* str, char ch);
+	char* strtok(char* str, const char* delim);
 
 };
 
