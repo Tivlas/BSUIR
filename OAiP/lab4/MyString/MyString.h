@@ -1,5 +1,4 @@
 #pragma once
-#include <cstring>
 #include <stdexcept>
 
 #ifdef MyString_EXPORTS
@@ -243,9 +242,10 @@ public:
 	MyString& operator=(const MyString& other);
 	MyString& operator=(const char* other);
 	MyString& operator=(char ch);
-	
+
 	explicit operator std::string() const;
 };
+
 
 bool operator==(const MyString& left, const MyString& right);
 bool operator!=(const MyString& left, const MyString& right);
@@ -253,7 +253,6 @@ bool operator<(const MyString& left, const MyString& right);
 bool operator>(const MyString& left, const MyString& right);
 bool operator<=(const MyString& left, const MyString& right);
 bool operator>=(const MyString& left, const MyString& right);
-
 
 
 //==================
@@ -375,11 +374,6 @@ int  my_strcmp(const char* s1, const char* s2)
 	return *s1 - *s2;
 }
 
-int  my_strcoll(const char* s1, const char* s2)
-{
-	return std::strcoll(s1, s2);
-}
-
 int  my_strncmp(const char* s1, const char* s2, size_t n)
 {
 	while (n-- && *s1 && *s2) {
@@ -392,56 +386,6 @@ int  my_strncmp(const char* s1, const char* s2, size_t n)
 	return *s1 - *s2;
 }
 
-size_t  my_strxfrm(char* s1, const char* s2, size_t n)
-{
-	return std::strxfrm(s1, s2, n);
-}
-
-bool  findChar(const char* str, char ch)
-{
-	while (*str) {
-		if (*str == ch) {
-			return true;
-		}
-		str++;
-	}
-	return false;
-}
-
-//char* my_strtok(char* str, const char* delim)
-//{
-//	char check1 = '\0';
-//	char first = *str;
-//	char* first_address = nullptr;
-//	char second;
-//	while (*str) {
-//		first_address = str;
-//		first = *str;
-//		if (*str && !findChar(delim, first)) {
-//			check1 = 'c';
-//			break;
-//		}
-//		str++;
-//	}
-//	if (check1 == '\0') {
-//		return nullptr;
-//	}
-//	char check2 = '\0';
-//	while (*(++first_address)) {
-//		second = *first_address;
-//		if (*first_address && findChar(delim, second)) {
-//			second = '\0';
-//			check2 = 'c';
-//			break;
-//		}
-//		first_address++;
-//	}
-//	if (check2 != '\0') {
-//		*(str) = '\0';
-//	}
-//	return str;
-//}
-
 void* my_memcet(void* dest, int ch, size_t count) {
 	char* p1 = (char*)dest;
 	unsigned char value = (unsigned char)ch;
@@ -449,19 +393,13 @@ void* my_memcet(void* dest, int ch, size_t count) {
 		*p1++ = value;
 	}
 	return p1;
-}\
+}
 
-//char* my_strerror(int errnum) {
-//	return std::strerror(errnum);
-//}
-
-size_t my_strlen(const char* str) {
-	size_t len = 0;
-	while (*str) {
-		len++;
-		str++;
-	}
-	return len;
+size_t my_strlen(const char* start) {
+	const char* end = start;
+	for (; *end != '\0'; ++end)
+		;
+	return end - start;
 }
 
 
