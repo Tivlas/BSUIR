@@ -10,33 +10,7 @@
 
 class MyString_API MyString
 {
-private:
-	char* str = nullptr;
-	size_t sz = 0;
-	size_t cap = 0;
 public:
-	MyString();
-	MyString(size_t);
-	MyString(size_t, char);
-	MyString(const MyString&);
-	MyString(const char[]);
-	~MyString();
-	size_t size() const;
-	size_t capacity() const;
-	void reserve(size_t new_cap);
-	void resize(size_t new_size, const char ch);
-	char& operator[](size_t pos);
-	char& at(size_t pos);
-	void push_back(char ch);
-	void pop_back();
-	void clear();
-	MyString& append(size_t count, char ch);
-	char& front();
-	char& back();
-	const char* data() const;
-	const char* c_str() const;
-	bool empty() const;
-
 	//====================================================
 	//================== ITERATORS =======================
 	//====================================================
@@ -227,11 +201,64 @@ public:
 	const_reverse_iterator crend() const {
 		return const_reverse_iterator(cbegin());
 	}
-	
+
 	//====================================================
 	//================== END OF ITERATORS =======================
 	//====================================================
+private:
+	char* str = nullptr;
+	size_t sz = 0;
+	size_t cap = 0;
+public:
+	MyString();
+	MyString(size_t);
+	MyString(size_t, char);
+	MyString(const MyString&);
+	MyString(const char[]);
+	~MyString();
+	size_t size() const;
+	size_t capacity() const;
+	void reserve(size_t new_cap);
+	void resize(size_t new_size, const char ch);
+	char& operator[](size_t pos);
+	const char& operator[](size_t pos) const;
+	char& at(size_t pos);
+	const char& at(size_t pos) const;
+	void push_back(char ch);
+	void pop_back();
+	void clear();
+	MyString& append(size_t count, char ch);
+	char& front();
+	char& back();
+	const char* data() const;
+	const char* c_str() const;
+	bool empty() const;
+	iterator insert(iterator pos, const char value);
+	iterator insert(iterator pos, size_t count, const char value);
+	iterator erase(iterator pos);
+	iterator erase(iterator first, iterator last);
+	MyString& operator+=(const MyString& other);
+	MyString& operator+=(const char* other);
+	MyString& operator+=(char ch);
+	MyString& operator=(const MyString& other);
+	MyString& operator=(const char* other);
+	MyString& operator=(char ch);
+	
+	explicit operator std::string() const;
 };
+
+bool operator==(const MyString& left, const MyString& right);
+bool operator!=(const MyString& left, const MyString& right);
+bool operator<(const MyString& left, const MyString& right);
+bool operator>(const MyString& left, const MyString& right);
+bool operator<=(const MyString& left, const MyString& right);
+bool operator>=(const MyString& left, const MyString& right);
+
+
+
+//==================
+// cstring functions
+//==================
 
 void* my_memcpy(void* dest, const void* src, size_t n)
 {
