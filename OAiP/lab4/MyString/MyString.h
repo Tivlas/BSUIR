@@ -261,22 +261,23 @@ bool operator>=(const MyString& left, const MyString& right);
 
 void* my_memcpy(void* dest, const void* src, size_t n)
 {
-	char* p1 = (char*)dest;
+	unsigned char* p1 = (unsigned char*)dest;
 	const char* p2 = (const char*)src;
 	while (n--) {
 		*p1++ = *p2++;
 	}
-	return p1;
+	return dest;
 }
 
 void* my_memmove(void* dest, const void* src, size_t n)
 {
-	char* p1 = (char*)dest;
-	const char* p2 = (const char*)src;
-	while (n--) {
-		*p1++ = *p2++;
-	}
-	return p1;
+	unsigned char* p1 = (unsigned char*)dest;
+	unsigned char* p2 = (unsigned char*)src;
+	unsigned char* temp = new unsigned char[n];
+	my_memcpy(temp, p2, n);
+	my_memcpy(p1, temp, n);
+	delete[] temp;
+	return dest;
 }
 
 char* my_strcpy(char* dest, const char* src)
@@ -290,7 +291,7 @@ char* my_strcpy(char* dest, const char* src)
 		*p1++ = *p2++;
 	}
 	*p1 = '\0';
-	return p1;
+	return dest;
 }
 
 char* my_strncpy(char* dest, const char* src, size_t n)
@@ -317,7 +318,7 @@ char* my_strncpy(char* dest, const char* src, size_t n)
 			++already_copied;
 		}
 	}
-	return p1;
+	return dest;
 }
 
 char* my_strcat(char* dest, const char* src)
@@ -331,7 +332,7 @@ char* my_strcat(char* dest, const char* src)
 		*p1++ = *p2++;
 	}
 	*p1 = '\0';
-	return p1;
+	return dest;
 }
 
 char* my_strncat(char* dest, const char* src, size_t n)
@@ -345,13 +346,13 @@ char* my_strncat(char* dest, const char* src, size_t n)
 		*p1++ = *p2++;
 	}
 	*p1 = '\0';
-	return p1;
+	return dest;
 }
 
 int  my_memcmp(const void* s1, const void* s2, size_t n)
 {
-	const char* p1 = (const char*)s1;
-	const char* p2 = (const char*)s2;
+	unsigned char* p1 = (unsigned char*)s1;
+	unsigned char* p2 = (unsigned char*)s2;
 	while (n--) {
 		if (*p1 != *p2) {
 			return *p1 - *p2;
@@ -392,7 +393,7 @@ void* my_memcet(void* dest, int ch, size_t count) {
 	while (count--) {
 		*p1++ = value;
 	}
-	return p1;
+	return dest;
 }
 
 size_t my_strlen(const char* start) {
