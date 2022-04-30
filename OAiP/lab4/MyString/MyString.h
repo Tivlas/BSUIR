@@ -1,11 +1,7 @@
 #pragma once
 #include <stdexcept>
 
-#ifdef MyString_EXPORTS
-#define MyString_API __declspec(dllimport)
-#else
 #define MyString_API __declspec(dllexport)
-#endif
 
 class MyString_API MyString
 {
@@ -256,10 +252,10 @@ bool operator>=(const MyString& left, const MyString& right);
 
 
 //==================
-// cstring functions
+// cstring functions 
 //==================
 
-void* my_memcpy(void* dest, const void* src, size_t n)
+extern "C" MyString_API void* my_memcpy(void* dest, const void* src, size_t n)
 {
 	unsigned char* p1 = (unsigned char*)dest;
 	const char* p2 = (const char*)src;
@@ -269,7 +265,7 @@ void* my_memcpy(void* dest, const void* src, size_t n)
 	return dest;
 }
 
-void* my_memmove(void* dest, const void* src, size_t n)
+extern "C" MyString_API void* my_memmove(void* dest, const void* src, size_t n)
 {
 	unsigned char* p1 = (unsigned char*)dest;
 	unsigned char* p2 = (unsigned char*)src;
@@ -280,7 +276,7 @@ void* my_memmove(void* dest, const void* src, size_t n)
 	return dest;
 }
 
-char* my_strcpy(char* dest, const char* src)
+extern "C++" MyString_API char* my_strcpy(char* dest, const char* src)
 {
 	char* p1 = dest;
 	const char* p2 = src;
@@ -294,7 +290,7 @@ char* my_strcpy(char* dest, const char* src)
 	return dest;
 }
 
-char* my_strncpy(char* dest, const char* src, size_t n)
+extern "C++" MyString_API char* my_strncpy(char* dest, const char* src, size_t n)
 {
 	size_t already_copied = 0;
 	char* p1 = dest;
@@ -321,7 +317,7 @@ char* my_strncpy(char* dest, const char* src, size_t n)
 	return dest;
 }
 
-char* my_strcat(char* dest, const char* src)
+extern "C" MyString_API char* my_strcat(char* dest, const char* src)
 {
 	char* p1 = dest;
 	while (*p1) {
@@ -335,7 +331,7 @@ char* my_strcat(char* dest, const char* src)
 	return dest;
 }
 
-char* my_strncat(char* dest, const char* src, size_t n)
+extern "C" MyString_API char* my_strncat(char* dest, const char* src, size_t n)
 {
 	char* p1 = dest;
 	while (*p1) {
@@ -349,7 +345,7 @@ char* my_strncat(char* dest, const char* src, size_t n)
 	return dest;
 }
 
-int  my_memcmp(const void* s1, const void* s2, size_t n)
+extern "C" MyString_API int  my_memcmp(const void* s1, const void* s2, size_t n)
 {
 	unsigned char* p1 = (unsigned char*)s1;
 	unsigned char* p2 = (unsigned char*)s2;
@@ -363,7 +359,7 @@ int  my_memcmp(const void* s1, const void* s2, size_t n)
 	return 0;
 }
 
-int  my_strcmp(const char* s1, const char* s2)
+extern "C" MyString_API int  my_strcmp(const char* s1, const char* s2)
 {
 	while (*s1 && *s2) {
 		if (*s1 != *s2) {
@@ -375,7 +371,7 @@ int  my_strcmp(const char* s1, const char* s2)
 	return *s1 - *s2;
 }
 
-int  my_strncmp(const char* s1, const char* s2, size_t n)
+extern "C" MyString_API int  my_strncmp(const char* s1, const char* s2, size_t n)
 {
 	while (n-- && *s1 && *s2) {
 		if (*s1 != *s2) {
@@ -387,7 +383,7 @@ int  my_strncmp(const char* s1, const char* s2, size_t n)
 	return *s1 - *s2;
 }
 
-void* my_memcet(void* dest, int ch, size_t count) {
+extern "C" MyString_API void* my_memcet(void* dest, int ch, size_t count) {
 	char* p1 = (char*)dest;
 	unsigned char value = (unsigned char)ch;
 	while (count--) {
@@ -396,11 +392,58 @@ void* my_memcet(void* dest, int ch, size_t count) {
 	return dest;
 }
 
-size_t my_strlen(const char* start) {
+extern "C" MyString_API size_t my_strlen(const char* start) {
 	const char* end = start;
 	for (; *end != '\0'; ++end)
 		;
 	return end - start;
+}
+
+extern "C" MyString_API size_t my_strxfrm(char* dest, const char* src, size_t n) {
+	char* p1 = dest;
+	const char* p2 = src;
+	for (size_t i = 0; i < n; i++) {
+		*p1++ = *p2++;
+	}
+	*p1 = '\0';
+	return n;
+}
+
+extern "C" MyString_API char* my_strchr(const char* s, int c) {
+	const char* p = s;
+	while (*p != '\0') {
+		if (*p == c) {
+			return (char*)p;
+		}
+		p++;
+	}
+	if (c == '\0') {
+		return (char*)p;
+	}
+	return nullptr;
+}
+
+extern "C" MyString_API char* my_strtok(char* str, const char* delim) {
+	static char* p1 = nullptr;
+	if (str != nullptr) {
+		p1 = str;
+	}
+	else {
+		if (p1 == nullptr) {
+			return nullptr;
+		}
+	}
+	char* p2 = p1;
+	while (*p2 != '\0') {
+		if (my_strchr(delim, *p2) != nullptr) {
+			*p2 = '\0';
+			p1 = p2 + 1;
+			return p2;
+		}
+		p2++;
+	}
+	p1 = nullptr;
+	return nullptr;
 }
 
 
