@@ -5,18 +5,18 @@ Parser::Parser(QWidget* parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
+	fundTypesRegEx = ("((const *)?(signed *|unsigned *)? *(std::string|std::vector\\<\\w+\\>|size_t|bool|char|int|short|void|long long|float|long double|double|long|auto)(\\**&* +\\**&*))( *[^\\(^\\)^;]+\\,?.*?;)");
+	structs_classes = ("(class|struct) +(\\w+)");
 }
 
 void Parser::findVarOfFundTypes(const QString& text)
 {
 	std::string input = text.toStdString();
 	std::smatch match;
-	std::regex fundTypesRegEx("((const *)?(signed *|unsigned *)?(size_t|bool|char|int|short|void|(long)? *long|float|(long)? *double|auto)(\\**&* +\\**&*))( *[^\\(^\\)^;]+\\,?.*?;)");
-
 	while (std::regex_search(input, match, fundTypesRegEx))
 	{
-		std::string type = match[2].str() + match[3].str() + match[4].str() + match[7].str();
-		std::string value = match[8].str();
+		std::string type = match[2].str() + match[3].str() + match[4].str() + match[5].str();
+		std::string value = match[6].str();
 		value.erase(std::remove(value.begin(), value.end(), ' '), value.end());
 		for (int i = 0; i < value.size(); i++)
 		{
@@ -25,13 +25,6 @@ void Parser::findVarOfFundTypes(const QString& text)
 				while (value[i] != '}') {
 					i++;
 				}
-			}
-			if (value[i] == '\"') {
-				i++;
-				while (value[i] != '\"') {
-					i++;
-				}
-
 			}
 			if (value[i] == ',')
 			{
@@ -55,8 +48,12 @@ void Parser::findVarOfFundTypes(const QString& text)
 
 			if (!newFound)
 			{
-				if (var.find('[') != std::string::npos) {
-					temp_type += "array ";
+				if (size_t index = var.find(']') != std::string::npos) {
+					if (var[index+1]=='=')
+					{
+						temp_type += "array ";
+						++numberOfArrays;
+					}
 				}
 			}
 			if (var.back() != ';') { var += ';'; }
@@ -66,6 +63,18 @@ void Parser::findVarOfFundTypes(const QString& text)
 	}
 }
 
+void Parser::findStructsAndClasses(const QString& text)
+{
+	std::string input = text.toStdString();
+	std::smatch match;
+	while (std::regex_search(input, match, structs_classes))
+	{
+		std::string type = match[1].str();
+		std::string name = match[2].str();
+		structsAndClasses.push_back(SPair(type, name));
+		input = match.suffix().str();
+	}
+}
 
 void Parser::sortByType(PVector& v)
 {
@@ -86,7 +95,7 @@ void Parser::sortByType(PVector& v)
 
 void Parser::on_readBtn_clicked()
 {
-	fileName = QFileDialog::getOpenFileName(this, "Open your file", /*"D:/BSUIR/OAiP/"*/ "D:/Лабы по проге/1 сем/4 lab/task_10", "Text File (*.txt *.cpp)");
+	fileName = QFileDialog::getOpenFileName(this, "Open your file", /*"D:/BSUIR/OAiP/"*/ "D:/Tests/C++_Tests/Tests/RegExTest", "Text File (*.txt *.cpp)");
 	QFile file(fileName);
 	QTextStream fromFile(&file);
 
@@ -108,6 +117,10 @@ void Parser::on_parseBtn_clicked()
 	result = "";
 	ui.parseBtn->setEnabled(false);
 	QString text = ui.codeTextEdit->toPlainText();
+
+	//++++++++++++++++++++++++++++++++++
+	//++++++++++++Переменные++++++++++++
+	//++++++++++++++++++++++++++++++++++
 	findVarOfFundTypes(text);
 	sortByType(fundTypeVariables);
 	QTextCharFormat notInBold = ui.resultTextEdit->currentCharFormat(), inBold;
@@ -119,14 +132,10 @@ void Parser::on_parseBtn_clicked()
 
 
 	int i = 0;
-	while (i!=fundTypeVariables.size())
+	while (i != fundTypeVariables.size())
 	{
 		int count = 0;
 		int first = i;
-		std::string t1 = fundTypeVariables[i].first;
-		std::string t2 = fundTypeVariables[i+1].first;
-		std::string tt1 = fundTypeVariables[i].second;
-		std::string tt2 = fundTypeVariables[i + 1].second;
 		while (fundTypeVariables[i].first == fundTypeVariables[i + 1].first && i < fundTypeVariables.size() - 1) {
 			count++;
 			i++;
@@ -134,20 +143,55 @@ void Parser::on_parseBtn_clicked()
 		count++;
 
 		ui.resultTextEdit->setCurrentCharFormat(inBold);
-		result += QString::fromStdString("ТИП: " + fundTypeVariables[i-1].first) + ", КОЛИЧЕСТВО ПЕРЕМЕННЫХ = " + QString::number(count) + "\n";
+		result += QString::fromStdString("ТИП: " + fundTypeVariables[i].first) + ", КОЛИЧЕСТВО ПЕРЕМЕННЫХ = " + QString::number(count) + "\n";
 		ui.resultTextEdit->appendPlainText(result);
 		ui.resultTextEdit->setCurrentCharFormat(notInBold);
 		for (size_t j = first; j <= i; j++)
 		{
 			result += QString::fromStdString(fundTypeVariables[j].second) + "\n";
 		}
-		
+
 		result += "\n";
 		++i;
 	}
-	
+
+	//++++++++++++++++++++++++++++++++++
+	//+++++++ Структуры и классы +++++++
+	//++++++++++++++++++++++++++++++++++
+	findStructsAndClasses(text);
+	sortByType(structsAndClasses);
+	result += "\nСТРУКТУРЫ И КЛАССЫ:\n";
+	ui.resultTextEdit->setCurrentCharFormat(inBold);
+	ui.resultTextEdit->appendPlainText(result);
+	ui.resultTextEdit->setCurrentCharFormat(notInBold);
+
+	i = 0;
+	while (i != structsAndClasses.size())
+	{
+		int count = 0;
+		int first = i;
+		while (structsAndClasses[i].first == structsAndClasses[i + 1].first && i < structsAndClasses.size() - 1) {
+			count++;
+			i++;
+		}
+		count++;
+
+		ui.resultTextEdit->setCurrentCharFormat(inBold);
+		result += QString::fromStdString("ТИП: " + structsAndClasses[i].first) + ", КОЛИЧЕСТВО ПЕРЕМЕННЫХ = " + QString::number(count) + "\n";
+		ui.resultTextEdit->appendPlainText(result);
+		ui.resultTextEdit->setCurrentCharFormat(notInBold);
+		for (size_t j = first; j <= i; j++)
+		{
+			result += QString::fromStdString(structsAndClasses[j].second) + "\n";
+		}
+
+		result += "\n";
+		++i;
+	}
+
 
 	fundTypeVariables.clear();
+	structsAndClasses.clear();
 	ui.resultTextEdit->setPlainText(result);
 }
 

@@ -16,6 +16,7 @@ class Parser : public QMainWindow
 public:
     Parser(QWidget *parent = Q_NULLPTR);
     void findVarOfFundTypes(const QString& text);
+    void findStructsAndClasses(const QString& text);
     void sortByType(PVector& v);
 
 private slots:
@@ -28,6 +29,10 @@ private:
     Ui::ParserClass ui;
     PVector fundTypeVariables; // вектор пар для хранения переменных фундаментальных типов +
                               // (их имя + значение по умолчанию)
+	PVector structsAndClasses; // вектор пар для хранения структур и классов + их имен
     QString fileName;
     QString result = "";
+    std::regex fundTypesRegEx;
+    std::regex structs_classes;
+    size_t numberOfArrays = 0;
 };
