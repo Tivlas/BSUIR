@@ -5,8 +5,9 @@ Parser::Parser(QWidget* parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
-	fundTypesRegEx = ("((const *)?(signed *|unsigned *)? *(std::string|std::vector\\<\\w+\\>|size_t|bool|char|int|short|void|long long|float|long double|double|long|auto)(\\**&* +\\**&*))( *[^\\(^\\)^;]+\\,?.*?;)");
-	structs_classes = ("(class|struct) +(\\w+)");
+	fundTypesRegEx = ("((const *)?(signed *|unsigned *)? *(std::string|std::vector\\<\\w+\\>|size_t|bool|char|int|short|void|long long|float|long double|double|long|auto)(\\**&* +\\**&*))( *[A-Za-z_;]+\\,?[A-Za-z\\. ,\\[\\]0-9=_]*;)");
+	structsClasses = ("(class|struct) +(\\w+)");
+	functionsPrototypes = ("((const *)?(signed *|unsigned *)? *(std::string|std::vector\\<\\w+\\>|size_t|bool|char|int|short|void|long long|float|long double|double|long|auto)(\\**&* +\\**&*))( *[A-Za-z0-9_]+[(][A-Za-z_ 0-9]*[)])");
 }
 
 void Parser::findVarOfFundTypes(const QString& text)
@@ -49,7 +50,7 @@ void Parser::findVarOfFundTypes(const QString& text)
 			if (!newFound)
 			{
 				if (size_t index = var.find(']') != std::string::npos) {
-					if (var[index+1]=='=')
+					if (var[index + 1] == '=')
 					{
 						temp_type += "array ";
 						++numberOfArrays;
@@ -67,11 +68,24 @@ void Parser::findStructsAndClasses(const QString& text)
 {
 	std::string input = text.toStdString();
 	std::smatch match;
-	while (std::regex_search(input, match, structs_classes))
+	while (std::regex_search(input, match, structsClasses))
 	{
 		std::string type = match[1].str();
 		std::string name = match[2].str();
 		structsAndClasses.push_back(SPair(type, name));
+		input = match.suffix().str();
+	}
+}
+
+void Parser::findFunctionsPrototypes(const QString& text)
+{
+	std::string input = text.toStdString();
+	std::smatch match;
+	while (std::regex_search(input, match, functionsPrototypes))
+	{
+		std::string type = match[2].str() + match[3].str() + match[4].str() + match[5].str();
+		std::string name = match[6].str();
+		funcPrototypesV.push_back(SPair(type, name));
 		input = match.suffix().str();
 	}
 }
@@ -84,6 +98,23 @@ void Parser::sortByType(PVector& v)
 		for (int j = 0; j < v.size() - i - 1; j++)
 		{
 			if (v[j].first > v[j + 1].first)
+			{
+				temp = v[j];
+				v[j] = v[j + 1];
+				v[j + 1] = temp;
+			}
+		}
+	}
+}
+
+void Parser::sortByName(PVector& v)
+{
+	SPair temp;
+	for (int i = 0; i < v.size(); i++)
+	{
+		for (int j = 0; j < v.size() - i - 1; j++)
+		{
+			if (v[j].second > v[j + 1].second)
 			{
 				temp = v[j];
 				v[j] = v[j + 1];
@@ -189,9 +220,25 @@ void Parser::on_parseBtn_clicked()
 		++i;
 	}
 
+	//++++++++++++++++++++++++++++++++++
+	//++++++++++++Функции+++++++++++++++
+	//++++++++++++++++++++++++++++++++++
+	findFunctionsPrototypes(text);
+	sortByType(funcPrototypesV);
+	sortByName(funcPrototypesV);
+	result += "\nФУНКЦИИ:\n";
+	ui.resultTextEdit->setCurrentCharFormat(inBold);
+	ui.resultTextEdit->appendPlainText(result);
+	ui.resultTextEdit->setCurrentCharFormat(notInBold);
+
+	for (size_t i = 0; i < funcPrototypesV.size(); i++)
+	{
+		result += QString::fromStdString(funcPrototypesV[i].first) + QString::fromStdString(funcPrototypesV[i].second) + "\n";
+	}
 
 	fundTypeVariables.clear();
 	structsAndClasses.clear();
+	funcPrototypesV.clear();
 	ui.resultTextEdit->setPlainText(result);
 }
 

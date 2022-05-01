@@ -17,7 +17,10 @@ public:
     Parser(QWidget *parent = Q_NULLPTR);
     void findVarOfFundTypes(const QString& text);
     void findStructsAndClasses(const QString& text);
+    void findFunctionsPrototypes(const QString& text);
+
     void sortByType(PVector& v);
+	void sortByName(PVector& v);
 
 private slots:
     void on_quitBtn_clicked();
@@ -30,9 +33,16 @@ private:
     PVector fundTypeVariables; // вектор пар для хранения переменных фундаментальных типов +
                               // (их имя + значение по умолчанию)
 	PVector structsAndClasses; // вектор пар для хранения структур и классов + их имен
+	PVector funcPrototypesV; // вектор пар для хранения прототипов функций
+
+
+	
     QString fileName;
     QString result = "";
     std::regex fundTypesRegEx;
-    std::regex structs_classes;
+    std::regex structsClasses;
+    std::regex functionsPrototypes;
+
+	
     size_t numberOfArrays = 0;
 };
