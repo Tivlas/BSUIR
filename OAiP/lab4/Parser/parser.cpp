@@ -17,7 +17,6 @@ void Parser::findVarOfFundTypes(const QString& text)
 	{
 		std::string type = match[2].str() + match[3].str() + match[4].str() + match[7].str();
 		std::string value = match[8].str();
-		// delete all spaces from value
 		value.erase(std::remove(value.begin(), value.end(), ' '), value.end());
 		for (int i = 0; i < value.size(); i++)
 		{
@@ -44,17 +43,21 @@ void Parser::findVarOfFundTypes(const QString& text)
 		for (size_t i = 0; i < list.size(); ++i) {
 			std::string var = list[i].toStdString();
 			std::string temp_type = type;
+			bool newFound = false;
 			for (size_t j = 0; j < var.size(); ++j) {
-				if(var[j]=='n' && var[j+1]=='e' && var[j+2]=='w')
+				if (var[j] == 'n' && var[j + 1] == 'e' && var[j + 2] == 'w')
 				{
-					var.insert(j+3, " ");
+					var.insert(j + 3, " ");
+					newFound = true;
 					break;
 				}
 			}
-			
-			
-			 if (var.find('[') != std::string::npos) {
-				temp_type += "array ";
+
+			if (!newFound)
+			{
+				if (var.find('[') != std::string::npos) {
+					temp_type += "array ";
+				}
 			}
 			if (var.back() != ';') { var += ';'; }
 			fundTypeVariables.push_back(SPair(temp_type, var));
@@ -115,29 +118,35 @@ void Parser::on_parseBtn_clicked()
 	ui.resultTextEdit->setCurrentCharFormat(notInBold);
 
 
-	for (size_t i = 0; i < fundTypeVariables.size(); i++)
+	int i = 0;
+	while (i!=fundTypeVariables.size())
 	{
 		int count = 0;
-		for (size_t j = 0; j < fundTypeVariables.size(); j++)
-		{
-			if (fundTypeVariables[i].first == fundTypeVariables[j].first)
-			{
-				count++;
-			}
+		int first = i;
+		std::string t1 = fundTypeVariables[i].first;
+		std::string t2 = fundTypeVariables[i+1].first;
+		std::string tt1 = fundTypeVariables[i].second;
+		std::string tt2 = fundTypeVariables[i + 1].second;
+		while (fundTypeVariables[i].first == fundTypeVariables[i + 1].first && i < fundTypeVariables.size() - 1) {
+			count++;
+			i++;
 		}
+		count++;
+
 		ui.resultTextEdit->setCurrentCharFormat(inBold);
-		result += QString::fromStdString("ТИП: " + fundTypeVariables[i].first) + ", КОЛИЧЕСТВО ПЕРЕМЕННЫХ = " + QString::number(count) + "\n";
+		result += QString::fromStdString("ТИП: " + fundTypeVariables[i-1].first) + ", КОЛИЧЕСТВО ПЕРЕМЕННЫХ = " + QString::number(count) + "\n";
 		ui.resultTextEdit->appendPlainText(result);
 		ui.resultTextEdit->setCurrentCharFormat(notInBold);
-		for (size_t j = 0; j < fundTypeVariables.size(); j++)
+		for (size_t j = first; j <= i; j++)
 		{
-			if (fundTypeVariables[i].first == fundTypeVariables[j].first)
-			{
-				result += QString::fromStdString(fundTypeVariables[j].second) + "\n";
-			}
+			result += QString::fromStdString(fundTypeVariables[j].second) + "\n";
 		}
+		
 		result += "\n";
+		++i;
 	}
+	
+
 	fundTypeVariables.clear();
 	ui.resultTextEdit->setPlainText(result);
 }
