@@ -18,6 +18,7 @@ public:
     void findVarOfFundTypes(const QString& text);
     void findStructsAndClasses(const QString& text);
     void findFunctionsPrototypes(const QString& text);
+    void findVarChanges(const QString& text);
 
     void sortByType(PVector& v);
 	void sortByName(PVector& v);
@@ -34,6 +35,7 @@ private:
                               // (их имя + значение по умолчанию)
 	PVector structsAndClasses; // вектор пар для хранения структур и классов + их имен
 	PVector funcPrototypesV; // вектор пар для хранения прототипов функций
+    Vector<std::string>  varChanges;
 
 
 	
@@ -42,6 +44,7 @@ private:
     std::regex fundTypesRegEx;
     std::regex structsClasses;
     std::regex functionsPrototypes;
+    std::regex variablesChanges;
 
 	
     size_t numberOfArrays = 0;

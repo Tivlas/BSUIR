@@ -5,9 +5,10 @@ Parser::Parser(QWidget* parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
-	fundTypesRegEx = ("((const *)?(signed *|unsigned *)? *(std::string|std::vector\\<\\w+\\>|size_t|bool|char|int|short|void|long long|float|long double|double|long|auto)(\\**&* +\\**&*))( *[A-Za-z_;]+\\,?[A-Za-z\\. ,\\[\\]0-9=_]*;)");
+	fundTypesRegEx = ("((const *)?(signed *|unsigned *)? *(std::string|std::vector\\<\\w+\\>|size_t|bool|char|int|short|void|long long|float|long double|double|long|auto)(\\**&* +\\**&*))( *[A-Za-z_;]+\\,?[A-Za-z\\. ,\\[\\]0-9=_\\{\\}]*;)");
 	structsClasses = ("(class|struct) +(\\w+)");
-	functionsPrototypes = ("((const *)?(signed *|unsigned *)? *(std::string|std::vector\\<\\w+\\>|size_t|bool|char|int|short|void|long long|float|long double|double|long|auto)(\\**&* +\\**&*))( *[A-Za-z0-9_]+[(][A-Za-z_ 0-9]*[)])");
+	functionsPrototypes = ("((const *)?(signed *|unsigned *)? *(std::string|std::vector\\<\\w+\\>|size_t|bool|char|int|short|void|long long|float|long double|double|long|auto)(\\**&* +\\**&*))( *[A-Za-z0-9_]+[(][A-Za-z_ 0-9=]*[)])");
+	variablesChanges = ("[A-Za-z0-9_]+ *={1} *[\\{\\}A-Za-z0-9()+ \\.\\[\\],]+;");
 }
 
 void Parser::findVarOfFundTypes(const QString& text)
@@ -49,7 +50,11 @@ void Parser::findVarOfFundTypes(const QString& text)
 
 			if (!newFound)
 			{
-				if (size_t index = var.find(']') != std::string::npos) {
+				if (var.find(']') != std::string::npos) {
+					size_t index = 0;
+					while (var[index] != ']') {
+						++index;
+					}
 					if (var[index + 1] == '=')
 					{
 						temp_type += "array ";
@@ -86,6 +91,32 @@ void Parser::findFunctionsPrototypes(const QString& text)
 		std::string type = match[2].str() + match[3].str() + match[4].str() + match[5].str();
 		std::string name = match[6].str();
 		funcPrototypesV.push_back(SPair(type, name));
+		input = match.suffix().str();
+	}
+}
+
+void Parser::findVarChanges(const QString& text)
+{
+	std::string input = text.toStdString();
+	std::smatch match;
+	while (std::regex_search(input, match, variablesChanges))
+	{
+		std::string change = match[0].str();
+		size_t openBracketCounter = 0;
+		size_t closeBracketCounter = 0;
+		for (size_t i = 0; i < change.size(); ++i) {
+			if (change[i] == '(') {
+				openBracketCounter++;
+			}
+			if (change[i] == ')') {
+				closeBracketCounter++;
+			}
+		}
+		if (openBracketCounter != closeBracketCounter) {
+			input = match.suffix().str();
+			continue;
+		}
+		varChanges.push_back(change);
 		input = match.suffix().str();
 	}
 }
@@ -156,11 +187,11 @@ void Parser::on_parseBtn_clicked()
 	sortByType(fundTypeVariables);
 	QTextCharFormat notInBold = ui.resultTextEdit->currentCharFormat(), inBold;
 	inBold.setFontWeight(QFont::Bold);
-	result += "ПЕРЕМЕННЫЕ:\n";
+	result = "ПЕРЕМЕННЫЕ:";
 	ui.resultTextEdit->setCurrentCharFormat(inBold);
-	ui.resultTextEdit->appendPlainText(result);
+	ui.resultTextEdit->append(result);
 	ui.resultTextEdit->setCurrentCharFormat(notInBold);
-
+	result = "";
 
 	int i = 0;
 	while (i != fundTypeVariables.size())
@@ -174,15 +205,17 @@ void Parser::on_parseBtn_clicked()
 		count++;
 
 		ui.resultTextEdit->setCurrentCharFormat(inBold);
-		result += QString::fromStdString("ТИП: " + fundTypeVariables[i].first) + ", КОЛИЧЕСТВО ПЕРЕМЕННЫХ = " + QString::number(count) + "\n";
-		ui.resultTextEdit->appendPlainText(result);
+		result = QString::fromStdString("Тип: " + fundTypeVariables[i].first) + ", Количество переменных = " + QString::number(count);
+		ui.resultTextEdit->append(result);
 		ui.resultTextEdit->setCurrentCharFormat(notInBold);
+		result = "";
 		for (size_t j = first; j <= i; j++)
 		{
 			result += QString::fromStdString(fundTypeVariables[j].second) + "\n";
 		}
 
-		result += "\n";
+		ui.resultTextEdit->append(result);
+		result = "";
 		++i;
 	}
 
@@ -191,10 +224,11 @@ void Parser::on_parseBtn_clicked()
 	//++++++++++++++++++++++++++++++++++
 	findStructsAndClasses(text);
 	sortByType(structsAndClasses);
-	result += "\nСТРУКТУРЫ И КЛАССЫ:\n";
+	result = "СТРУКТУРЫ И КЛАССЫ:";
 	ui.resultTextEdit->setCurrentCharFormat(inBold);
-	ui.resultTextEdit->appendPlainText(result);
+	ui.resultTextEdit->append(result);
 	ui.resultTextEdit->setCurrentCharFormat(notInBold);
+	result = "";
 
 	i = 0;
 	while (i != structsAndClasses.size())
@@ -208,15 +242,17 @@ void Parser::on_parseBtn_clicked()
 		count++;
 
 		ui.resultTextEdit->setCurrentCharFormat(inBold);
-		result += QString::fromStdString("ТИП: " + structsAndClasses[i].first) + ", КОЛИЧЕСТВО ПЕРЕМЕННЫХ = " + QString::number(count) + "\n";
-		ui.resultTextEdit->appendPlainText(result);
+		result = QString::fromStdString("Тип: " + structsAndClasses[i].first) + ", Количество переменных = " + QString::number(count);
+		ui.resultTextEdit->append(result);
 		ui.resultTextEdit->setCurrentCharFormat(notInBold);
+		result = "";
 		for (size_t j = first; j <= i; j++)
 		{
 			result += QString::fromStdString(structsAndClasses[j].second) + "\n";
 		}
 
-		result += "\n";
+		ui.resultTextEdit->append(result);
+		result = "";
 		++i;
 	}
 
@@ -226,20 +262,42 @@ void Parser::on_parseBtn_clicked()
 	findFunctionsPrototypes(text);
 	sortByType(funcPrototypesV);
 	sortByName(funcPrototypesV);
-	result += "\nФУНКЦИИ:\n";
+	result = "ПРОТОТИПЫ ФУНКЦИЙ:";
 	ui.resultTextEdit->setCurrentCharFormat(inBold);
-	ui.resultTextEdit->appendPlainText(result);
+	ui.resultTextEdit->append(result);
 	ui.resultTextEdit->setCurrentCharFormat(notInBold);
+	result = "";
 
 	for (size_t i = 0; i < funcPrototypesV.size(); i++)
 	{
 		result += QString::fromStdString(funcPrototypesV[i].first) + QString::fromStdString(funcPrototypesV[i].second) + "\n";
 	}
+	ui.resultTextEdit->append(result);
+	result = "";
+
+	//++++++++++++++++++++++++++++++++++++++++++++
+	//++++++++++ Изменения переменных ++++++++++++
+	//++++++++++++++++++++++++++++++++++++++++++++
+	findVarChanges(text);
+	result = "ИЗМЕНЕНИЯ ПЕРЕМЕННЫХ(включая инициализацию):";
+	ui.resultTextEdit->setCurrentCharFormat(inBold);
+	ui.resultTextEdit->append(result);
+	ui.resultTextEdit->setCurrentCharFormat(notInBold);
+	result = "";
+
+	for (size_t i = 0; i < varChanges.size(); i++)
+	{
+		result += QString::fromStdString(varChanges[i]) + "\n";
+	}
+	ui.resultTextEdit->append(result);
+	result = "";
+
 
 	fundTypeVariables.clear();
 	structsAndClasses.clear();
 	funcPrototypesV.clear();
-	ui.resultTextEdit->setPlainText(result);
+	varChanges.clear();
+	ui.resultTextEdit->append(result);
 }
 
 void Parser::on_codeTextEdit_textChanged()
