@@ -15,7 +15,7 @@ class Parser : public QMainWindow
 
 public:
 	Parser(QWidget* parent = Q_NULLPTR);
-	void findVarOfFundTypes(const QString& text);
+	void findVarOfFundTypes(const QString& text, std::regex& fundTypesRegEx);
 	void findStructsAndClasses(const QString& text);
 	void findFunctionsPrototypes(const QString& text);
 	void findVarChanges(const QString& text);
@@ -38,11 +38,12 @@ private:
 	PVector funcPrototypesV; // вектор пар для хранения прототипов функций
 	Vector<std::string>  varChanges;
 	Vector<std::string> logicalErrors;
+	Vector<std::string> classStructNames;
 
 
 	QString fileName;
 	QString result = "";
-	std::regex fundTypesRegEx;
+	//std::regex fundTypesRegEx;
 	std::regex structsClassesRegEx;
 	std::regex functionsPrototypesRegEx;
 	std::regex variablesChangesRegEx;

@@ -1,11 +1,14 @@
 ﻿#include "parser.h"
 #include "stdafx.h"
 
+
+
+
+	
 Parser::Parser(QWidget* parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
-	fundTypesRegEx = ("((const *)?(signed *|unsigned *)? *(std::string|std::vector\\<\\w+\\>|size_t|bool|char|int|short|void|long long|float|long double|double|long|auto)(\\**&* +\\**&*))( *[A-Za-z_;]+\\,?[A-Za-z\\. ,\\[\\]0-9=_\\{\\}]*;)");
 	structsClassesRegEx = ("(class|struct) +(\\w+)");
 	functionsPrototypesRegEx = ("((const *)?(signed *|unsigned *)? *(std::string|std::vector\\<\\w+\\>|size_t|bool|char|int|short|void|long long|float|long double|double|long|auto)(\\**&* +\\**&*))( *[A-Za-z0-9_]+[(][A-Za-z_ 0-9=]*[)])");
 	variablesChangesRegEx = ("[A-Za-z0-9_]+ *={1} *[\\{\\}A-Za-z0-9()+ \\.\\[\\],]+;");
@@ -15,14 +18,16 @@ Parser::Parser(QWidget* parent)
 
 }
 
-void Parser::findVarOfFundTypes(const QString& text)
+void Parser::findVarOfFundTypes(const QString& text,std::regex& typesAndValuesRegEx)
 {
+	//std::string s = "((const *)?(signed *|unsigned *)? *(std::string|std::vector\\<\\w+\\>|size_t|bool|char|int|short|void|long long|float|long double|double|long|auto)(\\**&* +\\**&*))( *[A-Za-z_;]+\\,?[A-Za-z\\. ,\\[\\]0-9=_\\{\\}]*;)";
+	
 	std::string input = text.toStdString();
 	std::smatch match;
-	while (std::regex_search(input, match, fundTypesRegEx))
+	while (std::regex_search(input, match, typesAndValuesRegEx))
 	{
-		std::string type = match[2].str() + match[3].str() + match[4].str() + match[5].str();
-		std::string value = match[6].str();
+		std::string type = match[2].str() + match[3].str() + match[4].str();
+		std::string value = match[5].str()+ match[6].str();
 		bool newFound = false;// checking for dynamic array
 		for (size_t j = 0; j < value.size(); ++j) {
 			if (value[j] == 'n' && value[j + 1] == 'e' && value[j + 2] == 'w' && value[j + 3] == ' ')
@@ -50,6 +55,19 @@ void Parser::findVarOfFundTypes(const QString& text)
 		for (size_t i = 0; i < list.size(); ++i) {
 			std::string var = list[i].toStdString();
 			std::string temp_type = type;
+			for( size_t j = 0; j < var.size(); ++j)
+			{
+				if (var[j] == '*')
+				{
+					temp_type += "*";
+					var.erase(j, 1);
+				}
+				else if (var[j] == '&')
+				{
+					temp_type += "&";
+					var.erase(j, 1);
+				}
+			}
 			if (!newFound)
 			{
 				if (var.find(']') != std::string::npos) {
@@ -59,13 +77,13 @@ void Parser::findVarOfFundTypes(const QString& text)
 					}
 					if (var[index + 1] == '=')
 					{
-						temp_type += "array ";
+						temp_type += "carray ";
 						++numberOfArrays;
 					}
 				}
 			}
 			else if (newFound) {
-				temp_type += "dynamic array ";
+				temp_type += " (dynamic array) ";
 				for (size_t j = 0; j < var.size(); ++j) {
 					if (var[j] == 'n' && var[j + 1] == 'e' && var[j + 2] == 'w')
 					{
@@ -90,6 +108,7 @@ void Parser::findStructsAndClasses(const QString& text)
 		std::string type = match[1].str();
 		std::string name = match[2].str();
 		structsAndClasses.push_back(SPair(type, name));
+		classStructNames.push_back(name);
 		input = match.suffix().str();
 	}
 }
@@ -197,27 +216,74 @@ void Parser::on_readBtn_clicked()
 	}
 }
 
+
 void Parser::on_parseBtn_clicked()
 {
 	ui.resultTextEdit->clear();
 	result = "";
 	ui.parseBtn->setEnabled(false);
 	QString text = ui.codeTextEdit->toPlainText();
-
-	//++++++++++++++++++++++++++++++++++
-	//++++++++++++Переменные++++++++++++
-	//++++++++++++++++++++++++++++++++++
-	findVarOfFundTypes(text);
-	sortByType(fundTypeVariables);
 	QTextCharFormat notInBold = ui.resultTextEdit->currentCharFormat(), inBold;
 	inBold.setFontWeight(QFont::Bold);
-	result = "ПЕРЕМЕННЫЕ:";
+
+	//++++++++++++++++++++++++++++++++++
+	//+++++++ Структуры и классы +++++++
+	//++++++++++++++++++++++++++++++++++
+	findStructsAndClasses(text);
+	sortByType(structsAndClasses);
+	result = "СТРУКТУРЫ И КЛАССЫ:";
 	ui.resultTextEdit->setCurrentCharFormat(inBold);
 	ui.resultTextEdit->append(result);
 	ui.resultTextEdit->setCurrentCharFormat(notInBold);
 	result = "";
 
 	int i = 0;
+	while (i != structsAndClasses.size())
+	{
+		int count = 0;
+		int first = i;
+		while (structsAndClasses[i].first == structsAndClasses[i + 1].first && i < structsAndClasses.size() - 1) {
+			count++;
+			i++;
+		}
+		count++;
+
+		ui.resultTextEdit->setCurrentCharFormat(inBold);
+		result = QString::fromStdString("Тип: " + structsAndClasses[i].first) + ", количество = " + QString::number(count);
+		ui.resultTextEdit->append(result);
+		ui.resultTextEdit->setCurrentCharFormat(notInBold);
+		result = "";
+		for (size_t j = first; j <= i; j++)
+		{
+			result += QString::fromStdString(structsAndClasses[j].second) + "\n";
+		}
+
+		ui.resultTextEdit->append(result);
+		result = "";
+		++i;
+	}
+	
+	//++++++++++++++++++++++++++++++++++
+	//++++++++++++Переменные++++++++++++
+	//++++++++++++++++++++++++++++++++++
+	std::string const_unsigned = "((const *)?(signed *|unsigned *)? *(";
+	std::string types = "std::string|std::vector\\<\\w+\\>|size_t|bool|char|int|short|void|long long|float|long double|double|long|auto|";
+	for (size_t j = 0; j < classStructNames.size(); ++j) {
+		types += classStructNames[j] + "|";
+	}
+	types.pop_back();
+	std::string regularExForTypes = const_unsigned + types + ")(\\**&* +\\**&*)( *[A-Za-z_;]+\\,?[A-Za-z\\. ,\\[\\]0-9=_\\{\\}]*;))";
+	std::regex typesAndValuesRegEx(regularExForTypes);
+	
+	findVarOfFundTypes(text, typesAndValuesRegEx);
+	sortByType(fundTypeVariables);
+	result = "ПЕРЕМЕННЫЕ:";
+	ui.resultTextEdit->setCurrentCharFormat(inBold);
+	ui.resultTextEdit->append(result);
+	ui.resultTextEdit->setCurrentCharFormat(notInBold);
+	result = "";
+
+	 i = 0;
 	while (i != fundTypeVariables.size())
 	{
 		int count = 0;
@@ -243,42 +309,6 @@ void Parser::on_parseBtn_clicked()
 		++i;
 	}
 
-	//++++++++++++++++++++++++++++++++++
-	//+++++++ Структуры и классы +++++++
-	//++++++++++++++++++++++++++++++++++
-	findStructsAndClasses(text);
-	sortByType(structsAndClasses);
-	result = "СТРУКТУРЫ И КЛАССЫ:";
-	ui.resultTextEdit->setCurrentCharFormat(inBold);
-	ui.resultTextEdit->append(result);
-	ui.resultTextEdit->setCurrentCharFormat(notInBold);
-	result = "";
-
-	i = 0;
-	while (i != structsAndClasses.size())
-	{
-		int count = 0;
-		int first = i;
-		while (structsAndClasses[i].first == structsAndClasses[i + 1].first && i < structsAndClasses.size() - 1) {
-			count++;
-			i++;
-		}
-		count++;
-
-		ui.resultTextEdit->setCurrentCharFormat(inBold);
-		result = QString::fromStdString("Тип: " + structsAndClasses[i].first) + ", количество переменных = " + QString::number(count);
-		ui.resultTextEdit->append(result);
-		ui.resultTextEdit->setCurrentCharFormat(notInBold);
-		result = "";
-		for (size_t j = first; j <= i; j++)
-		{
-			result += QString::fromStdString(structsAndClasses[j].second) + "\n";
-		}
-
-		ui.resultTextEdit->append(result);
-		result = "";
-		++i;
-	}
 
 	//++++++++++++++++++++++++++++++++++
 	//++++++++++++Функции+++++++++++++++
