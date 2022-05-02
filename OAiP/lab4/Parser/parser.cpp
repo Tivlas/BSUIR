@@ -12,7 +12,7 @@ Parser::Parser(QWidget* parent)
 	structsClassesRegEx = ("(class|struct) +(\\w+)");
 	functionsPrototypesRegEx = ("((const *)?(signed *|unsigned *)? *(std::string|std::vector\\<\\w+\\>|size_t|bool|char|int|short|void|long long|float|long double|double|long|auto)(\\**&* +\\**&*))( *[A-Za-z0-9_]+[(][A-Za-z_ 0-9=]*[)])");
 	variablesChangesRegEx = ("[A-Za-z0-9_]+ *={1} *[\\{\\}A-Za-z0-9()+ \\.\\[\\],]+;");
-	//branchingDepthRegEx = ("(if\\(.*\\))");
+	branchingDepthRegEx = ("(if *\\(.+\\) *\\{([^\\}]*)\\})( *else *\\{([^\\}]*)\\})*");
 	logicalErrorsRegEx = ("(const *bool.+;|while *\\([A-Za-z0-9 ]*\\)|(else)? *if *\\((true|false)?[0-9\\-\\.]*\\)|for *\\([^;]*; *(true|false) *;.*\\))");
 
 

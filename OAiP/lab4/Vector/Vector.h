@@ -205,11 +205,14 @@ public:
 		if (new_cap <= cap) return;
 
 		T* new_arr = reinterpret_cast<T*>(new char[new_cap * sizeof(T)]);
-		for (size_t i = 0; i < sz; i++) {
-			new(new_arr + i) T(arr[i]);
-		}
-		for (size_t i = 0; i < sz; ++i) {
-			arr[i].~T();
+		if (sz != 0)
+		{
+			for (size_t i = 0; i < sz; i++) {
+				new(new_arr + i) T(arr[i]);
+			}
+			for (size_t i = 0; i < sz; ++i) {
+				arr[i].~T();
+			}
 		}
 		delete[] reinterpret_cast<char*>(arr);
 		arr = new_arr;
@@ -233,10 +236,10 @@ public:
 
 	void assign(size_t n, const T& value) {
 		this->clear();
-		sz = n;
 		if (n > cap) {
 			reserve(n);
 		}
+		sz = n;
 		for (size_t i = 0; i < sz; ++i) {
 			new(arr + i)T(value);
 		}
@@ -287,7 +290,7 @@ public:
 	}
 
 	iterator erase(const_iterator pos) {
-		size_t dist = std::distance(this->begin(), pos);
+		size_t dist = std::distance(this->cbegin(), pos);
 		arr[dist].~T();
 		for (size_t i = dist; i < sz - 1; ++i) {
 			arr[i] = arr[i + 1];
@@ -324,7 +327,7 @@ public:
 	}
 
 	iterator insert(const_iterator pos, size_t count, const T& value) { // insert count copies of value before pos
-		size_t dist = std::distance(this->begin(), pos);
+		size_t dist = std::distance(this->cbegin(), pos);
 		if (sz + count > cap) {
 			reserve(cap * 2);
 		}

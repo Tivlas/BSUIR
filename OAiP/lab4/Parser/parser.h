@@ -43,11 +43,10 @@ private:
 
 	QString fileName;
 	QString result = "";
-	//std::regex fundTypesRegEx;
 	std::regex structsClassesRegEx;
 	std::regex functionsPrototypesRegEx;
 	std::regex variablesChangesRegEx;
-	// std::regex branchingDepthRegEx;
+	std::regex branchingDepthRegEx;
 	std::regex logicalErrorsRegEx;
 
 
