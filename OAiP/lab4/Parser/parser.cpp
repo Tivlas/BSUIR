@@ -1,10 +1,7 @@
 ﻿#include "parser.h"
 #include "stdafx.h"
+#include <algorithm>
 
-
-
-
-	
 Parser::Parser(QWidget* parent)
 	: QMainWindow(parent)
 {
@@ -12,22 +9,20 @@ Parser::Parser(QWidget* parent)
 	structsClassesRegEx = ("(class|struct) +(\\w+)");
 	functionsPrototypesRegEx = ("((const *)?(signed *|unsigned *)? *(std::string|std::vector\\<\\w+\\>|size_t|bool|char|int|short|void|long long|float|long double|double|long|auto)(\\**&* +\\**&*))( *[A-Za-z0-9_]+[(][A-Za-z_ 0-9=]*[)])");
 	variablesChangesRegEx = ("[A-Za-z0-9_]+ *={1} *[\\{\\}A-Za-z0-9()+ \\.\\[\\],]+;");
-	branchingDepthRegEx = ("(if *\\(.+\\) *\\{([^\\}]*)\\})( *else *\\{([^\\}]*)\\})*");
 	logicalErrorsRegEx = ("(const *bool.+;|while *\\([A-Za-z0-9 ]*\\)|(else)? *if *\\((true|false)?[0-9\\-\\.]*\\)|for *\\([^;]*; *(true|false) *;.*\\))");
-
-
+	branchingDepthRegEx = ("(if *\\(.+\\) *\\{([^\\}]*)\\})( *else *\\{([^\\}]*)\\})*");
 }
 
-void Parser::findVarOfFundTypes(const QString& text,std::regex& typesAndValuesRegEx)
+void Parser::findVarOfFundTypes(const QString& text, std::regex& typesAndValuesRegEx)
 {
 	//std::string s = "((const *)?(signed *|unsigned *)? *(std::string|std::vector\\<\\w+\\>|size_t|bool|char|int|short|void|long long|float|long double|double|long|auto)(\\**&* +\\**&*))( *[A-Za-z_;]+\\,?[A-Za-z\\. ,\\[\\]0-9=_\\{\\}]*;)";
-	
+
 	std::string input = text.toStdString();
 	std::smatch match;
 	while (std::regex_search(input, match, typesAndValuesRegEx))
 	{
 		std::string type = match[2].str() + match[3].str() + match[4].str();
-		std::string value = match[5].str()+ match[6].str();
+		std::string value = match[5].str() + match[6].str();
 		bool newFound = false;// checking for dynamic array
 		for (size_t j = 0; j < value.size(); ++j) {
 			if (value[j] == 'n' && value[j + 1] == 'e' && value[j + 2] == 'w' && value[j + 3] == ' ')
@@ -55,7 +50,7 @@ void Parser::findVarOfFundTypes(const QString& text,std::regex& typesAndValuesRe
 		for (size_t i = 0; i < list.size(); ++i) {
 			std::string var = list[i].toStdString();
 			std::string temp_type = type;
-			for( size_t j = 0; j < var.size(); ++j)
+			for (size_t j = 0; j < var.size(); ++j)
 			{
 				if (var[j] == '*')
 				{
@@ -164,6 +159,23 @@ void Parser::findLogicalErrors(const QString& text)
 	}
 }
 
+int Parser::findBranchingDepth(const QString& text, int cur = 0)
+{
+	std::string input = text.toStdString();
+	std::smatch result;
+	int res = cur;
+	while (std::regex_search(input, result, branchingDepthRegEx)) {
+		if (result[2].matched) {
+			res = std::max(res, findBranchingDepth(QString(result[2].str().c_str()) + "}", cur + 1));
+		}
+		if (result[4].matched) {
+			res = std::max(res, findBranchingDepth(QString(result[4].str().c_str()) + "}", cur + 1));
+		}
+		input = result.suffix();
+	}
+	return res;
+}
+
 void Parser::sortByType(PVector& v)
 {
 	SPair temp;
@@ -216,7 +228,6 @@ void Parser::on_readBtn_clicked()
 	}
 }
 
-
 void Parser::on_parseBtn_clicked()
 {
 	ui.resultTextEdit->clear();
@@ -262,7 +273,7 @@ void Parser::on_parseBtn_clicked()
 		result = "";
 		++i;
 	}
-	
+
 	//++++++++++++++++++++++++++++++++++
 	//++++++++++++Переменные++++++++++++
 	//++++++++++++++++++++++++++++++++++
@@ -274,7 +285,7 @@ void Parser::on_parseBtn_clicked()
 	types.pop_back();
 	std::string regularExForTypes = const_unsigned + types + ")(\\**&* +\\**&*)( *[A-Za-z_;]+\\,?[A-Za-z\\. ,\\[\\]0-9=_\\{\\}]*;))";
 	std::regex typesAndValuesRegEx(regularExForTypes);
-	
+
 	findVarOfFundTypes(text, typesAndValuesRegEx);
 	sortByType(fundTypeVariables);
 	result = "ПЕРЕМЕННЫЕ:";
@@ -283,7 +294,7 @@ void Parser::on_parseBtn_clicked()
 	ui.resultTextEdit->setCurrentCharFormat(notInBold);
 	result = "";
 
-	 i = 0;
+	i = 0;
 	while (i != fundTypeVariables.size())
 	{
 		int count = 0;
@@ -361,13 +372,26 @@ void Parser::on_parseBtn_clicked()
 		result += QString::fromStdString(logicalErrors[i]) + "\n";
 	}
 
+	ui.resultTextEdit->append(result);
+	result = "";
+
+	//++++++++++++++++++++++++++++++++++++++++++++
+	//++++++++++  Глубина ветвления ++++++++++++++
+	//++++++++++++++++++++++++++++++++++++++++++++
+	result = "ГЛУБИНА ВЕТВЛЕНИЯ:";
+	ui.resultTextEdit->setCurrentCharFormat(inBold);
+	ui.resultTextEdit->append(result);
+	ui.resultTextEdit->setCurrentCharFormat(notInBold);
+	result = "";
+	int depth = findBranchingDepth(text);
+	result = QString::number(depth);
+	ui.resultTextEdit->append(result);
 
 	fundTypeVariables.clear();
 	structsAndClasses.clear();
 	funcPrototypesV.clear();
 	varChanges.clear();
 	logicalErrors.clear();
-	ui.resultTextEdit->append(result);
 }
 
 void Parser::on_codeTextEdit_textChanged()

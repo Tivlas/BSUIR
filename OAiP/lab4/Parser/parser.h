@@ -20,6 +20,7 @@ public:
 	void findFunctionsPrototypes(const QString& text);
 	void findVarChanges(const QString& text);
 	void findLogicalErrors(const QString& text);
+	int findBranchingDepth(const QString& text,int cur);
 
 	void sortByType(PVector& v);
 	void sortByName(PVector& v);
