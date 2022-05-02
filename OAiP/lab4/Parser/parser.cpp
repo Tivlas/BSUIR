@@ -6,9 +6,13 @@ Parser::Parser(QWidget* parent)
 {
 	ui.setupUi(this);
 	fundTypesRegEx = ("((const *)?(signed *|unsigned *)? *(std::string|std::vector\\<\\w+\\>|size_t|bool|char|int|short|void|long long|float|long double|double|long|auto)(\\**&* +\\**&*))( *[A-Za-z_;]+\\,?[A-Za-z\\. ,\\[\\]0-9=_\\{\\}]*;)");
-	structsClasses = ("(class|struct) +(\\w+)");
-	functionsPrototypes = ("((const *)?(signed *|unsigned *)? *(std::string|std::vector\\<\\w+\\>|size_t|bool|char|int|short|void|long long|float|long double|double|long|auto)(\\**&* +\\**&*))( *[A-Za-z0-9_]+[(][A-Za-z_ 0-9=]*[)])");
-	variablesChanges = ("[A-Za-z0-9_]+ *={1} *[\\{\\}A-Za-z0-9()+ \\.\\[\\],]+;");
+	structsClassesRegEx = ("(class|struct) +(\\w+)");
+	functionsPrototypesRegEx = ("((const *)?(signed *|unsigned *)? *(std::string|std::vector\\<\\w+\\>|size_t|bool|char|int|short|void|long long|float|long double|double|long|auto)(\\**&* +\\**&*))( *[A-Za-z0-9_]+[(][A-Za-z_ 0-9=]*[)])");
+	variablesChangesRegEx = ("[A-Za-z0-9_]+ *={1} *[\\{\\}A-Za-z0-9()+ \\.\\[\\],]+;");
+	//branchingDepthRegEx = ("(if\\(.*\\))");
+	logicalErrorsRegEx = ("(const *bool.+;|while *\\([A-Za-z0-9 ]*\\)|(else)? *if *\\((true|false)?[0-9\\-\\.]*\\)|for *\\([^;]*; *(true|false) *;.*\\))");
+
+
 }
 
 void Parser::findVarOfFundTypes(const QString& text)
@@ -19,6 +23,14 @@ void Parser::findVarOfFundTypes(const QString& text)
 	{
 		std::string type = match[2].str() + match[3].str() + match[4].str() + match[5].str();
 		std::string value = match[6].str();
+		bool newFound = false;// checking for dynamic array
+		for (size_t j = 0; j < value.size(); ++j) {
+			if (value[j] == 'n' && value[j + 1] == 'e' && value[j + 2] == 'w' && value[j + 3] == ' ')
+			{
+				newFound = true;
+				break;
+			}
+		}
 		value.erase(std::remove(value.begin(), value.end(), ' '), value.end());
 		for (int i = 0; i < value.size(); i++)
 		{
@@ -38,16 +50,6 @@ void Parser::findVarOfFundTypes(const QString& text)
 		for (size_t i = 0; i < list.size(); ++i) {
 			std::string var = list[i].toStdString();
 			std::string temp_type = type;
-			bool newFound = false;
-			for (size_t j = 0; j < var.size(); ++j) {
-				if (var[j] == 'n' && var[j + 1] == 'e' && var[j + 2] == 'w')
-				{
-					var.insert(j + 3, " ");
-					newFound = true;
-					break;
-				}
-			}
-
 			if (!newFound)
 			{
 				if (var.find(']') != std::string::npos) {
@@ -62,6 +64,16 @@ void Parser::findVarOfFundTypes(const QString& text)
 					}
 				}
 			}
+			else if (newFound) {
+				temp_type += "dynamic array ";
+				for (size_t j = 0; j < var.size(); ++j) {
+					if (var[j] == 'n' && var[j + 1] == 'e' && var[j + 2] == 'w')
+					{
+						var.insert(j + 3, " ");
+					}
+				}
+				++numberOfArrays;
+			}
 			if (var.back() != ';') { var += ';'; }
 			fundTypeVariables.push_back(SPair(temp_type, var));
 		}
@@ -73,7 +85,7 @@ void Parser::findStructsAndClasses(const QString& text)
 {
 	std::string input = text.toStdString();
 	std::smatch match;
-	while (std::regex_search(input, match, structsClasses))
+	while (std::regex_search(input, match, structsClassesRegEx))
 	{
 		std::string type = match[1].str();
 		std::string name = match[2].str();
@@ -86,7 +98,7 @@ void Parser::findFunctionsPrototypes(const QString& text)
 {
 	std::string input = text.toStdString();
 	std::smatch match;
-	while (std::regex_search(input, match, functionsPrototypes))
+	while (std::regex_search(input, match, functionsPrototypesRegEx))
 	{
 		std::string type = match[2].str() + match[3].str() + match[4].str() + match[5].str();
 		std::string name = match[6].str();
@@ -99,7 +111,7 @@ void Parser::findVarChanges(const QString& text)
 {
 	std::string input = text.toStdString();
 	std::smatch match;
-	while (std::regex_search(input, match, variablesChanges))
+	while (std::regex_search(input, match, variablesChangesRegEx))
 	{
 		std::string change = match[0].str();
 		size_t openBracketCounter = 0;
@@ -117,6 +129,18 @@ void Parser::findVarChanges(const QString& text)
 			continue;
 		}
 		varChanges.push_back(change);
+		input = match.suffix().str();
+	}
+}
+
+void Parser::findLogicalErrors(const QString& text)
+{
+	std::string input = text.toStdString();
+	std::smatch match;
+	while (std::regex_search(input, match, logicalErrorsRegEx))
+	{
+		std::string error = match[0].str();
+		logicalErrors.push_back(error);
 		input = match.suffix().str();
 	}
 }
@@ -205,7 +229,7 @@ void Parser::on_parseBtn_clicked()
 		count++;
 
 		ui.resultTextEdit->setCurrentCharFormat(inBold);
-		result = QString::fromStdString("Тип: " + fundTypeVariables[i].first) + ", Количество переменных = " + QString::number(count);
+		result = QString::fromStdString("Тип: " + fundTypeVariables[i].first) + ", количество переменных = " + QString::number(count);
 		ui.resultTextEdit->append(result);
 		ui.resultTextEdit->setCurrentCharFormat(notInBold);
 		result = "";
@@ -242,7 +266,7 @@ void Parser::on_parseBtn_clicked()
 		count++;
 
 		ui.resultTextEdit->setCurrentCharFormat(inBold);
-		result = QString::fromStdString("Тип: " + structsAndClasses[i].first) + ", Количество переменных = " + QString::number(count);
+		result = QString::fromStdString("Тип: " + structsAndClasses[i].first) + ", количество переменных = " + QString::number(count);
 		ui.resultTextEdit->append(result);
 		ui.resultTextEdit->setCurrentCharFormat(notInBold);
 		result = "";
@@ -292,11 +316,27 @@ void Parser::on_parseBtn_clicked()
 	ui.resultTextEdit->append(result);
 	result = "";
 
+	//++++++++++++++++++++++++++++++++++++++++++++
+	//++++++++++ Логические ошибки +++++++++++++++
+	//++++++++++++++++++++++++++++++++++++++++++++
+	findLogicalErrors(text);
+	result = "ЛОГИЧЕСКИЕ ОШИБКИ:";
+	ui.resultTextEdit->setCurrentCharFormat(inBold);
+	ui.resultTextEdit->append(result);
+	ui.resultTextEdit->setCurrentCharFormat(notInBold);
+	result = "";
+
+	for (size_t i = 0; i < logicalErrors.size(); i++)
+	{
+		result += QString::fromStdString(logicalErrors[i]) + "\n";
+	}
+
 
 	fundTypeVariables.clear();
 	structsAndClasses.clear();
 	funcPrototypesV.clear();
 	varChanges.clear();
+	logicalErrors.clear();
 	ui.resultTextEdit->append(result);
 }
 
