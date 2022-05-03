@@ -271,11 +271,9 @@ extern "C" MYSTRING int  my_strcmp(const char* s1, const char* s2);
 
 extern "C" MYSTRING int  my_strncmp(const char* s1, const char* s2, size_t n);
 
-extern "C" MYSTRING void* my_memcet(void* dest, int ch, size_t count);
+extern "C" MYSTRING void* my_memset(void* dest, int ch, size_t count);
 
 extern "C" MYSTRING size_t my_strxfrm(char* dest, const char* src, size_t n);
-
-extern "C" MYSTRING char* my_strchr(const char* s, int c);
 
 extern "C" MYSTRING char* my_strtok(char* str, const char* delim);
 

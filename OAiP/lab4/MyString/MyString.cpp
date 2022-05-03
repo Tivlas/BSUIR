@@ -1,12 +1,6 @@
 #include "pch.h"
 #include "MyString.h"
 
-size_t my_strlen(const char* start) {
-	const char* end = start;
-	for (; *end != '\0'; ++end)
-		;
-	return end - start;
-}
 
 MyString::MyString()
 {
@@ -44,7 +38,7 @@ MyString::MyString(const char other[])
 {
 	sz = my_strlen(other);
 	this->str = new char[sz + 1];
-	memcpy(this->str, other, sz + 1);
+	my_memcpy(this->str, other, sz + 1);
 	cap = sz;
 }
 
@@ -70,7 +64,7 @@ void MyString::reserve(size_t new_cap)
 	char* new_str = new char[new_cap];
 	if (sz != 0)
 	{
-		for (size_t i = 0; i < sz; i++) {
+		for (size_t i = 0; i <= sz; i++) {
 			new_str[i] = str[i];
 		}
 		delete[] str;
@@ -367,6 +361,11 @@ bool operator>=(const MyString& left, const MyString& right)
 // cstring functions 
 //==================
 
+size_t my_strlen(const char* start) {
+	const char* end = start;
+	for (; *end != '\0'; ++end);
+	return end - start;
+}
 
 void* my_memcpy(void* dest, const void* src, size_t n)
 {
@@ -405,29 +404,12 @@ char* my_strcpy(char* dest, const char* src)
 
 char* my_strncpy(char* dest, const char* src, size_t n)
 {
-	size_t already_copied = 0;
-	char* p1 = dest;
-	const char* p2 = src;
-	while (n-- && *p2) {
-		if (*p1 == '\0' && already_copied < n)
-		{
-			throw std::exception("strncpy: dest is too small");
-		}
-		*p1++ = *p2++;
-		++already_copied;
-	}
-	if (!*p2) {
-		*p1 = '\0';
-		++already_copied;
-	}
-	else if (already_copied != n) // if the source string is shorter than n
+	char* temp = dest;
+	while (n--)
 	{
-		while (already_copied < n) {
-			*p1++ = '\0';
-			++already_copied;
-		}
+		*dest++ = *src++;
 	}
-	return dest;
+	return temp;
 }
 
 char* my_strcat(char* dest, const char* src)
@@ -496,7 +478,7 @@ int  my_strncmp(const char* s1, const char* s2, size_t n)
 	return *s1 - *s2;
 }
 
-void* my_memcet(void* dest, int ch, size_t count) {
+void* my_memset(void* dest, int ch, size_t count) {
 	char* p1 = (char*)dest;
 	unsigned char value = (unsigned char)ch;
 	while (count--) {
@@ -515,39 +497,42 @@ size_t my_strxfrm(char* dest, const char* src, size_t n) {
 	return n;
 }
 
-char* my_strchr(const char* s, int c) {
-	const char* p = s;
-	while (*p != '\0') {
-		if (*p == c) {
-			return (char*)p;
-		}
-		p++;
-	}
-	if (c == '\0') {
-		return (char*)p;
-	}
-	return nullptr;
-}
-
 char* my_strtok(char* str, const char* delim) {
-	static char* p1 = nullptr;
+	static char* prevCallPtr;
 	if (str != nullptr) {
-		p1 = str;
+		prevCallPtr = str;
 	}
 	else {
-		if (p1 == nullptr) {
-			return nullptr;
-		}
+		str = prevCallPtr;
 	}
-	char* p2 = p1;
-	while (*p2 != '\0') {
-		if (my_strchr(delim, *p2) != nullptr) {
-			*p2 = '\0';
-			p1 = p2 + 1;
-			return p2;
-		}
-		p2++;
+
+	if (*prevCallPtr == '\0') {
+		return nullptr;
 	}
-	p1 = nullptr;
-	return nullptr;
+
+	while (*prevCallPtr) {
+		for (int i = 0; delim[i]; ++i) {
+			if (*prevCallPtr == delim[i]) {
+
+				if (prevCallPtr == str) {
+					++prevCallPtr;
+					++str;
+				}
+				else {
+					*prevCallPtr = '\0';
+					break;
+				}
+			}
+		}
+
+		if (*prevCallPtr == '\0') {
+			++prevCallPtr;
+			return str;
+		}
+
+		++prevCallPtr;
+	}
+	return str;
 }
+
+
