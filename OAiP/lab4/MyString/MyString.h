@@ -1,6 +1,13 @@
 #pragma once
 #include <stdexcept>
 
+//#ifdef MATHLIBRARY_EXPORTS
+//#define MYSTRING __declspec(dllimport)
+//#else
+//#define MYSTRING __declspec(dllexport)
+//#endif
+
+
 #define MYSTRING __declspec(dllexport)
 
 class MYSTRING MyString

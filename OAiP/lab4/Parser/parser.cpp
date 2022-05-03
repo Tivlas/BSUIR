@@ -7,16 +7,13 @@ Parser::Parser(QWidget* parent)
 {
 	ui.setupUi(this);
 	structsClassesRegEx = ("(class|struct) +(\\w+)");
-	functionsPrototypesRegEx = ("((const *)?(signed *|unsigned *)? *(std::string|std::vector\\<\\w+\\>|size_t|bool|char|int|short|void|long long|float|long double|double|long|auto)(\\**&* +\\**&*))( *[A-Za-z0-9_]+[(][A-Za-z_ 0-9=]*[)])");
-	variablesChangesRegEx = ("[A-Za-z0-9_]+ *={1} *[\\{\\}A-Za-z0-9()+ \\.\\[\\],]+;");
+	variablesChangesRegEx = ("[A-Za-z0-9_\\.]+ *={1} *[\\{\\}A-Za-z0-9()+ \\.\\[\\],]+;");
 	logicalErrorsRegEx = ("(const *bool.+;|while *\\([A-Za-z0-9 ]*\\)|(else)? *if *\\((true|false)?[0-9\\-\\.]*\\)|for *\\([^;]*; *(true|false) *;.*\\))");
 	branchingDepthRegEx = ("(if *\\(.+\\) *\\{([^\\}]*)\\})( *else *\\{([^\\}]*)\\})*");
 }
 
-void Parser::findVarOfFundTypes(const QString& text, std::regex& typesAndValuesRegEx)
+void Parser::findVarOfFundTypes(const QString& text, const std::regex& typesAndValuesRegEx)
 {
-	//std::string s = "((const *)?(signed *|unsigned *)? *(std::string|std::vector\\<\\w+\\>|size_t|bool|char|int|short|void|long long|float|long double|double|long|auto)(\\**&* +\\**&*))( *[A-Za-z_;]+\\,?[A-Za-z\\. ,\\[\\]0-9=_\\{\\}]*;)";
-
 	std::string input = text.toStdString();
 	std::smatch match;
 	while (std::regex_search(input, match, typesAndValuesRegEx))
@@ -72,7 +69,7 @@ void Parser::findVarOfFundTypes(const QString& text, std::regex& typesAndValuesR
 					}
 					if (var[index + 1] == '=')
 					{
-						temp_type += "carray ";
+						temp_type += " array ";
 						++numberOfArrays;
 					}
 				}
@@ -94,6 +91,7 @@ void Parser::findVarOfFundTypes(const QString& text, std::regex& typesAndValuesR
 	}
 }
 
+
 void Parser::findStructsAndClasses(const QString& text)
 {
 	std::string input = text.toStdString();
@@ -108,7 +106,8 @@ void Parser::findStructsAndClasses(const QString& text)
 	}
 }
 
-void Parser::findFunctionsPrototypes(const QString& text)
+
+void Parser::findFunctionsPrototypes(const QString& text, const std::regex& functionsPrototypesRegEx)
 {
 	std::string input = text.toStdString();
 	std::smatch match;
@@ -120,6 +119,7 @@ void Parser::findFunctionsPrototypes(const QString& text)
 		input = match.suffix().str();
 	}
 }
+
 
 void Parser::findVarChanges(const QString& text)
 {
@@ -147,6 +147,7 @@ void Parser::findVarChanges(const QString& text)
 	}
 }
 
+
 void Parser::findLogicalErrors(const QString& text)
 {
 	std::string input = text.toStdString();
@@ -154,27 +155,30 @@ void Parser::findLogicalErrors(const QString& text)
 	while (std::regex_search(input, match, logicalErrorsRegEx))
 	{
 		std::string error = match[0].str();
+		error.erase(std::remove(error.begin(), error.end(), ' '), error.end());
 		logicalErrors.push_back(error);
 		input = match.suffix().str();
 	}
 }
 
+
 int Parser::findBranchingDepth(const QString& text, int cur = 0)
 {
 	std::string input = text.toStdString();
-	std::smatch result;
-	int res = cur;
-	while (std::regex_search(input, result, branchingDepthRegEx)) {
-		if (result[2].matched) {
-			res = std::max(res, findBranchingDepth(QString(result[2].str().c_str()) + "}", cur + 1));
+	std::smatch match;
+	int depth = cur;
+	while (std::regex_search(input, match, branchingDepthRegEx)) {
+		if (match[2].matched) {
+			depth = std::max(depth, findBranchingDepth(QString(match[2].str().c_str()) + "}", cur + 1));
 		}
-		if (result[4].matched) {
-			res = std::max(res, findBranchingDepth(QString(result[4].str().c_str()) + "}", cur + 1));
+		if (match[4].matched) {
+			depth = std::max(depth, findBranchingDepth(QString(match[4].str().c_str()) + "}", cur + 1));
 		}
-		input = result.suffix();
+		input = match.suffix();
 	}
-	return res;
+	return depth;
 }
+
 
 void Parser::sortByType(PVector& v)
 {
@@ -193,6 +197,7 @@ void Parser::sortByType(PVector& v)
 	}
 }
 
+
 void Parser::sortByName(PVector& v)
 {
 	SPair temp;
@@ -210,23 +215,6 @@ void Parser::sortByName(PVector& v)
 	}
 }
 
-void Parser::on_readBtn_clicked()
-{
-	fileName = QFileDialog::getOpenFileName(this, "Open your file", /*"D:/BSUIR/OAiP/"*/ "D:/Tests/C++_Tests/Tests/RegExTest", "Text File (*.txt *.cpp)");
-	QFile file(fileName);
-	QTextStream fromFile(&file);
-
-	if (!file.open(QFile::ReadOnly | QFile::Text))
-	{
-		QMessageBox::warning(this, "Warning", "The file was not opened or it's empty!");
-	}
-	else
-	{
-		QString text = fromFile.readAll();
-		ui.codeTextEdit->setPlainText(text);
-		file.close();
-	}
-}
 
 void Parser::on_parseBtn_clicked()
 {
@@ -278,12 +266,12 @@ void Parser::on_parseBtn_clicked()
 	//++++++++++++Переменные++++++++++++
 	//++++++++++++++++++++++++++++++++++
 	std::string const_unsigned = "((const *)?(signed *|unsigned *)? *(";
-	std::string types = "std::string|std::vector\\<\\w+\\>|size_t|bool|char|int|short|void|long long|float|long double|double|long|auto|";
+	std::string types = "QString|std::string|std::vector\\<\\w+\\>|size_t|bool|char|int|short|void|long long|float|long double|double|long|auto|";
 	for (size_t j = 0; j < classStructNames.size(); ++j) {
 		types += classStructNames[j] + "|";
 	}
 	types.pop_back();
-	std::string regularExForTypes = const_unsigned + types + ")(\\**&* +\\**&*)( *[A-Za-z_;]+\\,?[A-Za-z\\. ,\\[\\]0-9=_\\{\\}]*;))";
+	std::string regularExForTypes = const_unsigned + types + ")(\\**&* +\\**&*)( *[A-Za-z_;\\.]+\\,?[A-Za-z\\. ,\\[\\]0-9=_\\{\\}]*;))";
 	std::regex typesAndValuesRegEx(regularExForTypes);
 
 	findVarOfFundTypes(text, typesAndValuesRegEx);
@@ -324,7 +312,10 @@ void Parser::on_parseBtn_clicked()
 	//++++++++++++++++++++++++++++++++++
 	//++++++++++++Функции+++++++++++++++
 	//++++++++++++++++++++++++++++++++++
-	findFunctionsPrototypes(text);
+
+	std::string strRegExForFuncPrototypes = const_unsigned + types + ")(\\**&* +\\**&*)( *[A-Za-z0-9_]+[(][A-Za-z_ 0-9=&\\*,]*[)]))";
+	std::regex functionsPrototypesRegEx(strRegExForFuncPrototypes);
+	findFunctionsPrototypes(text, functionsPrototypesRegEx);
 	sortByType(funcPrototypesV);
 	sortByName(funcPrototypesV);
 	result = "ПРОТОТИПЫ ФУНКЦИЙ:";
@@ -361,7 +352,7 @@ void Parser::on_parseBtn_clicked()
 	//++++++++++ Логические ошибки +++++++++++++++
 	//++++++++++++++++++++++++++++++++++++++++++++
 	findLogicalErrors(text);
-	result = "ЛОГИЧЕСКИЕ ОШИБКИ:";
+	result = "ЛОГИЧЕСКИЕ ОШИБКИ(или потенциальные логические ошибки):";
 	ui.resultTextEdit->setCurrentCharFormat(inBold);
 	ui.resultTextEdit->append(result);
 	ui.resultTextEdit->setCurrentCharFormat(notInBold);
@@ -378,7 +369,7 @@ void Parser::on_parseBtn_clicked()
 	//++++++++++++++++++++++++++++++++++++++++++++
 	//++++++++++  Глубина ветвления ++++++++++++++
 	//++++++++++++++++++++++++++++++++++++++++++++
-	result = "ГЛУБИНА ВЕТВЛЕНИЯ:";
+	result = "МАКСИМАЛЬНАЯ ГЛУБИНА ВЕТВЛЕНИЯ:";
 	ui.resultTextEdit->setCurrentCharFormat(inBold);
 	ui.resultTextEdit->append(result);
 	ui.resultTextEdit->setCurrentCharFormat(notInBold);
@@ -386,6 +377,7 @@ void Parser::on_parseBtn_clicked()
 	int depth = findBranchingDepth(text);
 	result = QString::number(depth);
 	ui.resultTextEdit->append(result);
+	result = "";
 
 	fundTypeVariables.clear();
 	structsAndClasses.clear();
@@ -394,10 +386,31 @@ void Parser::on_parseBtn_clicked()
 	logicalErrors.clear();
 }
 
+
 void Parser::on_codeTextEdit_textChanged()
 {
 	ui.parseBtn->setEnabled(true);
 }
+
+
+void Parser::on_readBtn_clicked()
+{
+	fileName = QFileDialog::getOpenFileName(this, "Open your file", /*"D:/BSUIR/OAiP/"*/ "D:/Tests/C++_Tests/Tests/RegExTest", "Text File (*.txt *.cpp *.h)");
+	QFile file(fileName);
+	QTextStream fromFile(&file);
+
+	if (!file.open(QFile::ReadOnly | QFile::Text))
+	{
+		QMessageBox::warning(this, "Warning", "The file was not opened or it's empty!");
+	}
+	else
+	{
+		QString text = fromFile.readAll();
+		ui.codeTextEdit->setPlainText(text);
+		file.close();
+	}
+}
+
 
 void Parser::on_quitBtn_clicked() {
 	QApplication::quit();

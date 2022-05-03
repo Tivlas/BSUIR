@@ -15,9 +15,9 @@ class Parser : public QMainWindow
 
 public:
 	Parser(QWidget* parent = Q_NULLPTR);
-	void findVarOfFundTypes(const QString& text, std::regex& fundTypesRegEx);
+	void findVarOfFundTypes(const QString& text,const std::regex& fundTypesRegEx);
 	void findStructsAndClasses(const QString& text);
-	void findFunctionsPrototypes(const QString& text);
+	void findFunctionsPrototypes(const QString& text,const std::regex& functionsPrototypesRegEx);
 	void findVarChanges(const QString& text);
 	void findLogicalErrors(const QString& text);
 	int findBranchingDepth(const QString& text,int cur);
@@ -40,12 +40,12 @@ private:
 	Vector<std::string>  varChanges;
 	Vector<std::string> logicalErrors;
 	Vector<std::string> classStructNames;
+	//Vector<MyPair<std::string, size_t>> branchings;
 
 
 	QString fileName;
 	QString result = "";
 	std::regex structsClassesRegEx;
-	std::regex functionsPrototypesRegEx;
 	std::regex variablesChangesRegEx;
 	std::regex branchingDepthRegEx;
 	std::regex logicalErrorsRegEx;
