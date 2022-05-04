@@ -7,7 +7,7 @@ Parser::Parser(QWidget* parent)
 {
 	ui.setupUi(this);
 	structsClassesRegEx = ("(class|struct) +(\\w+)");
-	variablesChangesRegEx = ("[A-Za-z0-9_\\.]+ *={1} *[\\{\\}A-Za-z0-9()+ \\.\\[\\],]+;");
+	variablesChangesRegEx = ("[A-Za-z0-9_\\.]+ *={1} *[\\{\\}A-Za-z0-9()+ \\.\\[\\],\\+\\(\\)&\\*]+;");
 	logicalErrorsRegEx = ("(const *bool.+;|while *\\([A-Za-z0-9 ]*\\)|(else)? *if *\\((true|false)?[0-9\\-\\.]*\\)|for *\\([^;]*; *(true|false) *;.*\\))");
 	branchingDepthRegEx = ("(if *\\(.+\\) *\\{([^\\}]*)\\})( *else *\\{([^\\}]*)\\})*");
 }
@@ -47,14 +47,18 @@ void Parser::findVarOfFundTypes(const QString& text, const std::regex& typesAndV
 		for (size_t i = 0; i < list.size(); ++i) {
 			std::string var = list[i].toStdString();
 			std::string temp_type = type;
+			bool EqualOperatorFound = false;
 			for (size_t j = 0; j < var.size(); ++j)
 			{
-				if (var[j] == '*' && var[j - 1] != '=')
+				if (var[j] == '=') {
+					EqualOperatorFound = true;
+				}
+				else if (var[j] == '*' && !EqualOperatorFound)
 				{
 					temp_type += "*";
 					var.erase(j, 1);
 				}
-				else if (var[j] == '&' && var[j - 1] != '=')
+				else if (var[j] == '&' && !EqualOperatorFound)
 				{
 					temp_type += "&";
 					var.erase(j, 1);
@@ -271,7 +275,7 @@ void Parser::on_parseBtn_clicked()
 		types += classStructNames[j] + "|";
 	}
 	types.pop_back();
-	std::string regularExForTypes = const_unsigned + types + ")(\\**&* +\\**&*)( *[A-Za-z_;\\.]+\\,?[\\*&A-Za-z\\. ,\\[\\]0-9=_\\{\\}]*;))";
+	std::string regularExForTypes = const_unsigned + types + ")(\\**&* +\\**&*)( *[A-Za-z_;\\.]+\\,?[\\+\\*&A-Za-z\\.\\s,\\[\\]0-9=_\\{\\}]*;))";
 	std::regex typesAndValuesRegEx(regularExForTypes);
 
 	findVarOfFundTypes(text, typesAndValuesRegEx);
@@ -396,7 +400,7 @@ void Parser::on_codeTextEdit_textChanged()
 
 void Parser::on_readBtn_clicked()
 {
-	fileName = QFileDialog::getOpenFileName(this, "Open your file", "D:/BSUIR/OAiP/", "Text File (*.cpp *.h)");
+	fileName = QFileDialog::getOpenFileName(this, "Open your file", "D:/BSUIR/OAiP/lab4", "Text File (*.cpp *.h)");
 	QFile file(fileName);
 	QTextStream fromFile(&file);
 
