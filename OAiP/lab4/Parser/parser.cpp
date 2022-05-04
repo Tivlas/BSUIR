@@ -49,12 +49,12 @@ void Parser::findVarOfFundTypes(const QString& text, const std::regex& typesAndV
 			std::string temp_type = type;
 			for (size_t j = 0; j < var.size(); ++j)
 			{
-				if (var[j] == '*')
+				if (var[j] == '*' && var[j - 1] != '=')
 				{
 					temp_type += "*";
 					var.erase(j, 1);
 				}
-				else if (var[j] == '&')
+				else if (var[j] == '&' && var[j - 1] != '=')
 				{
 					temp_type += "&";
 					var.erase(j, 1);
@@ -271,7 +271,7 @@ void Parser::on_parseBtn_clicked()
 		types += classStructNames[j] + "|";
 	}
 	types.pop_back();
-	std::string regularExForTypes = const_unsigned + types + ")(\\**&* +\\**&*)( *[A-Za-z_;\\.]+\\,?[A-Za-z\\. ,\\[\\]0-9=_\\{\\}]*;))";
+	std::string regularExForTypes = const_unsigned + types + ")(\\**&* +\\**&*)( *[A-Za-z_;\\.]+\\,?[\\*&A-Za-z\\. ,\\[\\]0-9=_\\{\\}]*;))";
 	std::regex typesAndValuesRegEx(regularExForTypes);
 
 	findVarOfFundTypes(text, typesAndValuesRegEx);
@@ -384,6 +384,7 @@ void Parser::on_parseBtn_clicked()
 	funcPrototypesV.clear();
 	varChanges.clear();
 	logicalErrors.clear();
+	classStructNames.clear();
 }
 
 
@@ -395,7 +396,7 @@ void Parser::on_codeTextEdit_textChanged()
 
 void Parser::on_readBtn_clicked()
 {
-	fileName = QFileDialog::getOpenFileName(this, "Open your file", /*"D:/BSUIR/OAiP/"*/ "D:/Tests/C++_Tests/Tests/RegExTest", "Text File (*.txt *.cpp *.h)");
+	fileName = QFileDialog::getOpenFileName(this, "Open your file", "D:/BSUIR/OAiP/", "Text File (*.cpp *.h)");
 	QFile file(fileName);
 	QTextStream fromFile(&file);
 

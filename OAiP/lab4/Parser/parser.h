@@ -40,7 +40,7 @@ private:
 	Vector<std::string>  varChanges;
 	Vector<std::string> logicalErrors;
 	Vector<std::string> classStructNames;
-	//Vector<MyPair<std::string, size_t>> branchings;
+	Vector<size_t> branchings;
 
 
 	QString fileName;
