@@ -393,9 +393,6 @@ char* my_strcpy(char* dest, const char* src)
 	char* p1 = dest;
 	const char* p2 = src;
 	while (*p2) {
-		if (*p1 == '\0' && *p2 != '\0') {
-			throw std::exception("strcpy: dest is too small");
-		}
 		*p1++ = *p2++;
 	}
 	*p1 = '\0';

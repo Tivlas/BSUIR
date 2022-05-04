@@ -257,9 +257,9 @@ extern "C" MYSTRING void* my_memcpy(void* dest, const void* src, size_t n);
 
 extern "C" MYSTRING void* my_memmove(void* dest, const void* src, size_t n);
 
-extern "C++" MYSTRING char* my_strcpy(char* dest, const char* src);
+extern "C" MYSTRING char* my_strcpy(char* dest, const char* src);
 
-extern "C++" MYSTRING char* my_strncpy(char* dest, const char* src, size_t n);
+extern "C" MYSTRING char* my_strncpy(char* dest, const char* src, size_t n);
 
 extern "C" MYSTRING char* my_strcat(char* dest, const char* src);
 
