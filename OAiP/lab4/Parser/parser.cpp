@@ -7,7 +7,7 @@ Parser::Parser(QWidget* parent)
 {
 	ui.setupUi(this);
 	structsClassesRegEx = ("(class|struct) +(\\w+)");
-	variablesChangesRegEx = ("[A-Za-z0-9_\\.]+ *={1} *[\\{\\}A-Za-z0-9()+ \\.\\[\\],\\+\\(\\)&\\*]+;");
+	variablesChangesRegEx = ("[A-Za-z0-9_\\.]+ *={1} *[\\{\\}A-Za-z0-9()+ \\.\\[\\]\\+\\(\\)&\\*/]+(;|,)");
 	logicalErrorsRegEx = ("(const *bool.+;|while *\\([A-Za-z0-9 ]*\\)|(else)? *if *\\((true|false)?[0-9\\-\\.]*\\)|for *\\([^;]*; *(true|false) *;.*\\))");
 	branchingDepthRegEx = ("(if *\\(.+\\) *\\{([^\\}]*)\\})( *else *\\{([^\\}]*)\\})*");
 }
@@ -71,7 +71,7 @@ void Parser::findVarOfFundTypes(const QString& text, const std::regex& typesAndV
 					while (var[index] != ']') {
 						++index;
 					}
-					if (var[index + 1] == '=')
+					if (var[index + 1] == '=' || var[index+1] ==';')
 					{
 						temp_type += " array ";
 						++numberOfArrays;
@@ -146,6 +146,8 @@ void Parser::findVarChanges(const QString& text)
 			input = match.suffix().str();
 			continue;
 		}
+		change.erase(std::remove(change.begin(), change.end(), ' '), change.end());
+		
 		varChanges.push_back(change);
 		input = match.suffix().str();
 	}
@@ -275,7 +277,7 @@ void Parser::on_parseBtn_clicked()
 		types += classStructNames[j] + "|";
 	}
 	types.pop_back();
-	std::string regularExForTypes = const_unsigned + types + ")(\\**&* +\\**&*)( *[A-Za-z_;\\.]+\\,?[\\+\\*&A-Za-z\\.\\s,\\[\\]0-9=_\\{\\}]*;))";
+	std::string regularExForTypes = const_unsigned + types + ")(\\**&* +\\**&*)( *[:A-Za-z_;\\.0-9]+\\,?[:'\\+\\*&A-Za-z\\.\\s,\\[\\]0-9=_\\{\\}]*;))";
 	std::regex typesAndValuesRegEx(regularExForTypes);
 
 	findVarOfFundTypes(text, typesAndValuesRegEx);
@@ -317,7 +319,7 @@ void Parser::on_parseBtn_clicked()
 	//++++++++++++Функции+++++++++++++++
 	//++++++++++++++++++++++++++++++++++
 
-	std::string strRegExForFuncPrototypes = const_unsigned + types + ")(\\**&* +\\**&*)( *[A-Za-z0-9_]+[(][A-Za-z_ 0-9=&\\*,]*[)]))";
+	std::string strRegExForFuncPrototypes = const_unsigned + types + ")(\\**&* +\\**&*)( *[:A-Za-z0-9_=\\+\\-]+[(][:A-Za-z_ 0-9=&\\*,\\(\\)]*[)]))";
 	std::regex functionsPrototypesRegEx(strRegExForFuncPrototypes);
 	findFunctionsPrototypes(text, functionsPrototypesRegEx);
 	sortByType(funcPrototypesV);
@@ -339,7 +341,7 @@ void Parser::on_parseBtn_clicked()
 	//++++++++++ Изменения переменных ++++++++++++
 	//++++++++++++++++++++++++++++++++++++++++++++
 	findVarChanges(text);
-	result = "ИЗМЕНЕНИЯ ПЕРЕМЕННЫХ(включая инициализацию):";
+	result = "СТРОКИ С ИЗМЕНЕНИЕМ ПЕРЕМЕННЫХ:";
 	ui.resultTextEdit->setCurrentCharFormat(inBold);
 	ui.resultTextEdit->append(result);
 	ui.resultTextEdit->setCurrentCharFormat(notInBold);
