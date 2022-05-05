@@ -11,6 +11,12 @@
             this.discount = discount;
         }
 
+        public WithDiscount(IPrice price, int discount)
+        {
+            this.discount = discount;
+            this.price = price!.GetPrice();
+        }
+
         public double GetPrice()
         {
             return price - price * discount / 100;

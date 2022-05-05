@@ -8,7 +8,7 @@ Parser::Parser(QWidget* parent)
 	ui.setupUi(this);
 	structsClassesRegEx = ("(class|struct) +(\\w+)");
 	variablesChangesRegEx = ("[A-Za-z0-9_\\.]+ *={1} *[\\{\\}A-Za-z0-9()+ \\.\\[\\]\\+\\(\\)&\\*/]+(;|,)");
-	logicalErrorsRegEx = ("(const *bool.+;|while *\\([A-Za-z0-9 ]*\\)|(else)? *if *\\((true|false)?[0-9\\-\\.]*\\)|for *\\([^;]*; *(true|false) *;.*\\))");
+	logicalErrorsRegEx = ("(const +bool.+;|while *\\([A-Za-z0-9 ]*\\)|(else)? *if *\\((true|false)?[0-9\\-\\.]*\\)|for *\\([^;]*; *(true|false) *;.*\\))");
 	branchingDepthRegEx = ("(if *\\(.+\\) *\\{([^\\}]*)\\})( *else *\\{([^\\}]*)\\})*");
 }
 
