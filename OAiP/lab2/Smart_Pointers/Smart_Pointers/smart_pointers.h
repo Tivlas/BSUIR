@@ -218,6 +218,9 @@ public:
 	shared_ptr& operator=(const shared_ptr<T>& other) noexcept {
 		if (ptrCB) {
 			--ptrCB->shared_counter;
+			if (ptrCB->shared_counter == 0 && ptrCB->weak_counter == 0) {
+				delete ptrCB;
+			}
 		}
 		ptrCB = other.ptrCB;
 		if (ptrCB) {
@@ -234,6 +237,9 @@ public:
 	shared_ptr& operator=(shared_ptr<T>&& other) noexcept {
 		if (ptrCB) {
 			--ptrCB->shared_counter;
+			if (ptrCB->shared_counter == 0 && ptrCB->weak_counter == 0) {
+				delete ptrCB;
+			}
 		}
 		ptrCB = other.ptrCB;
 		other.ptrCB = nullptr;
@@ -349,6 +355,9 @@ public:
 	shared_ptr& operator=(const shared_ptr<T>& other) noexcept {
 		if (ptrCB) {
 			--ptrCB->shared_counter;
+			if (ptrCB->shared_counter == 0 && ptrCB->weak_counter == 0) {
+				delete ptrCB;
+			}
 		}
 		ptrCB = other.ptrCB;
 		if (ptrCB) {
@@ -365,6 +374,9 @@ public:
 	shared_ptr& operator=(shared_ptr<T>&& other) noexcept {
 		if (ptrCB) {
 			--ptrCB->shared_counter;
+			if (ptrCB->shared_counter == 0 && ptrCB->weak_counter == 0) {
+				delete ptrCB;
+			}
 		}
 		ptrCB = other.ptrCB;
 		other.ptrCB = nullptr;
