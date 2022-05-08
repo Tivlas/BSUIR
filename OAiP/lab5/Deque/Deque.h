@@ -3,7 +3,6 @@
 
 template <typename T>
 class Deque {
-	class iterator;
 private:
 	static constexpr size_t initial_buffer_size = 8;
 	T** buffer = nullptr;
@@ -16,17 +15,16 @@ private:
 		: 1;
 
 	size_t sz = 0;
-	iterator first, last;
 
 public:
-	class iterator {
+	template <typename U>
+	class MyIterator {
 		friend class Deque;
 		using iterator_category = std::random_access_iterator_tag;
-		using value_type = T;
+		using value_type = U;
 		using difference_type = std::ptrdiff_t;
-		using pointer = T*;
-		using reference = T&;
-		using difference_type = std::ptrdiff_t;
+		using pointer = U*;
+		using reference = U&;
 
 	private:
 		// futher buffer is an array of pointers to blocks (arrays of T)
@@ -44,13 +42,13 @@ public:
 		}
 
 	public:
-		iterator() : cur_node(nullptr), current(nullptr), first(nullptr), last(nullptr) {}
+		MyIterator() : cur_node(nullptr), current(nullptr), first(nullptr), last(nullptr) {}
 
-		iterator(const iterator& other) : cur_node(other.cur_node), current(other.current), first(other.first), last(other.last) {}
+		MyIterator(const MyIterator& other) : cur_node(other.cur_node), current(other.current), first(other.first), last(other.last) {}
 
-		iterator(pointer* buffer_pointer, pointer cur) : cur_node(buffer_pointer), current(cur), first(*buffer_pointer), last(*buffer_pointer + block_size) {}
+		MyIterator(pointer* buffer_pointer, pointer cur) : cur_node(buffer_pointer), current(cur), first(*buffer_pointer), last(*buffer_pointer + block_size) {}
 
-		iterator& operator++() {
+		MyIterator& operator++() {
 			++current;
 			if (current == last) {
 				set_node(cur_node + 1);
@@ -59,13 +57,13 @@ public:
 			return *this;
 		}
 
-		iterator operator++(int) {
-			iterator tmp(*this);
+		MyIterator operator++(int) {
+			MyIterator tmp = *this;
 			++(*this);
 			return tmp;
 		}
 
-		iterator& operator--() {
+		MyIterator& operator--() {
 			if (current == first) {
 				set_node(cur_node - 1);
 				current = last;
@@ -74,13 +72,13 @@ public:
 			return *this;
 		}
 
-		iterator operator--(int) {
-			iterator tmp(*this);
+		MyIterator operator--(int) {
+			MyIterator tmp = *this;
 			--(*this);
 			return tmp;
 		}
 
-		iterator& operator+=(difference_type n) {
+		MyIterator& operator+=(difference_type n) {
 			difference_type offcet = n + current - first; // wanna move n times from the current position
 			if (offcet >= 0 && offcet < block_size) {
 				current += n;
@@ -101,17 +99,17 @@ public:
 			return *this;
 		}
 
-		iterator& operator-=(difference_type n) {
+		MyIterator& operator-=(difference_type n) {
 			return *this += -n;
 		}
 
-		iterator operator+(difference_type n) {
-			iterator tmp(*this);
+		MyIterator operator+(difference_type n) {
+			MyIterator tmp(*this);
 			return tmp += n;
 		}
 
-		iterator operator-(difference_type n) {
-			iterator tmp(*this);
+		MyIterator operator-(difference_type n) {
+			MyIterator tmp(*this);
 			return tmp -= n;
 		}
 
@@ -123,21 +121,53 @@ public:
 			return *current;
 		}
 
-		bool operator==(const iterator& other) {
+		bool operator==(const MyIterator& other) {
 			return  current == other.current;
 		}
 
-		bool operator!=(const iterator& other) {
+		bool operator!=(const MyIterator& other) {
 			return !(*this == other);
+		}
+
+		MyIterator& operator=(const MyIterator& other) {
+			cur_node = other.cur_node;
+			current = other.current;
+			first = other.first;
+			last = other.last;
+			return *this;
+		}
+
+		difference_type operator-(const MyIterator& other) const {
+			difference_type dist = 0;
+			MyIterator tmp = *this;
+			while (tmp != other) {
+				++dist;
+				--tmp;
+			}
+			return dist;
 		}
 	};
 
+	using iterator = MyIterator<T>;
+	using const_iterator = MyIterator<const T>;
+	
+private:
+	iterator first, last;
+public:
 	iterator begin() {
 		return first;
 	}
 
 	iterator end() {
 		return last;
+	}
+
+	const_iterator cbegin() const {
+		return const_iterator(first);
+	}
+
+	const_iterator cend() const {
+		return const_iterator(last);
 	}
 
 	Deque() {
@@ -219,7 +249,7 @@ public:
 	void push_front(T&& value) {
 		emplace_front(std::move(value));
 	}
-	
+
 
 	void pop_back() {
 		std::destroy_at(last.current);
@@ -233,6 +263,7 @@ public:
 		--sz;
 	}
 
+
 	void resize(size_t new_size) {
 		while (sz < new_size) {
 			emplace_back();
@@ -241,6 +272,68 @@ public:
 			pop_back();
 		}
 	}
+
+	void resize(size_t new_size, const T& value) {
+		while (sz < new_size) {
+			emplace_back(value);
+		}
+		while (new_size < sz) {
+			pop_back();
+		}
+	}
+
+
+	template <typename... Args>
+	iterator emplace(const_iterator pos, Args&&... args) {
+		size_t dist = std::distance(cbegin(), pos);
+		if (dist <= size() / 2) {
+			emplace_front(std::forward<Args>(args)...);
+			std::rotate(begin(), begin() + 1, begin() + dist + 1);
+		}
+		else {
+			emplace_back(std::forward<Args>(args)...);
+			std::rotate(begin() + dist, end() - 1, end());
+		}
+		return begin() + dist;
+	}
+
+	iterator insert(const_iterator pos, const T& value) {
+		return emplace(pos, value);
+	}
+
+	iterator insert(const_iterator pos, T&& value) {
+		return emplace(pos, std::move(value));
+	}
+
+	iterator insert(const_iterator pos, size_t count, const T& value) {
+		iterator it = emplace(pos, value);
+		for (size_t i = 1; i < count; ++i) {
+			it = emplace(it, value);
+		}
+	}
+
+	iterator erase(const_iterator first, const_iterator last) {
+		size_t dist = std::distance(cbegin(), first);
+		size_t count = std::distance(first, last);
+		if (dist <= size() / 2) {
+			std::move_backward(cbegin(), first, last);
+			for (; count > 0; --count) {
+				pop_front();
+			}
+		}
+		else {
+			std::move(last, cend(), first);
+			for (; count > 0; --count) {
+				pop_back();
+			}
+		}
+		return begin() + dist;
+	}
+
+	iterator erase(const_iterator pos) {
+		return erase(pos, pos + 1);
+	}
+
 
 	size_t size() const { return sz; }
 
