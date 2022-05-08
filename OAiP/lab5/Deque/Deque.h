@@ -1,10 +1,13 @@
 #pragma once
+#include <algorithm>
+
 template <typename T>
 class Deque {
+	class iterator;
 private:
-	static constexpr size_t initial_map_size = 8;
-	T** map = nullptr;
-	size_t map_size = 0;
+	static constexpr size_t initial_buffer_size = 8;
+	T** buffer = nullptr;
+	size_t buffer_size = 0;
 	static constexpr size_t bytes = sizeof(T);
 	static constexpr size_t block_size = bytes <= 1 ? 16
 		: bytes <= 2 ? 8
@@ -13,9 +16,11 @@ private:
 		: 1;
 
 	size_t sz = 0;
+	iterator first, last;
 
 public:
 	class iterator {
+		friend class Deque;
 		using iterator_category = std::random_access_iterator_tag;
 		using value_type = T;
 		using difference_type = std::ptrdiff_t;
@@ -43,7 +48,7 @@ public:
 
 		iterator(const iterator& other) : cur_node(other.cur_node), current(other.current), first(other.first), last(other.last) {}
 
-		iterator(pointer* map_pointer, pointer cur) : cur_node(map_pointer), current(cur), first(*map_pointer), last(*map_pointer + block_size) {}
+		iterator(pointer* buffer_pointer, pointer cur) : cur_node(buffer_pointer), current(cur), first(*buffer_pointer), last(*buffer_pointer + block_size) {}
 
 		iterator& operator++() {
 			if (current == last) {
@@ -76,7 +81,7 @@ public:
 		}
 
 		iterator& operator+=(difference_type n) {
-			difference_type offcet = n + cur - first; // wanna move n times from the current position
+			difference_type offcet = n + current - first; // wanna move n times from the current position
 			if (offcet >= 0 && offcet < block_size) {
 				current += n;
 			}
@@ -90,7 +95,7 @@ public:
 				{
 					offcet_blocks = (offcet + 1) / block_size - 1;
 				}
-				set_node(node + offcet_blocks);
+				set_node(cur_node + offcet_blocks);
 				current = first + offcet - offcet_blocks * block_size;
 			}
 			return *this;
@@ -127,13 +132,106 @@ public:
 		}
 	};
 
+	iterator begin() {
+		return first;
+	}
 
+	iterator end() {
+		return last;
+	}
+
+	Deque() {
+		create_deque(0);
+	}
+
+	explicit Deque(size_t count) : sz(count) {
+		create_deque(count);
+	}
+
+	explicit Deque(size_t count, const T& value) : sz(count) {
+		create_deque(count);
+		std::fill(begin(), end(), value);
+	}
+
+	Deque(const Deque& other) : sz(other.sz) {
+		create_deque(other.sz);
+		std::copy(other.begin(), other.end(), this->begin());
+	}
+
+	Deque(Deque&& other) : sz(other.sz), buffer(other.buffer), buffer_size(other.buffer_size), first(other.first), last(other.last) {
+		other.buffer = nullptr;
+		other.buffer_size = 0;
+		other.first = other.last;
+	}
+
+	~Deque() {
+		for (T** cur = first.cur_node; cur <= last.cur_node; ++cur) {
+			delete[] * cur;
+		}
+		delete[] buffer;
+	}
+
+
+	void resize(size_t count) {
+
+	}
 
 	size_t size() const { return sz; }
 
 	bool empty() const { return sz == 0; }
+
 private:
-	
 
+	void reallocate_buffer(size_t nodes_to_add, bool added_at_front) {
+		size_t prev_num_of_nodes = last.cur_node - first.cur_node + 1;
+		size_t new_num_of_nodes = prev_num_of_nodes + nodes_to_add;
+		T** new_buffer_start;
+		if (buffer_size > 2 * new_num_of_nodes) {
+			new_buffer_start = buffer + (buffer_size - new_num_of_nodes) / 2 + (added_at_front ? nodes_to_add : 0);
+			if (new_buffer_start < first.cur_node) {
+				std::copy(first.cur_node, last.cur_node + 1, new_buffer_start);
+			}
+			else {
+				std::copy_backward(first.cur_node, last.cur_node + 1, new_buffer_start + prev_num_of_nodes);
+			}
+		}
+		else {
+			size_t new_buffer_size = buffer_size + std::max(buffer_size, nodes_to_add) + 2;
+			T** new_buffer = new T * [new_buffer_size];
+			new_buffer_start = new_buffer + (new_buffer_size - new_num_of_nodes) / 2 + (added_at_front ? nodes_to_add : 0);
+			std::copy(buffer, buffer + buffer_size, new_buffer);
+			delete[] buffer;
+			buffer = new_buffer;
+			buffer_size = new_buffer_size;
+		}
+		first.set_node(new_buffer_start);
+		last.set_node(new_buffer_start + prev_num_of_nodes - 1);
+	}
 
+	void reserve_buffer_at_back(size_t nodes_to_add = 1) {
+		if (nodes_to_add > buffer_size - (last.cur_node - buffer) - 1) {
+			reallocate_buffer(nodes_to_add, false);
+		}
+	}
+
+	void reserve_buffer_at_front(size_t nodes_to_add = 1) {
+		if (nodes_to_add > first.cur_node - buffer) {
+			reallocate_buffer(nodes_to_add, true);
+		}
+	}
+
+	void create_deque(size_t n) {
+		size_t num_of_nodes = n / block_size + 1;
+		buffer_size = std::max(initial_buffer_size, num_of_nodes);
+		buffer = new T * [buffer_size];
+		T** buffer_start = buffer + (buffer_size - num_of_nodes) / 2;
+		T** buffer_end = buffer_start + num_of_nodes - 1;
+		for (T** cur = buffer_start; cur <= buffer_end; ++cur) {
+			*cur = reinterpret_cast<T*>(new char[block_size]);
+		}
+		first.set_node(buffer_start);
+		last.set_node(buffer_end);
+		first.current = first.first;
+		last.current = last.first + n % block_size;
+	}
 };
