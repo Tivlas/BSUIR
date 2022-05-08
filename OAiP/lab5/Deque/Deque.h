@@ -33,7 +33,7 @@ public:
 		pointer* cur_node; // pointer to the current subarray in the buffer (pointer to pointer: T**)
 		pointer current; // pointer to the current  element in the subarray
 		pointer first; // pointer to the first element in current subarray in buffer
-		pointer last; // pointer to the last element in current subarray in buffer
+		pointer last; // pointer to the element after last in current subarray in buffer
 
 	private:
 		void set_node(pointer* new_node) // sets the current node to the new_node
@@ -51,11 +51,11 @@ public:
 		iterator(pointer* buffer_pointer, pointer cur) : cur_node(buffer_pointer), current(cur), first(*buffer_pointer), last(*buffer_pointer + block_size) {}
 
 		iterator& operator++() {
+			++current;
 			if (current == last) {
 				set_node(cur_node + 1);
 				current = first;
 			}
-			else ++current;
 			return *this;
 		}
 
@@ -70,7 +70,7 @@ public:
 				set_node(cur_node - 1);
 				current = last;
 			}
-			else --current;
+			--current;
 			return *this;
 		}
 
@@ -171,23 +171,105 @@ public:
 		delete[] buffer;
 	}
 
+	template <typename... Args>
+	void emplace_back(Args&&... args) {
+		if (last.current != last.last - 1) {
+			new(last.current) T(std::forward<Args>(args)...);
+			++last.current;
+		}
+		else {
+			reserve_buffer_at_back(); // 1 by default
+			*(last.cur_node + 1) = reinterpret_cast<T*>(new char[block_size * sizeof(T)]);
+			new(last.current) T(std::forward<Args>(args)...);
+			last.set_node(last.cur_node + 1);
+			last.current = last.first;
+		}
+		++sz;
+	}
 
-	void resize(size_t count) {
+	void push_back(const T& value) {
+		emplace_back(value);
+	}
 
+	void push_back(T&& value) {
+		emplace_back(std::move(value));
+	}
+
+
+	template <typename... Args>
+	void emplace_front(Args&&... args) {
+		if (first.current != first.first) {
+			--first.current;
+			new(first.current) T(std::forward<Args>(args)...);
+		}
+		else {
+			reserve_buffer_at_front(); // 1 by default
+			*(last.cur_node - 1) = reinterpret_cast<T*>(new char[block_size * sizeof(T)]);
+			first.set_node(first.cur_node - 1);
+			first.current = first.last - 1;
+			new(first.current) T(std::forward<Args>(args)...);
+		}
+		++sz;
+	}
+
+	void push_front(const T& value) {
+		emplace_front(value);
+	}
+
+	void push_front(T&& value) {
+		emplace_front(std::move(value));
+	}
+	
+
+	void pop_back() {
+		std::destroy_at(last.current);
+		--last;
+		--sz;
+	}
+
+	void pop_front() {
+		std::destroy_at(first.current);
+		++first;
+		--sz;
+	}
+
+	void resize(size_t new_size) {
+		while (sz < new_size) {
+			emplace_back();
+		}
+		while (new_size < sz) {
+			pop_back();
+		}
 	}
 
 	size_t size() const { return sz; }
 
 	bool empty() const { return sz == 0; }
 
+	T& operator[](size_t index) {
+		return first[index];
+	}
+
+	const T& operator[](size_t index) const {
+		return first[index];
+	}
+
+	void clear() {
+		for (; first != last; ++first) {
+			std::destroy_at(first.current);
+		}
+		sz = 0;
+		last = first;
+	}
+
 private:
 
-	void reallocate_buffer(size_t nodes_to_add, bool added_at_front) {
+	void reallocate_buffer(size_t nodes_to_add, bool add_at_front) {
 		size_t prev_num_of_nodes = last.cur_node - first.cur_node + 1;
 		size_t new_num_of_nodes = prev_num_of_nodes + nodes_to_add;
 		T** new_buffer_start;
 		if (buffer_size > 2 * new_num_of_nodes) {
-			new_buffer_start = buffer + (buffer_size - new_num_of_nodes) / 2 + (added_at_front ? nodes_to_add : 0);
+			new_buffer_start = buffer + (buffer_size - new_num_of_nodes) / 2 + (add_at_front ? nodes_to_add : 0);
 			if (new_buffer_start < first.cur_node) {
 				std::copy(first.cur_node, last.cur_node + 1, new_buffer_start);
 			}
@@ -198,8 +280,8 @@ private:
 		else {
 			size_t new_buffer_size = buffer_size + std::max(buffer_size, nodes_to_add) + 2;
 			T** new_buffer = new T * [new_buffer_size];
-			new_buffer_start = new_buffer + (new_buffer_size - new_num_of_nodes) / 2 + (added_at_front ? nodes_to_add : 0);
-			std::copy(buffer, buffer + buffer_size, new_buffer);
+			new_buffer_start = new_buffer + (new_buffer_size - new_num_of_nodes) / 2 + (add_at_front ? nodes_to_add : 0);
+			std::copy(buffer, buffer + buffer_size, new_buffer_start);
 			delete[] buffer;
 			buffer = new_buffer;
 			buffer_size = new_buffer_size;
@@ -209,7 +291,7 @@ private:
 	}
 
 	void reserve_buffer_at_back(size_t nodes_to_add = 1) {
-		if (nodes_to_add > buffer_size - (last.cur_node - buffer) - 1) {
+		if (nodes_to_add > buffer_size - (last.cur_node - buffer) - 1) { // check if we wanna add more than there are free nodes
 			reallocate_buffer(nodes_to_add, false);
 		}
 	}
@@ -227,7 +309,7 @@ private:
 		T** buffer_start = buffer + (buffer_size - num_of_nodes) / 2;
 		T** buffer_end = buffer_start + num_of_nodes - 1;
 		for (T** cur = buffer_start; cur <= buffer_end; ++cur) {
-			*cur = reinterpret_cast<T*>(new char[block_size]);
+			*cur = reinterpret_cast<T*>(new char[block_size * sizeof(T)]);
 		}
 		first.set_node(buffer_start);
 		last.set_node(buffer_end);
