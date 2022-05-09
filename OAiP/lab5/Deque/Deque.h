@@ -199,28 +199,15 @@ public:
 	// EMPLACE/PUSH_BACK/FRONT
 	template <typename... Args>
 	void emplace_back(Args&&... args) {
-		//if (last.current != last.last) {
-		//	new(last.current) T(std::forward<Args>(args)...);
-		//	++last.current;
-		//	if (last.current == last.last) {
-		//		reserve_buffer_at_back(); // 1 by default
-		//		*(last.cur_node + 1) = reinterpret_cast<T*>(new char[block_size * sizeof(T)]);
-		//		last.set_node(last.cur_node + 1);
-		//		last.current = last.first;
-		//	}
-		//}
-		//++sz;
-
-		if (last.current != last.last - 1) {
+		if (last.current != last.last) {
 			new(last.current) T(std::forward<Args>(args)...);
 			++last.current;
-		}
-		else {
-			reserve_buffer_at_back();
-			*(last.cur_node + 1) = reinterpret_cast<T*>(new char[block_size * sizeof(T)]);
-			new(last.current) T(std::forward<Args>(args)...);
-			last.set_node(last.cur_node + 1);
-			last.current = last.first;
+			if (last.current == last.last) {
+				reserve_buffer_at_back(); // 1 by default
+				*(last.cur_node + 1) = reinterpret_cast<T*>(new char[block_size * sizeof(T)]);
+				last.set_node(last.cur_node + 1);
+				last.current = last.first;
+			}
 		}
 		++sz;
 	}
@@ -402,7 +389,7 @@ private:
 			size_t new_buffer_size = buffer_size + std::max(buffer_size, nodes_to_add) + 2;
 			T** new_buffer = new T * [new_buffer_size];
 			new_buffer_start = new_buffer + (new_buffer_size - new_num_of_nodes) / 2 + (add_at_front ? nodes_to_add : 0);
-			std::copy(buffer, buffer + buffer_size, new_buffer_start);
+			std::copy(first.cur_node, last.cur_node + 1, new_buffer_start);
 			delete[] buffer;
 			buffer = new_buffer;
 			buffer_size = new_buffer_size;
