@@ -17,6 +17,7 @@ private:
 	size_t sz = 0;
 
 public:
+	//	ITERATOR
 	template <typename U>
 	class MyIterator {
 		friend class Deque;
@@ -122,7 +123,7 @@ public:
 		}
 
 		bool operator==(const MyIterator& other) {
-			return  current == other.current;
+			return cur_node == other.cur_node && current == other.current;
 		}
 
 		bool operator!=(const MyIterator& other) {
@@ -151,7 +152,8 @@ public:
 	using iterator = MyIterator<T>;
 
 private:
-	iterator first, last, after_last_filled;
+	iterator first, last;
+	iterator actual_begin; // iterator to the first element in the deque( because first.current points to the first befor last filled element 
 
 
 public:
@@ -160,7 +162,7 @@ public:
 	}
 
 	iterator end() {
-		return after_last_filled;
+		return last;
 	}
 
 	Deque() {
@@ -169,6 +171,7 @@ public:
 
 	explicit Deque(size_t count) : sz(count) {
 		create_deque(count);
+		std::fill(begin(), end(), T());
 	}
 
 	explicit Deque(size_t count, const T& value) : sz(count) {
@@ -188,25 +191,26 @@ public:
 	}
 
 	~Deque() {
+		clear();
 		for (T** cur = first.cur_node; cur <= last.cur_node; ++cur) {
-			delete[] * cur;
+			delete[] reinterpret_cast<char*>(*cur);
 		}
 		delete[] buffer;
 	}
 
+
+	// EMPLACE/PUSH_BACK/FRONT
 	template <typename... Args>
 	void emplace_back(Args&&... args) {
-		if (after_last_filled.current != last.last) {
-			new(after_last_filled.current) T(std::forward<Args>(args)...);
-			++after_last_filled.current;
-		}
-		else {
-			reserve_buffer_at_back(); // 1 by default
-			*(last.cur_node + 1) = reinterpret_cast<T*>(new char[block_size * sizeof(T)]);
-			new(after_last_filled.current) T(std::forward<Args>(args)...);
-			last.set_node(last.cur_node + 1);
-			last.current = last.first+1;
-			++after_last_filled.current;
+		if (last.current != last.last) {
+			new(last.current) T(std::forward<Args>(args)...);
+			++last.current;
+			if (last.current == last.last) {
+				reserve_buffer_at_back(); // 1 by default
+				*(last.cur_node + 1) = reinterpret_cast<T*>(new char[block_size * sizeof(T)]);
+				last.set_node(last.cur_node + 1);
+				last.current = last.first;
+			}
 		}
 		++sz;
 	}
@@ -223,15 +227,19 @@ public:
 	template <typename... Args>
 	void emplace_front(Args&&... args) {
 		if (first.current != first.first) {
-			--first.current;
 			new(first.current) T(std::forward<Args>(args)...);
+			actual_begin.cur_node = first.cur_node;
+			actual_begin.current = first.current + 1;
+			--first.current;
 		}
 		else {
+			new(first.current) T(std::forward<Args>(args)...);
+			actual_begin.cur_node = first.cur_node;
+			actual_begin.current = first.current + 1;
 			reserve_buffer_at_front(); // 1 by default
 			*(first.cur_node - 1) = reinterpret_cast<T*>(new char[block_size * sizeof(T)]);
 			first.set_node(first.cur_node - 1);
 			first.current = first.last - 1;
-			new(first.current) T(std::forward<Args>(args)...);
 		}
 		++sz;
 	}
@@ -244,7 +252,7 @@ public:
 		emplace_front(std::move(value));
 	}
 
-
+	// POP_BACK/FRONT
 	void pop_back() {
 		std::destroy_at(last.current);
 		--last;
@@ -279,7 +287,7 @@ public:
 
 	template <typename... Args>
 	iterator emplace(iterator pos, Args&&... args) {
-		size_t dist = pos - first;
+		size_t dist = pos - actual_begin;
 		if (dist <= sz / 2) {
 			emplace_front(std::forward<Args>(args)...);
 			T temp = *begin();
@@ -292,16 +300,16 @@ public:
 			return begin() + dist;
 		}
 		else {
-			size_t dist_from_end = end() - pos;
 			emplace_back(std::forward<Args>(args)...);
+			size_t dist_from_end = sz - dist;
 			T temp = *(end() - 1);
-			iterator last = end() - 1;
-			iterator start = end() - dist_from_end - 1;
-			for (; start != last; ++start) {
-				*(start) = *(start + 1);
+			iterator last = end() - dist_from_end;
+			iterator start = end() - 1;
+			for (; start != last; --start) {
+				*(start) = *(start - 1);
 			}
-			*(end() - 1) = temp;
-			return end() - dist_from_end-1;
+			*(end() - dist_from_end) = temp;
+			return end() - dist_from_end;
 		}
 	}
 
@@ -321,17 +329,24 @@ public:
 		return it;
 	}
 
-	iterator erase(iterator first, iterator last) {
-		size_t dist = std::distance(begin(), first);
-		size_t count = std::distance(first, last);
-		if (dist <= size() / 2) {
-			std::move_backward(begin(), first, last);
+
+	iterator erase(iterator start, iterator finish) {
+		size_t dist = start - actual_begin;
+		size_t count = finish - start;
+		if (dist <= sz / 2) {
+			for (size_t i = 0; dist - i >= 0; ++i) {
+				this->operator[](dist - 1 + count - i) = this->operator[](dist - 1 - i);
+			}
+
 			for (; count > 0; --count) {
 				pop_front();
 			}
 		}
 		else {
-			std::move(last, end(), first);
+			size_t dist_from_end = sz - dist - 1;
+			for (size_t i = 0; i < count && sz - 1 - dist_from_end + count < sz; ++i) {
+				this->operator[](sz - 1 - dist_from_end) = this->operator[](sz - 1 - dist_from_end + count);
+			}
 			for (; count > 0; --count) {
 				pop_back();
 			}
@@ -388,8 +403,6 @@ private:
 		}
 		first.set_node(new_buffer_start);
 		last.set_node(new_buffer_start + prev_num_of_nodes - 1);
-		after_last_filled.set_node( new_buffer_start + prev_num_of_nodes);
-		after_last_filled.current = after_last_filled.first;
 	}
 
 	void reserve_buffer_at_back(size_t nodes_to_add = 1) {
@@ -417,7 +430,5 @@ private:
 		last.set_node(buffer_end);
 		first.current = first.first;
 		last.current = last.first + n % block_size;
-		after_last_filled.set_node(buffer_start);
-		after_last_filled.current = after_last_filled.first;
 	}
 };
