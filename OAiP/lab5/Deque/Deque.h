@@ -17,7 +17,7 @@ private:
 	size_t sz = 0;
 
 public:
-	//	ITERATOR
+	// ITERATOR
 	template <typename U>
 	class MyIterator {
 		friend class Deque;
@@ -162,6 +162,7 @@ public:
 		return last;
 	}
 
+	// CONSTRUCTORS AND DESTRUCTOR
 	Deque() {
 		create_deque(0);
 	}
@@ -196,7 +197,7 @@ public:
 	}
 
 
-	// EMPLACE/PUSH_BACK/FRONT
+	// ADDING/INSERTION
 	template <typename... Args>
 	void emplace_back(Args&&... args) {
 		if (last.current != last.last) {
@@ -219,7 +220,6 @@ public:
 	void push_back(T&& value) {
 		emplace_back(std::move(value));
 	}
-
 
 	template <typename... Args>
 	void emplace_front(Args&&... args) {
@@ -244,40 +244,7 @@ public:
 	void push_front(T&& value) {
 		emplace_front(std::move(value));
 	}
-
-	// POP_BACK/FRONT
-	void pop_back() {
-		std::destroy_at(last.current);
-		--last;
-		--sz;
-	}
-
-	void pop_front() {
-		std::destroy_at(first.current);
-		++first;
-		--sz;
-	}
-
-
-	void resize(size_t new_size) {
-		while (sz < new_size) {
-			emplace_back();
-		}
-		while (new_size < sz) {
-			pop_back();
-		}
-	}
-
-	void resize(size_t new_size, const T& value) {
-		while (sz < new_size) {
-			emplace_back(value);
-		}
-		while (new_size < sz) {
-			pop_back();
-		}
-	}
-
-
+	
 	template <typename... Args>
 	iterator emplace(iterator pos, Args&&... args) {
 		size_t dist = pos - first;
@@ -322,6 +289,18 @@ public:
 		return it;
 	}
 
+	// REMOVING
+	void pop_back() {
+		std::destroy_at((last-1).current);
+		--last;
+		--sz;
+	}
+
+	void pop_front() {
+		std::destroy_at(first.current);
+		++first;
+		--sz;
+	}
 
 	iterator erase(iterator start, iterator finish) {
 		size_t dist = start - begin();
@@ -350,7 +329,25 @@ public:
 	iterator erase(iterator pos) {
 		return erase(pos, pos + 1);
 	}
+	
+	// OTHER
+	void resize(size_t new_size) {
+		while (sz < new_size) {
+			emplace_back();
+		}
+		while (new_size < sz) {
+			pop_back();
+		}
+	}
 
+	void resize(size_t new_size, const T& value) {
+		while (sz < new_size) {
+			emplace_back(value);
+		}
+		while (new_size < sz) {
+			pop_back();
+		}
+	}
 
 	size_t size() const { return sz; }
 
@@ -372,6 +369,7 @@ public:
 
 private:
 
+	// HELPER METHODS
 	void reallocate_buffer(size_t nodes_to_add, bool add_at_front) {
 		size_t prev_num_of_nodes = last.cur_node - first.cur_node + 1;
 		size_t new_num_of_nodes = prev_num_of_nodes + nodes_to_add;
