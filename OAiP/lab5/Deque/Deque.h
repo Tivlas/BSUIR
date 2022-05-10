@@ -200,7 +200,6 @@ public:
 	// ADDING/INSERTION
 	template <typename... Args>
 	void emplace_back(Args&&... args) {
-		if (last.current != last.last) {
 			new(last.current) T(std::forward<Args>(args)...);
 			++last.current;
 			if (last.current == last.last) {
@@ -209,7 +208,6 @@ public:
 				last.set_node(last.cur_node + 1);
 				last.current = last.first;
 			}
-		}
 		++sz;
 	}
 
