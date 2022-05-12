@@ -1,5 +1,5 @@
-#pragma once
-
+﻿#pragma once
+#include <utility>
 template <typename T>
 class AVL_Tree {
 	using value_type = T;
@@ -81,7 +81,7 @@ private:
 			else if (key < root->key) {
 				root->left_child = insert(root->left_child, key, data);
 			}
-			else if (key > root->key) {
+			else if (key >= root->key) {
 				root->right_child = insert(root->right_child, key, data);
 			}
 			return balance(root);
@@ -147,12 +147,12 @@ private:
 			if (this->right_child) {
 				this->right_child->traverse_postorder(c);
 			}
-			c.push_back(this->data);
+			c.push_back(std::pair<int, value_type>(this->key, this->data));
 		}
 
 		template <typename Container>
 		void traverse_preorder(Container& c) {
-			c.push_back(this->data);
+			c.push_back(std::pair<int, value_type>(this->key, this->data));
 			if (this->left_child) {
 				this->left_child->traverse_preorder(c);
 			}
@@ -166,7 +166,7 @@ private:
 			if (this->left_child) {
 				this->left_child->traverse_inorder(c);
 			}
-			c.push_back(this->data);
+			c.push_back(std::pair<int, value_type>(this->key, this->data));
 			if (this->right_child) {
 				this->right_child->traverse_inorder(c);
 			}
@@ -183,15 +183,16 @@ public:
 	}
 
 	void insert(int key, value_type value) {
-		root = root->insert(root,key, value);
+		root = root->insert(root, key, value);
 	}
 
 	void remove(int remove_key) {
 		root = root->remove(root, remove_key);
 	}
 
-	AVL_Node* search(int search_key) {
-		return root->search(root, search_key);
+	value_type search(int search_key) {
+		AVL_Node* node = root->search(root, search_key);
+		return node ? node->data : throw std::exception("Вершина с таким ключем не существует");
 	}
 
 	bool empty() {
