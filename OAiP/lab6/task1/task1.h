@@ -19,6 +19,7 @@ private slots:
 	void on_searchBtn_clicked();
 	void on_addBtn_clicked();
 	void on_comboBox_currentTextChanged(const QString& s);
+	void on_clearBtn_clicked();
 private:
 	Ui::task1Class ui;
 	AVL_Tree<QString> tree;

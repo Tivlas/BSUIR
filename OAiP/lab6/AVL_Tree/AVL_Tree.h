@@ -15,7 +15,7 @@ private:
 		~AVL_Node() = default;
 
 		// METHODS
-		void clear(AVL_Node* root) {
+		static void clear(AVL_Node* root) {
 			if (root != nullptr) {
 				clear(root->left_child);
 				clear(root->right_child);
@@ -179,9 +179,14 @@ public:
 	AVL_Tree() : root(nullptr) {}
 
 	~AVL_Tree() {
-		root->clear(root);
+		AVL_Node::clear(root);
 	}
 
+	void clear() {
+		AVL_Node::clear(root);
+		root = nullptr;
+	}
+	
 	void insert(int key, value_type value) {
 		root = root->insert(root, key, value);
 	}

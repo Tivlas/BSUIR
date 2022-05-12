@@ -11,6 +11,8 @@ task1::task1(QWidget* parent)
 	ui.removeEdit->setPlaceholderText("Ключ");
 	ui.addKeyEdit->setPlaceholderText("Ключ");
 	ui.addValueEdit->setPlaceholderText("Значение");
+	ui.searcResultEdit->setPlaceholderText("Результат поиска:");
+	ui.tableWidget->horizontalHeader()->setStretchLastSection(true);
 }
 
 void task1::print(const std::vector<std::pair<int, QString>>& v)
@@ -74,8 +76,17 @@ void task1::on_comboBox_currentTextChanged(const QString& cur_text)
 		ui.tableWidget->setHorizontalHeaderLabels(QStringList() << "Ключ" << "Значение");
 		QMessageBox::warning(this, "Внимание", "Дерево пустое");
 		ui.plainTextEdit->clear();
+		pushed_keys_order.clear();
 	}
 	v.clear();
+}
+
+void task1::on_clearBtn_clicked()
+{
+	tree.clear();
+	on_comboBox_currentTextChanged(ui.comboBox->currentText());
+	ui.plainTextEdit->clear();
+	pushed_keys_order.clear();
 }
 
 void task1::on_removeBtn_clicked()
@@ -106,8 +117,9 @@ void task1::on_searchBtn_clicked()
 	catch (const std::exception& ex)
 	{
 		QMessageBox::warning(this, "Ошибка", ex.what());
+		ui.searcResultEdit->setText("Не найдено");
 		return;
 	}
-	ui.searchLbl->setText(value);
+	ui.searcResultEdit->setText(value);
 }
 
