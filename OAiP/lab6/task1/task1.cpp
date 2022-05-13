@@ -5,8 +5,8 @@ task1::task1(QWidget* parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
-	ui.tableWidget->setColumnCount(2);
-	ui.tableWidget->setHorizontalHeaderLabels(QStringList() << "Ключ" << "Значение");
+	ui.tableWidget->setColumnCount(3);
+	ui.tableWidget->setHorizontalHeaderLabels(QStringList() << "Ключ" << "Значение"<<"Количество символов");
 	ui.searchEdit->setPlaceholderText("Ключ");
 	ui.removeEdit->setPlaceholderText("Ключ");
 	ui.addKeyEdit->setPlaceholderText("Ключ");
@@ -18,12 +18,13 @@ task1::task1(QWidget* parent)
 void task1::print(const std::vector<std::pair<int, QString>>& v)
 {
 	ui.tableWidget->clear();
-	ui.tableWidget->setColumnCount(2);
-	ui.tableWidget->setHorizontalHeaderLabels(QStringList() << "Ключ" << "Значение");
+	ui.tableWidget->setColumnCount(3);
+	ui.tableWidget->setHorizontalHeaderLabels(QStringList() << "Ключ" << "Значение" << "Количество символов");
 	ui.tableWidget->setRowCount(v.size());
 	for (int i = 0; i < v.size(); i++) {
 		ui.tableWidget->setItem(i, 0, new QTableWidgetItem(QString::number(v[i].first)));
 		ui.tableWidget->setItem(i, 1, new QTableWidgetItem(v[i].second));
+		ui.tableWidget->setItem(i, 2, new QTableWidgetItem(QString::number(v[i].second.size())));
 	}
 }
 
@@ -72,8 +73,8 @@ void task1::on_comboBox_currentTextChanged(const QString& cur_text)
 	}
 	else {
 		ui.tableWidget->clear();
-		ui.tableWidget->setColumnCount(2);
-		ui.tableWidget->setHorizontalHeaderLabels(QStringList() << "Ключ" << "Значение");
+		ui.tableWidget->setColumnCount(3);
+		ui.tableWidget->setHorizontalHeaderLabels(QStringList() << "Ключ" << "Значение" << "Количество символов");
 		QMessageBox::warning(this, "Внимание", "Дерево пустое");
 		ui.plainTextEdit->clear();
 		pushed_keys_order.clear();
