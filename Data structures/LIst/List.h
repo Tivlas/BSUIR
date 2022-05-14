@@ -72,6 +72,37 @@ private:
 public:
 	List() {};
 
+	List(const List& other) {
+		if (other.head == nullptr) {
+			head = nullptr;
+			tail = nullptr;
+			sz = 0;
+			return;
+		}
+		head = new Node<T>(other.head->data);
+		tail = head;
+		sz = 1;
+		pointer tmp = other.head->next;
+		while (tmp != nullptr) {
+			tail->next = new Node<T>(tmp->data);
+			tail->next->prev = tail;
+			tail = tail->next;
+			tmp = tmp->next;
+			++sz;
+		}
+	}
+
+	List& operator=(const List& other) {
+		if (this == &other) {
+			return *this;
+		}
+		clear();
+		for (auto it = other.begin(); it != other.end(); ++it) {
+			add(*it);
+		}
+		return *this;
+	}
+
 	~List() {
 		pointer next = nullptr;
 		while (head) {
@@ -120,7 +151,7 @@ public:
 				sz--;
 				return;
 			}
-			cur = currcurent->next;
+			cur = cur->next;
 		}
 	}
 
