@@ -10,7 +10,6 @@ class Unordered_map {
 	using value_type = std::pair<const key_type, mapped_type>;
 	using size_type = size_t;
 	using iterator = typename std::list<value_type>::iterator;
-	using const_iterator = typename std::list<value_type>::const_iterator;
 	using key_equal = KeyEqual;
 	static const size_type min_bucket_count = 8;
 
@@ -91,19 +90,19 @@ public:
 		// according to documentation we have to check if we already have this key: 
 		for (auto it = buckets[bucket_index].begin(); it != buckets[bucket_index].end(); ++it) {
 			if (key_eq(value.first, (*it)->first)) {
-				return std::make_pair(it, false);
+				return std::make_pair(iterator(*it), false);
 			}
 		}
 
 		list.push_back(value);
 
-		buckets[bucket_index].push_front(list.end() - 1);
+		buckets[bucket_index].push_front(--list.end());
 		++size_;
 		update_cur_load_factor();
 		if (need_rehash()) {
 			rehash(bucket_count_ << 1);
 		}
-		return std::make_pair(list.end() - 1, true);
+		return std::make_pair(--list.end(), true);
 	}
 
 	std::pair<iterator, bool> insert(value_type&& value) {
@@ -111,27 +110,28 @@ public:
 		// according to documentation we have to check if we already have this key: 
 		for (auto it = buckets[bucket_index].begin(); it != buckets[bucket_index].end(); ++it) {
 			if (key_eq(value.first, (*it)->first)) {
-				return std::make_pair(it, false);
+				return std::make_pair(iterator(*it), false);
 			}
 		}
 
 		list.push_back(std::move(value));
 
-		buckets[bucket_index].push_front(list.end() - 1);
+		buckets[bucket_index].push_front(--list.end());
 		++size_;
 		update_cur_load_factor();
 		if (need_rehash()) {
 			rehash(bucket_count_ << 1);
 		}
-		return std::make_pair(list.end() - 1, true);
+		return std::make_pair(--list.end(), true);
 	}
 
 	size_type erase(const key_type& key) {
 		size_type bucket_index = hasher(key) % bucket_count_;
 		for (auto it = buckets[bucket_index].begin(); it != buckets[bucket_index].end(); ++it) {
 			if (key_eq(key, (*it)->first)) {
-				std::erase(buckets[bucket_index], it);
-				list.erase(*it);
+				auto val = *it;
+				std::erase(buckets[bucket_index], val);
+				list.erase(val);
 				--size_;
 				update_cur_load_factor();
 				return 1;
@@ -141,23 +141,33 @@ public:
 	}
 
 	iterator erase(iterator pos) {
-		size_type bucket_index = hasher((*pos).first) % bucket_count_;
-		std::erase(buckets[bucket_index], pos);
-		list.erase(pos);
-		--size_;
-		update_cur_load_factor();
-		return pos;
+		key_type key = (*pos).first;
+		size_type bucket_index = hasher(key) % bucket_count_;
+
+		auto iter = list.end();
+		auto prev = buckets[bucket_index].before_begin();
+
+		for (auto cur = buckets[bucket_index].begin(); cur != buckets[bucket_index].end(); ++cur) {
+			if ((*(*cur)).first == key) {
+				iter = *cur;
+				buckets[bucket_index].erase_after(prev);
+				break;
+			}
+			++prev;
+		}
+
+		if (iter != list.end()) {
+			return list.erase(iter);
+		}
+		return iter;
 	}
 
-	iterator erase(const_iterator first, const_iterator last) {
-		size_type iteration_counter = 0;
-		for (auto it = first; it != last; ++it) {
-			size_type bucket_index = hasher((*it).first) % bucket_count_;
-			std::erase(buckets[bucket_index], it);
-			++iteration_counter;
+	iterator erase(iterator first, iterator last) {
+		size_type count = 0;
+		while (first != last) {
+			first = erase(first);
+			++count;
 		}
-		size_ -= iteration_counter;
-		update_cur_load_factor();
 		return last;
 	}
 
@@ -242,14 +252,6 @@ public:
 	iterator end() {
 		return list.end();
 	}
-	
-	const_iterator cbegin() const {
-		return list.cbegin();
-	}
-
-	const_iterator cend() const {
-		return list.cend();
-	}
 
 private: // helper methods
 	void update_cur_load_factor() {
@@ -257,6 +259,6 @@ private: // helper methods
 	}
 
 	bool need_rehash() {
-		return cur_load_factor > max_load_factor;
+		return cur_load_factor > max_load_factor_;
 	}
 };
