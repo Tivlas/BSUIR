@@ -273,14 +273,14 @@ public:
 	}
 
 	BitSet& operator<<=(size_t pos) noexcept {
-		const size_t elem_shift = pos / 64;
+		const std::ptrdiff_t elem_shift = pos / 64;
 		if (elem_shift != 0) {
-			for (size_t i = sz - 1; i >= 0; --i) {
+			for (std::ptrdiff_t i = sz - 1; i >= 0; --i) {
 				bits[i] = elem_shift <= i ? bits[i - elem_shift] : 0;
 			}
 		}
 		if ((pos %= 64) != 0) {
-			for (size_t i = sz - 1; i > 0; --i) {
+			for (std::ptrdiff_t i = sz - 1; i > 0; --i) {
 				bits[i] = (bits[i] << pos) | (bits[i - 1] >> (64 - pos));
 			}
 			bits[0] <<= pos;
@@ -290,14 +290,14 @@ public:
 	}
 
 	BitSet& operator>>=(size_t pos) noexcept {
-		const size_t elem_shift = pos / 64;
+		const std::ptrdiff_t elem_shift = pos / 64;
 		if (elem_shift != 0) {
-			for (size_t i = 0; i < sz; ++i) {
+			for (std::ptrdiff_t i = 0; i < sz; ++i) {
 				bits[i] = elem_shift <= sz - 1 - i ? bits[i + elem_shift] : 0;
 			}
 		}
 		if ((pos %= 64) != 0) {
-			for (size_t i = 0; i < sz - 1; ++i) {
+			for (std::ptrdiff_t i = 0; i < sz - 1; ++i) {
 				bits[i] = (bits[i] >> pos) | (bits[i + 1] << (64 - pos));
 			}
 			bits[sz - 1] >>= pos;
