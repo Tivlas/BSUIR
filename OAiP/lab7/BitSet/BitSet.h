@@ -87,7 +87,7 @@ public:
 
 	bool operator[](size_t pos) const {
 		if (pos >= N) {
-			throw std::out_of_range("BirSet index out of range");
+			throw std::out_of_range("BitSet index out of range");
 		}
 		return (bits[pos / 64] & (1ULL << (pos % 64))) != 0;
 	}
@@ -204,7 +204,7 @@ public:
 			if (N > 64) {
 				for (size_t i = 1; i < sz; i++) {
 					if (bits[i] != 0) {
-						throw std::overflow_error("bitset to_ullong overflow error");
+						throw std::overflow_error("BitSet to_ullong overflow error");
 					}
 				}
 			}
@@ -226,12 +226,12 @@ public:
 			if (bits_large) {
 				for (size_t i = 1; i < sz; i++) {
 					if (bits[i] != 0) {
-						throw std::overflow_error("bitset to_ulong overflow error");
+						throw std::overflow_error("BitSet to_ulong overflow error");
 					}
 				}
 			}
 			if (bits[0] > ULONG_MAX) {
-				throw std::overflow_error("bitset overflow");
+				throw std::overflow_error("BitSet to_ulong overflow error");
 			}
 			return static_cast<unsigned long>(bits[0]);
 		}
