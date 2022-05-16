@@ -10,16 +10,17 @@ class Unordered_map {
 	using value_type = std::pair<const key_type, mapped_type>;
 	using size_type = size_t;
 	using iterator = typename std::list<value_type>::iterator;
+	using const_iterator = typename std::list<value_type>::const_iterator;
 	using key_equal = KeyEqual;
 	static const size_type min_bucket_count = 8;
 
 	double cur_load_factor = 0;
-	const double max_load_factor_ = 0.75;
+	const double max_load_factor_ = 1.0;
 private:
 	Hash hasher;
 	key_equal key_eq;
 	std::list<value_type> list; // list of all inserted elements
-	std::vector<std::forward_list<iterator>> buckets; // vector contains lists of iterators to elements in 'list'(field) with the same hash
+	std::vector<std::list<iterator>> buckets; // vector contains lists of iterators to elements in 'list'(field) with the same hash
 	size_type size_;
 	size_type bucket_count_;
 
@@ -87,16 +88,14 @@ public:
 
 	std::pair<iterator, bool> insert(const value_type& value) {
 		size_type bucket_index = hasher(value.first) % bucket_count_;
-		// according to documentation we have to check if we already have this key: 
-		for (auto it = buckets[bucket_index].begin(); it != buckets[bucket_index].end(); ++it) {
-			if (key_eq(value.first, (*it)->first)) {
-				return std::make_pair(iterator(*it), false);
+		for (auto& cur : buckets[bucket_index]) {
+			if (key_eq(value.first, (*cur).first)) {
+				return std::make_pair(cur, false);
 			}
 		}
 
-		list.push_back(value);
+		elem_insert(value, bucket_index);
 
-		buckets[bucket_index].push_front(--list.end());
 		++size_;
 		update_cur_load_factor();
 		if (need_rehash()) {
@@ -107,16 +106,14 @@ public:
 
 	std::pair<iterator, bool> insert(value_type&& value) {
 		size_type bucket_index = hasher(value.first) % bucket_count_;
-		// according to documentation we have to check if we already have this key: 
-		for (auto it = buckets[bucket_index].begin(); it != buckets[bucket_index].end(); ++it) {
-			if (key_eq(value.first, (*it)->first)) {
-				return std::make_pair(iterator(*it), false);
+		for (auto& cur : buckets[bucket_index]) {
+			if (key_eq(value.first, (*cur).first)) {
+				return std::make_pair(cur, false);
 			}
 		}
 
-		list.push_back(std::move(value));
+		elem_move_insert(std::move(value), bucket_index);
 
-		buckets[bucket_index].push_front(--list.end());
 		++size_;
 		update_cur_load_factor();
 		if (need_rehash()) {
@@ -141,25 +138,12 @@ public:
 	}
 
 	iterator erase(iterator pos) {
-		key_type key = (*pos).first;
-		size_type bucket_index = hasher(key) % bucket_count_;
-
-		auto iter = list.end();
-		auto prev = buckets[bucket_index].before_begin();
-
-		for (auto cur = buckets[bucket_index].begin(); cur != buckets[bucket_index].end(); ++cur) {
-			if ((*(*cur)).first == key) {
-				iter = *cur;
-				buckets[bucket_index].erase_after(prev);
-				break;
-			}
-			++prev;
-		}
-
-		if (iter != list.end()) {
-			return list.erase(iter);
-		}
-		return iter;
+		size_type bucket_index = hasher((*pos).first) % bucket_count_;
+		std::erase(buckets[bucket_index], pos);
+		pos = list.erase(pos);
+		--size_;
+		update_cur_load_factor();
+		return pos;
 	}
 
 	iterator erase(iterator first, iterator last) {
@@ -171,11 +155,21 @@ public:
 		return last;
 	}
 
+	const_iterator find(const key_type& key) const {
+		size_type bucket_index = hasher(key) % bucket_count_;
+		for (auto& cur : buckets[bucket_index]) {
+			if (key_eq(key, (*cur).first)) {
+				return cur;
+			}
+		}
+		return list.cend();
+	}
+
 	iterator find(const key_type& key) {
 		size_type bucket_index = hasher(key) % bucket_count_;
-		for (auto it = buckets[bucket_index].begin(); it != buckets[bucket_index].end(); ++it) {
-			if (key_eq(key, (*it)->first)) {
-				return it;
+		for (auto& cur : buckets[bucket_index]) {
+			if (key_eq(key, (*cur).first)) {
+				return cur;
 			}
 		}
 		return list.end();
@@ -204,7 +198,7 @@ public:
 	mapped_type& operator[](const key_type& key) {
 		auto it = find(key);
 		if (it != list.end()) {
-			return (*it)->second;
+			return (*it).second;
 		}
 		else return insert(value_type(key, mapped_type())).first->second;
 	}
@@ -226,19 +220,11 @@ public:
 	}
 
 	size_type bucket_size(size_type n) const {
-		return buckets[n].size();
+		return std::distance(buckets[n].begin(), buckets[n].end());
 	}
 
 	size_type count(const key_type& key) const {
-		size_type bucket_index = hasher(key) % bucket_count_;
-		size_type count = 0;
-		for (auto it = buckets[bucket_index].begin(); it != buckets[bucket_index].end(); ++it) {
-			if (key_eq(key, (*it)->first)) {
-				++count;
-				break;
-			}
-		}
-		return count;
+		return find(key) != list.cend() ? 1 : 0;
 	}
 
 	bool contains(const key_type& key) const {
@@ -253,12 +239,68 @@ public:
 		return list.end();
 	}
 
-private: // helper methods
+	typename std::list<iterator>::iterator begin(size_type n) {
+		return buckets[n].begin();
+	}
+
+	typename std::list<iterator>::iterator end(size_type n) {
+		return buckets[n].end();
+	}
+
+private: // HELPER METHODS
 	void update_cur_load_factor() {
 		cur_load_factor = static_cast<double>(size_) / bucket_count_;
 	}
 
 	bool need_rehash() {
 		return cur_load_factor > max_load_factor_;
+	}
+
+	void elem_insert(const value_type& value, size_type bucket_index) {
+		auto it = list.begin();
+		if (bucket_index != 0) {
+			if (!buckets[bucket_index - 1].empty())
+			{
+				it = *(--buckets[bucket_index - 1].end());
+				++it;
+			}
+			else if (bucket_index - 2 >= 0) {
+				for (std::ptrdiff_t i = bucket_index - 2; i >= 0; --i)
+				{
+					if (!buckets[i].empty())
+					{
+						it = *(--buckets[i].end());
+						++it;
+						break;
+					}
+				}
+			}
+		}
+		it = list.insert(it, value);
+		buckets[bucket_index].push_front(it);
+	}
+
+	void elem_move_insert(value_type&& value, size_type bucket_index) {
+		auto it = list.begin();
+		if (bucket_index != 0) {
+			if (!buckets[bucket_index - 1].empty())
+			{
+				it = *(--buckets[bucket_index - 1].end());
+				++it;
+			}
+			else if (bucket_index - 2 >= 0) {
+				for (std::ptrdiff_t i = bucket_index - 2; i >= 0; --i)
+				{
+					if (!buckets[i].empty())
+					{
+						it = *(--buckets[i].end());
+						++it;
+						break;
+					}
+				}
+			}
+		}
+		it = list.insert(it, std::move(value));
+		buckets[bucket_index].push_front(it);
 	}
 };

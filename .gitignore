@@ -289,3 +289,6 @@ OAiP/lab3/task1_1/stdafx.cpp
 *.ipch
 /OAiP/lab7/BitSet/x64/Debug
 /OAiP/lab7/Unordered_map/x64/Debug
+/OAiP/lab7/U_map_Visualization/x64
+*.bin
+/OAiP/lab7/x64/Debug
