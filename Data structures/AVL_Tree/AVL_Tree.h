@@ -2,6 +2,7 @@
 #include <functional>
 #include <list>
 #include <type_traits>
+#include <algorithm>
 template <typename Key, typename T, typename Compare = std::less<Key>>
 class AVL_Tree {
 	using key_type = Key;
@@ -47,6 +48,36 @@ public:
 		pointer operator->() {
 			return std::addressof(cur->value_);
 		}
+
+		Iterator& operator++() {
+			cur = cur->next(cur);
+			return *this;
+		}
+
+		Iterator operator++(int) {
+			Iterator tmp(*this);
+			cur = cur->next(cur);
+			return tmp;
+		}
+
+		Iterator& operator--() {
+			cur = cur->prev(cur);
+			return *this;
+		}
+
+		Iterator operator--(int) {
+			Iterator tmp(*this);
+			cur = cur->prev(cur);
+			return tmp;
+		}
+
+		bool operator==(const Iterator& other) const {
+			return cur == other.cur;
+		}
+
+		bool operator!=(const Iterator& other) const {
+			return !(cur == other.cur);
+		}
 	};
 
 	template <typename T>
@@ -70,6 +101,7 @@ private:
 	// AVL_NODE
 	struct AVL_Node
 	{
+		friend class AVL_Tree;
 		AVL_Node* left_ = nullptr;
 		AVL_Node* right_ = nullptr;
 		AVL_Node* parent_ = nullptr;
@@ -77,22 +109,70 @@ private:
 		value_type value_;
 		AVL_Node(const value_type& value) : value_(value) {}
 		AVL_Node(value_type&& value) : value_(std::move(value)) {}
+
+		bool operator== (const AVL_Node& other) const {
+			return parent_ == other.parent_;
+		}
+
+		bool operator!= (const AVL_Node& other) const {
+			return !(*this == other);
+		}
+	private:
+		static inline key_type max;
+		static inline key_type min;
+		AVL_Node* next(AVL_Node* node) {
+			if (node->value_.first == max) {
+				return node->right_;
+			}
+			if (node->right_) {
+				node = node->right_;
+				while (node->left_) {
+					node = node->left_;
+				}
+			}
+			else {
+				while (node->parent_ && node->parent_->right_ == node) {
+					node = node->parent_;
+				}
+				node = node->parent_;
+			}
+			return node;
+		}
+
+		AVL_Node* prev(AVL_Node* node) {
+			if (node->left_) {
+				node = node->left_;
+				while (node->right_) {
+					node = node->right_;
+				}
+			}
+			else {
+				while (node->parent_ && node->parent_->left_ == node && node->parent_->parent_ != nullptr) {
+					node = node->parent_;
+				}
+				node = node->parent_;
+			}
+			return node;
+		}
 	};
 
-	key_compare  k_cmp;
-	AVL_Node* fake_root_ = new AVL_Node(value_type(key_type(), mapped_type()));
+	key_compare k_cmp;
 	AVL_Node* root_ = nullptr;
 	AVL_Node* begin_node_ = nullptr;
+	AVL_Node* end_node = nullptr;
 	size_type size_ = 0;
-	std::list<value_type> elem_list;
+	AVL_Node* fake_root_;
+	std::list<AVL_Node*> elem_list_;
+
 
 public:
-
 	AVL_Tree() : k_cmp(key_compare()) {
+		fake_root_ = new AVL_Node(value_type(key_type(), mapped_type()));
 		fake_root_->left_ = root_;
 	}
 
 	AVL_Tree(const key_compare& k_cmp) : k_cmp(k_cmp) {
+		fake_root_ = new AVL_Node(value_type(key_type(), mapped_type()));
 		fake_root_->left_ = root_;
 	}
 
@@ -104,6 +184,9 @@ public:
 		root_ = help_insert(root_, new_node, inserted, it);
 		if (inserted)
 		{
+			list_insert(elem_list_, new_node);
+			AVL_Node::max = k_cmp(new_node->value_.first, elem_list_.back()->first) ? elem_list_.back()->first : new_node->value_.first;
+			AVL_Node::min = k_cmp(new_node->value_.first, elem_list_.front()->first) ? elem_list_.front()->first : new_node->value_.first;
 			++size_;
 			update_root_parent();
 		}
@@ -117,6 +200,9 @@ public:
 		root_ = help_insert(root_, new_node, inserted, it);
 		if (inserted)
 		{
+			list_insert(elem_list_, new_node);
+			AVL_Node::max = k_cmp(new_node->value_.first, elem_list_.back()->value_.first) ? elem_list_.back()->value_.first : new_node->value_.first;
+			AVL_Node::min = k_cmp(new_node->value_.first, elem_list_.front()->value_.first) ? elem_list_.front()->value_.first : new_node->value_.first;
 			++size_;
 			update_root_parent();
 		}
@@ -132,6 +218,7 @@ public:
 		root_ = remove(root_, key, count);
 		if (count != 0)
 		{
+
 			update_root_parent();
 			--size_;
 		}
@@ -231,19 +318,27 @@ public:
 	}
 
 	iterator begin() {
-		return iterator(begin_node_);
+		return iterator(elem_list_.front());
 	}
 
 	const_iterator cbegin() const {
-		return const_iterator(begin_node_);
+		return const_iterator(elem_list_.front());
 	}
 
 	iterator end() {
-		return iterator(fake_root_);
+		return iterator(elem_list_.back()->right_);
 	}
 
 	const_iterator cend() const {
-		return const_iterator(fake_root_);
+		return const_iterator(elem_list_.back()->right_);
+	}
+
+	typename std::list<AVL_Node*>::iterator list_begin() {
+		return elem_list_.begin();
+	}
+
+	typename std::list<AVL_Node*>::iterator list_end() {
+		return elem_list_.end();
 	}
 private:
 	// HELPER METHODS
@@ -374,6 +469,7 @@ private:
 	void update_root_parent() {
 		if (root_) {
 			root_->parent_ = fake_root_;
+			fake_root_->left_ = root_;
 		}
 	}
 
@@ -413,5 +509,22 @@ private:
 			return balance(min);
 		}
 		return balance(root);
+	}
+
+	void list_insert(std::list<AVL_Node*>& list, AVL_Node* node_to_insert) {
+		if (list.empty()) list.push_back(node_to_insert);
+		else {
+			auto it = list.begin();
+			while (it != list.end() && k_cmp((*it)->value_.first, node_to_insert->value_.first)) ++it;
+			list.insert(it, node_to_insert);
+		}
+	}
+
+	void list_erase(std::list<AVL_Node*>& list, AVL_Node* node_to_erase) {
+		auto it = list.begin();
+		while (it != list.end() && *it != node_to_erase) ++it;
+		if (it != list.end()) {
+			list.erase(it);
+		}
 	}
 };
