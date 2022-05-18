@@ -9,21 +9,22 @@ class AVL_Tree {
 	using mapped_type = T;
 	using value_type = std::pair<const key_type, mapped_type>;
 	using size_type = std::size_t;
-	using reference = value_type&;
-	using const_reference = const value_type&;
 	using key_compare = Compare;
-	using difference_type = std::ptrdiff_t;
 
 public:
 	struct AVL_Node;
 
-	template <typename T>
 	class Iterator {
-		using val_t = T;
+		friend class AVL_Tree;
+		using iterator_category = std::bidirectional_iterator_tag;
+		using val_t = value_type;
 		using reference = val_t&;
 		using pointer = val_t*;
 	private:
 		AVL_Node* cur = nullptr;
+		AVL_Node* get_node() const {
+			return cur;
+		}
 	public:
 		Iterator() {}
 		Iterator(AVL_Node* cur) : cur(cur) {}
@@ -35,7 +36,7 @@ public:
 			cur = other.cur;
 			return *this;
 		}
-		Iterator& operator=(Iterator&& other) {
+		Iterator& operator=(Iterator&& other) noexcept {
 			cur = other.cur;
 			other.cur = nullptr;
 			return *this;
@@ -80,35 +81,426 @@ public:
 		}
 	};
 
-	template <typename T>
-	class List_Iterator {
+	class Const_Iterator {
+		friend class AVL_Tree;
+		using iterator_category = std::bidirectional_iterator_tag;
+		using val_t = const value_type;
+		using reference = val_t&;
+		using pointer = val_t*;
+	private:
+		AVL_Node* cur = nullptr;
+		AVL_Node* get_node() const {
+			return cur;
+		}
+	public:
+		Const_Iterator() {}
+		Const_Iterator(AVL_Node* cur) : cur(cur) {}
+		Const_Iterator(const Const_Iterator& other) : cur(other.cur) {}
+		Const_Iterator(Const_Iterator&& other) : cur(other.cur) {
+			other.cur = nullptr;
+		}
+		Const_Iterator& operator=(const Const_Iterator& other) {
+			cur = other.cur;
+			return *this;
+		}
+		Const_Iterator& operator=(Const_Iterator&& other) {
+			cur = other.cur;
+			other.cur = nullptr;
+			return *this;
+		}
+
+		reference operator*() {
+			return cur->value_;
+		}
+
+		pointer operator->() {
+			return std::addressof(cur->value_);
+		}
+
+		Const_Iterator& operator++() {
+			cur = cur->next(cur);
+			return *this;
+		}
+
+		Const_Iterator operator++(int) {
+			Const_Iterator tmp(*this);
+			cur = cur->next(cur);
+			return tmp;
+		}
+
+		Const_Iterator& operator--() {
+			cur = cur->prev(cur);
+			return *this;
+		}
+
+		Const_Iterator operator--(int) {
+			Const_Iterator tmp(*this);
+			cur = cur->prev(cur);
+			return tmp;
+		}
+
+		bool operator==(const Const_Iterator& other) const {
+			return cur == other.cur;
+		}
+
+		bool operator!=(const Const_Iterator& other) const {
+			return !(cur == other.cur);
+		}
 	};
 
-	using my_iterator = Iterator<value_type>;
-	using const_iterator = Iterator<const value_type>;
-	using my_reverse_iterator = std::reverse_iterator<my_iterator>;
-	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+	class Reverse_Iterator {
+		friend class AVL_Tree;
+		using iterator_category = std::bidirectional_iterator_tag;
+		using val_t = value_type;
+		using reference = val_t&;
+		using pointer = val_t*;
+	private:
+		Iterator it;
+	public:
+		Reverse_Iterator() {}
+		Reverse_Iterator(Iterator it) {
+			this->it = --it;
+		}
+		Reverse_Iterator(const Reverse_Iterator& other) : it(other.it) {}
+		Reverse_Iterator& operator=(const Reverse_Iterator& other) {
+			it = other.it;
+			return *this;
+		}
 
-	using list_iterator = List_Iterator<value_type>;
-	using const_list_iterator = List_Iterator<const value_type>;
-	using list_reverse_iterator = std::reverse_iterator<list_iterator>;
-	using const_list_reverse_iterator = std::reverse_iterator<const_list_iterator>;
+		reference operator*() {
+			return *it;
+		}
 
-	using iterator = std::conditional_t<std::is_same_v<key_type, mapped_type>, const_iterator, my_iterator>;
-	using reverse_iterator = std::conditional_t<std::is_same_v<key_type, mapped_type>, const_reverse_iterator, my_reverse_iterator>;
+		pointer operator->() {
+			return std::addressof(*it);
+		}
+
+		Reverse_Iterator& operator++() {
+			--it;
+			return *this;
+		}
+
+		Reverse_Iterator operator++(int) {
+			Reverse_Iterator tmp(*this);
+			--it;
+			return tmp;
+		}
+
+		Reverse_Iterator& operator--() {
+			++it;
+			return *this;
+		}
+
+		Reverse_Iterator operator--(int) {
+			Reverse_Iterator tmp(*this);
+			++it;
+			return tmp;
+		}
+
+		bool operator==(const Reverse_Iterator& other) const {
+			return it == other.it;
+		}
+
+		bool operator!=(const Reverse_Iterator& other) const {
+			return !(it == other.it);
+		}
+	};
+
+	class Const_Reverse_Iterator {
+		friend class AVL_Tree;
+		using iterator_category = std::bidirectional_iterator_tag;
+		using val_t = const value_type;
+		using reference = val_t&;
+		using pointer = val_t*;
+	private:
+		Const_Iterator it;
+	public:
+		Const_Reverse_Iterator() {}
+		Const_Reverse_Iterator(Const_Iterator it) {
+			this->it = --it;
+		}
+		Const_Reverse_Iterator(const Const_Reverse_Iterator& other) : it(other.it) {}
+		Const_Reverse_Iterator& operator=(const Const_Reverse_Iterator& other) {
+			it = other.it;
+			return *this;
+		}
+
+		reference operator*() {
+			return *it;
+		}
+
+		pointer operator->() {
+			return std::addressof(*it);
+		}
+
+		Const_Reverse_Iterator& operator++() {
+			--it;
+			return *this;
+		}
+
+		Const_Reverse_Iterator operator++(int) {
+			Const_Reverse_Iterator tmp(*this);
+			--it;
+			return tmp;
+		}
+
+		Const_Reverse_Iterator& operator--() {
+			++it;
+			return *this;
+		}
+
+		Const_Reverse_Iterator operator--(int) {
+			Const_Reverse_Iterator tmp(*this);
+			++it;
+			return tmp;
+		}
+
+		bool operator==(const Const_Reverse_Iterator& other) const {
+			return it == other.it;
+		}
+
+		bool operator!=(const Const_Reverse_Iterator& other) const {
+			return !(it == other.it);
+		}
+	};
+
+	class list_iterator {
+		friend class AVL_Tree;
+		using iterator_category = std::bidirectional_iterator_tag;
+		using val_t = value_type;
+		using reference = val_t&;
+		using pointer = val_t*;
+	private:
+		typename std::list<AVL_Node*>::iterator it;
+	public:
+		list_iterator() {}
+		list_iterator(typename std::list<AVL_Node*>::iterator it) : it(it) {}
+		list_iterator(const list_iterator& other) : it(other.it) {}
+		list_iterator& operator=(const list_iterator& other) {
+			it = other.it;
+			return *this;
+		}
+
+		reference operator*() {
+			return *(*it);
+		}
+
+		pointer operator->() {
+			return std::addressof((*it)->value_);
+		}
+
+		list_iterator& operator++() {
+			++it;
+			return *this;
+		}
+
+		list_iterator operator++(int) {
+			list_iterator tmp(*this);
+			++it;
+			return tmp;
+		}
+
+		list_iterator& operator--() {
+			--it;
+			return *this;
+		}
+
+		list_iterator operator--(int) {
+			list_iterator tmp(*this);
+			--it;
+			return tmp;
+		}
+
+		bool operator==(const list_iterator& other) const {
+			return it == other.it;
+		}
+
+		bool operator!=(const list_iterator& other) const {
+			return !(it == other.it);
+		}
+	};
+
+	class const_list_iterator {
+		friend class AVL_Tree;
+		using iterator_category = std::bidirectional_iterator_tag;
+		using val_t = const value_type;
+		using reference = val_t&;
+		using pointer = val_t*;
+	private:
+		typename std::list<AVL_Node*>::const_iterator it;
+	public:
+		const_list_iterator() {}
+		const_list_iterator(typename std::list<AVL_Node*>::const_iterator it) : it(it) {}
+		const_list_iterator(const const_list_iterator& other) : it(other.it) {}
+		const_list_iterator& operator=(const const_list_iterator& other) {
+			it = other.it;
+			return *this;
+		}
+
+		reference operator*() {
+			return *(*it);
+		}
+
+		pointer operator->() {
+			return std::addressof((*it)->value_);
+		}
+
+		const_list_iterator& operator++() {
+			++it;
+			return *this;
+		}
+
+		const_list_iterator operator++(int) {
+			const_list_iterator tmp(*this);
+			++it;
+			return tmp;
+		}
+
+		const_list_iterator& operator--() {
+			--it;
+			return *this;
+		}
+
+		const_list_iterator operator--(int) {
+			const_list_iterator tmp(*this);
+			--it;
+			return tmp;
+		}
+
+		bool operator==(const const_list_iterator& other) const {
+			return it == other.it;
+		}
+
+		bool operator!=(const const_list_iterator& other) const {
+			return !(it == other.it);
+		}
+	};
+
+	class list_reverse_iterator {
+		friend class AVL_Tree;
+		using iterator_category = std::bidirectional_iterator_tag;
+		using val_t = value_type;
+		using reference = val_t&;
+		using pointer = val_t*;
+	private:
+		typename std::list<AVL_Node*>::reverse_iterator it;
+	public:
+		list_reverse_iterator() {}
+		list_reverse_iterator(typename std::list<AVL_Node*>::reverse_iterator it) : it(it) {}
+		list_reverse_iterator(const list_reverse_iterator& other) : it(other.it) {}
+		list_reverse_iterator& operator=(const list_reverse_iterator& other) {
+			it = other.it;
+			return *this;
+		}
+
+		reference operator*() {
+			return *(*it);
+		}
+
+		pointer operator->() {
+			return std::addressof((*it)->value_);
+		}
+
+		list_reverse_iterator& operator++() {
+			++it;
+			return *this;
+		}
+
+		list_reverse_iterator operator++(int) {
+			list_reverse_iterator tmp(*this);
+			++it;
+			return tmp;
+		}
+
+		list_reverse_iterator& operator--() {
+			--it;
+			return *this;
+		}
+
+		list_reverse_iterator operator--(int) {
+			list_reverse_iterator tmp(*this);
+			--it;
+			return tmp;
+		}
+
+		bool operator==(const list_reverse_iterator& other) const {
+			return it == other.it;
+		}
+
+		bool operator!=(const list_reverse_iterator& other) const {
+			return !(it == other.it);
+		}
+	};
+
+	class const_list_reverse_iterator {
+		friend class AVL_Tree;
+		using iterator_category = std::bidirectional_iterator_tag;
+		using val_t = const value_type;
+		using reference = val_t&;
+		using pointer = val_t*;
+	private:
+		typename std::list<AVL_Node*>::const_reverse_iterator it;
+	public:
+		const_list_reverse_iterator() {}
+		const_list_reverse_iterator(typename std::list<AVL_Node*>::const_reverse_iterator it) : it(it) {}
+		const_list_reverse_iterator(const const_list_reverse_iterator& other) : it(other.it) {}
+		const_list_reverse_iterator& operator=(const const_list_reverse_iterator& other) {
+			it = other.it;
+			return *this;
+		}
+
+		reference operator*() {
+			return *(*it);
+		}
+
+		pointer operator->() {
+			return std::addressof((*it)->value_);
+		}
+
+		const_list_reverse_iterator& operator++() {
+			++it;
+			return *this;
+		}
+
+		const_list_reverse_iterator operator++(int) {
+			const_list_reverse_iterator tmp(*this);
+			++it;
+			return tmp;
+		}
+
+		const_list_reverse_iterator& operator--() {
+			--it;
+			return *this;
+		}
+
+		const_list_reverse_iterator operator--(int) {
+			const_list_reverse_iterator tmp(*this);
+			--it;
+			return tmp;
+		}
+
+		bool operator==(const const_list_reverse_iterator& other) const {
+			return it == other.it;
+		}
+
+		bool operator!=(const const_list_reverse_iterator& other) const {
+			return !(it == other.it);
+		}
+	};
+
+
+	using const_iterator = Const_Iterator;
+	using const_reverse_iterator = Const_Reverse_Iterator;
+	using iterator = std::conditional_t<std::is_same_v<key_type, mapped_type>, const_iterator, Iterator>;
+	using reverse_iterator = std::conditional_t<std::is_same_v<key_type, mapped_type>, const_reverse_iterator, Reverse_Iterator>;
 private:
-
 	// AVL_NODE
 	struct AVL_Node
 	{
 		friend class AVL_Tree;
-		AVL_Node* left_ = nullptr;
-		AVL_Node* right_ = nullptr;
-		AVL_Node* parent_ = nullptr;
-		int height_ = 1;
 		value_type value_;
-		AVL_Node(const value_type& value) : value_(value) {}
-		AVL_Node(value_type&& value) : value_(std::move(value)) {}
+		AVL_Node(const value_type& value, bool is_not_fake = true) : value_(value), is_not_fake_(is_not_fake) {}
+		AVL_Node(value_type&& value, bool is_not_fake = true) : value_(std::move(value)), is_not_fake_(is_not_fake) {}
 
 		bool operator== (const AVL_Node& other) const {
 			return parent_ == other.parent_;
@@ -118,15 +510,19 @@ private:
 			return !(*this == other);
 		}
 	private:
-		static inline key_type max;
-		static inline key_type min;
+		bool is_not_fake_ = true;
+		AVL_Node* left_ = nullptr;
+		AVL_Node* right_ = nullptr;
+		AVL_Node* parent_ = nullptr;
+		int height_ = 1;
+
 		AVL_Node* next(AVL_Node* node) {
-			if (node->value_.first == max) {
-				return node->right_;
-			}
 			if (node->right_) {
+				if (node->right_->is_not_fake_ == false) {
+					return node->right_;
+				}
 				node = node->right_;
-				while (node->left_) {
+				while (node->left_ && node->left_->is_not_fake_ == true) {
 					node = node->left_;
 				}
 			}
@@ -141,13 +537,16 @@ private:
 
 		AVL_Node* prev(AVL_Node* node) {
 			if (node->left_) {
+				if (node->left_->is_not_fake_ == false) {
+					return node->left_;
+				}
 				node = node->left_;
-				while (node->right_) {
+				while (node->right_ && node->right_->is_not_fake_ == true) {
 					node = node->right_;
 				}
 			}
 			else {
-				while (node->parent_ && node->parent_->left_ == node && node->parent_->parent_ != nullptr) {
+				while (node->parent_ && node->parent_->left_ == node) {
 					node = node->parent_;
 				}
 				node = node->parent_;
@@ -159,24 +558,26 @@ private:
 	key_compare k_cmp;
 	AVL_Node* root_ = nullptr;
 	AVL_Node* begin_node_ = nullptr;
-	AVL_Node* end_node = nullptr;
+	AVL_Node* fake_begin_node_ = nullptr;
+	AVL_Node* end_node_ = nullptr;
+	AVL_Node* fake_end_node_ = nullptr;
 	size_type size_ = 0;
-	AVL_Node* fake_root_;
 	std::list<AVL_Node*> elem_list_;
-
-
 public:
 	AVL_Tree() : k_cmp(key_compare()) {
-		fake_root_ = new AVL_Node(value_type(key_type(), mapped_type()));
-		fake_root_->left_ = root_;
+		fake_begin_node_ = new AVL_Node(value_type(), false);
+		fake_end_node_ = new AVL_Node(value_type(), false);
+		fake_begin_node_->height_ = 0;
+		fake_end_node_->height_ = 0;
 	}
 
 	AVL_Tree(const key_compare& k_cmp) : k_cmp(k_cmp) {
-		fake_root_ = new AVL_Node(value_type(key_type(), mapped_type()));
-		fake_root_->left_ = root_;
+		fake_begin_node_ = new AVL_Node(value_type(), false);
+		fake_end_node_ = new AVL_Node(value_type(), false);
+		fake_begin_node_->height_ = 0;
+		fake_end_node_->height_ = 0;
 	}
 
-	// INSERT
 	std::pair<iterator, bool> insert(const value_type& value) {
 		AVL_Node* new_node = new AVL_Node(value);
 		bool inserted = false;
@@ -184,11 +585,10 @@ public:
 		root_ = help_insert(root_, new_node, inserted, it);
 		if (inserted)
 		{
-			list_insert(elem_list_, new_node);
-			AVL_Node::max = k_cmp(new_node->value_.first, elem_list_.back()->first) ? elem_list_.back()->first : new_node->value_.first;
-			AVL_Node::min = k_cmp(new_node->value_.first, elem_list_.front()->first) ? elem_list_.front()->first : new_node->value_.first;
-			++size_;
+			list_insert(elem_list_, it.get_node());
+			update_begin_end_nodes(it.get_node());
 			update_root_parent();
+			++size_;
 		}
 		return std::make_pair(it, inserted);
 	}
@@ -200,16 +600,14 @@ public:
 		root_ = help_insert(root_, new_node, inserted, it);
 		if (inserted)
 		{
-			list_insert(elem_list_, new_node);
-			AVL_Node::max = k_cmp(new_node->value_.first, elem_list_.back()->value_.first) ? elem_list_.back()->value_.first : new_node->value_.first;
-			AVL_Node::min = k_cmp(new_node->value_.first, elem_list_.front()->value_.first) ? elem_list_.front()->value_.first : new_node->value_.first;
-			++size_;
+			list_insert(elem_list_, it.get_node());
+			update_begin_end_nodes(it.get_node());
 			update_root_parent();
+			++size_;
 		}
 		return std::make_pair(it, inserted);
 	}
 
-	// ERASE
 	size_type erase(const key_type& key) {
 		if (root_ == nullptr) {
 			return 0;
@@ -218,11 +616,31 @@ public:
 		root_ = remove(root_, key, count);
 		if (count != 0)
 		{
-
+			list_erase(elem_list_, key);
+			update_begin_end_nodes_after_erase();
 			update_root_parent();
 			--size_;
 		}
 		return count;
+	}
+
+	iterator erase(iterator pos) {
+		key_type key = pos.get_node()->value_.first;
+		size_type count = 0;
+		iterator* it = new iterator();
+		root_ = remove(root_, key, count, it);
+		list_erase(elem_list_, key);
+		update_begin_end_nodes_after_erase();
+		update_root_parent();
+		--size_;
+		return *it;
+	}
+
+	iterator erase(iterator first, iterator last) {
+		while (first != last) {
+			first = erase(first);
+		}
+		return last;
 	}
 
 	size_type size() const {
@@ -234,10 +652,11 @@ public:
 	}
 
 	void clear() {
-		delete fake_root_;
-		fake_root_ = new AVL_Node(value_type(key_type(), mapped_type()));
 		root_ = nullptr;
 		begin_node_ = nullptr;
+		end_node_ = nullptr;
+		fake_begin_node_ = nullptr;
+		fake_end_node_ = nullptr;
 		size_ = 0;
 	}
 
@@ -307,7 +726,17 @@ public:
 	mapped_type& operator[](const key_type& key) {
 		auto it = find(key);
 		if (it == end()) {
-			return insert(value_type(key, mapped_type())).first->second;
+			auto iter = insert({ key, mapped_type() });
+			return iter.first->second;
+		}
+		return it->second;
+	}
+
+	const mapped_type& operator[](const key_type& key) const {
+		auto it = find(key);
+		if (it == cend()) {
+			auto iter = insert({ key, mapped_type() });
+			return iter.first->second;
 		}
 		return it->second;
 	}
@@ -318,28 +747,69 @@ public:
 	}
 
 	iterator begin() {
-		return iterator(elem_list_.front());
+		return iterator(begin_node_);
 	}
 
 	const_iterator cbegin() const {
-		return const_iterator(elem_list_.front());
+		return const_iterator(begin_node_);
 	}
 
 	iterator end() {
-		return iterator(elem_list_.back()->right_);
+		return iterator(fake_end_node_);
 	}
 
 	const_iterator cend() const {
-		return const_iterator(elem_list_.back()->right_);
+		return const_iterator(fake_end_node_);
 	}
 
-	typename std::list<AVL_Node*>::iterator list_begin() {
-		return elem_list_.begin();
+	reverse_iterator rbegin() {
+		return reverse_iterator(end());
 	}
 
-	typename std::list<AVL_Node*>::iterator list_end() {
-		return elem_list_.end();
+	const_reverse_iterator crbegin() const {
+		return const_reverse_iterator(cend());
 	}
+
+	reverse_iterator rend() {
+		return reverse_iterator(begin());
+	}
+
+	const_reverse_iterator crend() const {
+		return const_reverse_iterator(cbegin());
+	}
+
+	list_iterator list_begin() {
+		return list_iterator(elem_list_.begin());
+	}
+
+	list_iterator list_end() {
+		return list_iterator(elem_list_.end());
+	}
+
+	const_list_iterator list_cbegin() const {
+		return const_list_iterator(elem_list_.cbegin());
+	}
+
+	const_list_iterator list_cend() const {
+		return const_list_iterator(elem_list_.cend());
+	}
+
+	list_reverse_iterator list_rbegin() {
+		return list_reverse_iterator(elem_list_.rbegin());
+	}
+
+	list_reverse_iterator list_rend() {
+		return list_reverse_iterator(elem_list_.rend());
+	}
+
+	const_list_reverse_iterator list_crbegin() const {
+		return const_list_reverse_iterator(elem_list_.crbegin());
+	}
+
+	const_list_reverse_iterator list_crend() const {
+		return const_list_reverse_iterator(elem_list_.crend());
+	}
+
 private:
 	// HELPER METHODS
 
@@ -421,11 +891,11 @@ private:
 	}
 
 	AVL_Node* find_min(AVL_Node* node) {
-		return node->left_ ? find_min(node->left_) : node;
+		return (node->left_ && node->left_->is_not_fake_ != false) ? find_min(node->left_) : node;
 	}
 
 	AVL_Node* remove_min(AVL_Node* node) {
-		if (node->left_ == nullptr) {
+		if (node->left_ == nullptr || node->left_->is_not_fake_ == false) {
 			if (node->right_) {
 				node->right_->parent_ = node->parent_;
 			}
@@ -435,18 +905,70 @@ private:
 		return balance(node);
 	}
 
-	AVL_Node* help_insert(AVL_Node* root, AVL_Node* node_to_insert, bool& inserted, iterator& it) {
-		if (root == nullptr) {
+	AVL_Node* remove(AVL_Node* root, const key_type& key, size_type& count, iterator* it = new iterator()) {
+		if (root == nullptr || root->is_not_fake_ == false) {
+			return nullptr;
+		}
+		if (k_cmp(key, root->value_.first)) {
+			root->left_ = remove(root->left_, key, count, it);
+		}
+		else if (k_cmp(root->value_.first, key)) {
+			root->right_ = remove(root->right_, key, count, it);
+		}
+		else {
+			AVL_Node* left = root->left_;
+			if (left && left->is_not_fake_ == false) {
+				left = nullptr;
+			}
+			AVL_Node* right = root->right_;
+			if (right && right->is_not_fake_ == false) {
+				right = nullptr;
+			}
+			AVL_Node* temp_parent = root->parent_;
+			*it = iterator(root->next(root));
+			root = nullptr; // will be deleted from the elem_list_
+			count = 1;
+			if (!right) {
+				if (left)
+				{
+					left->parent_ = temp_parent;
+				}
+				return left;
+			}
+			if (!left) {
+				right->parent_ = temp_parent;
+				return right;
+			}
+			AVL_Node* min = find_min(right);
+			min->right_ = remove_min(right);
+			if (right != min)
+			{
+				right->parent_ = min;
+			}
+			else {
+				right->parent_ = temp_parent;
+			}
+			min->left_ = left;
+			left->parent_ = min;
+			min->parent_ = temp_parent;
+			return balance(min);
+		}
+		return balance(root);
+	}
+
+	AVL_Node* help_insert(AVL_Node* root, AVL_Node* node_to_insert, bool& inserted, iterator& it, AVL_Node* parent = nullptr) {
+		if (root == nullptr || root->is_not_fake_ == false) {
 			root = node_to_insert;
+			root->parent_ = parent;
 			inserted = true;
 			it = iterator(root);
 			return root;
 		}
 		else if (k_cmp(node_to_insert->value_.first, root->value_.first)) {
-			root->left_ = help_insert(root->left_, node_to_insert, inserted, it);
+			root->left_ = help_insert(root->left_, node_to_insert, inserted, it, root);
 		}
 		else if (k_cmp(root->value_.first, node_to_insert->value_.first)) {
-			root->right_ = help_insert(root->right_, node_to_insert, inserted, it);
+			root->right_ = help_insert(root->right_, node_to_insert, inserted, it, root);
 
 		}
 		else {
@@ -461,68 +983,68 @@ private:
 		if (start_node == nullptr) {
 			return;
 		}
-		help_traverse_inorder(start_node->left_, cnt);
+		if (start_node->left_ && start_node->left_->is_not_fake_ != false)
+		{
+			help_traverse_inorder(start_node->left_, cnt);
+		}
 		cnt.push_back(start_node->value_);
-		help_traverse_inorder(start_node->right_, cnt);
+		if (start_node->right_ && start_node->right_->is_not_fake_ != false)
+		{
+			help_traverse_inorder(start_node->right_, cnt);
+		}
+
 	}
 
 	void update_root_parent() {
 		if (root_) {
-			root_->parent_ = fake_root_;
-			fake_root_->left_ = root_;
+			root_->parent_ = nullptr;
 		}
 	}
 
-	AVL_Node* remove(AVL_Node* root, const key_type& key, size_type& count) {
-		if (root == nullptr) {
-			return root;
+	void update_begin_end_nodes(AVL_Node* new_node) {
+		if (begin_node_ == nullptr) {
+			begin_node_ = new_node;
 		}
-		if (k_cmp(key, root->value_.first)) {
-			root->left_ = remove(root->left_, key, count);
+		else if (new_node->value_.first < begin_node_->value_.first) {
+			begin_node_ = new_node;
 		}
-		else if (k_cmp(root->value_.first, key)) {
-			root->right_ = remove(root->right_, key, count);
+		if (end_node_ == nullptr) {
+			end_node_ = new_node;
 		}
-		else {
-			AVL_Node* left = root->left_;
-			AVL_Node* right = root->right_;
-			AVL_Node* temp_parent = root->parent_;
-			delete root;
-			if (!right) {
-				if (left)
-				{
-					left->parent_ = temp_parent;
-				}
-				return left;
-			}
-			if (!left) {
-				right->parent_ = temp_parent;
-				return right;
-			}
-			AVL_Node* min = find_min(right);
-			min->right_ = remove_min(right);
-			right->parent_ = min;
-			min->left_ = left;
-			left->parent_ = min;
-			min->parent_ = temp_parent;
-			count = 1;
-			return balance(min);
+		else if (new_node->value_.first > end_node_->value_.first) {
+			end_node_ = new_node;
 		}
-		return balance(root);
+		end_node_->right_ = fake_end_node_;
+		begin_node_->left_ = fake_begin_node_;
+		fake_end_node_->parent_ = end_node_;
+		fake_begin_node_->parent_ = begin_node_;
+	}
+
+	void update_begin_end_nodes_after_erase() {
+		begin_node_ = elem_list_.front();
+		end_node_ = elem_list_.back();
+		fake_end_node_->parent_ = end_node_;
+		fake_begin_node_->parent_ = begin_node_;
+		end_node_->right_ = fake_end_node_;
+		begin_node_->left_ = fake_begin_node_;
 	}
 
 	void list_insert(std::list<AVL_Node*>& list, AVL_Node* node_to_insert) {
 		if (list.empty()) list.push_back(node_to_insert);
 		else {
 			auto it = list.begin();
-			while (it != list.end() && k_cmp((*it)->value_.first, node_to_insert->value_.first)) ++it;
+			while (it != list.end() && k_cmp((*it)->value_.first, node_to_insert->value_.first)) {
+				++it;
+			}
 			list.insert(it, node_to_insert);
 		}
 	}
 
-	void list_erase(std::list<AVL_Node*>& list, AVL_Node* node_to_erase) {
+	void list_erase(std::list<AVL_Node*>& list, const key_type& key) {
 		auto it = list.begin();
-		while (it != list.end() && *it != node_to_erase) ++it;
+		while (it != list.end() && (*it)->value_.first != key) {
+			++it;
+		}
 		if (it != list.end()) {
 			list.erase(it);
 		}
