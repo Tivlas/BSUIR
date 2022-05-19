@@ -3,8 +3,10 @@
 #include <list>
 #include <type_traits>
 #include <algorithm>
+#include <stdexcept>
 template <typename Key, typename T, typename Compare = std::less<Key>>
 class AVL_Tree {
+public:
 	using key_type = Key;
 	using mapped_type = T;
 	using value_type = std::pair<const key_type, mapped_type>;
@@ -77,7 +79,7 @@ public:
 		}
 
 		bool operator!=(const Iterator& other) const {
-			return !(cur == other.cur);
+			return cur != other.cur;
 		}
 	};
 
@@ -491,8 +493,10 @@ public:
 
 	using const_iterator = Const_Iterator;
 	using const_reverse_iterator = Const_Reverse_Iterator;
-	using iterator = std::conditional_t<std::is_same_v<key_type, mapped_type>, const_iterator, Iterator>;
-	using reverse_iterator = std::conditional_t<std::is_same_v<key_type, mapped_type>, const_reverse_iterator, Reverse_Iterator>;
+	//using iterator = std::conditional_t<std::is_same_v<key_type, mapped_type>, const_iterator, Iterator>;
+	//using reverse_iterator = std::conditional_t<std::is_same_v<key_type, mapped_type>, const_reverse_iterator, Reverse_Iterator>;
+	using iterator = Iterator;
+	using reverse_iterator = Reverse_Iterator;
 private:
 	// AVL_NODE
 	struct AVL_Node
@@ -571,11 +575,10 @@ public:
 		fake_end_node_->height_ = 0;
 	}
 
-	AVL_Tree(const key_compare& k_cmp) : k_cmp(k_cmp) {
-		fake_begin_node_ = new AVL_Node(value_type(), false);
-		fake_end_node_ = new AVL_Node(value_type(), false);
-		fake_begin_node_->height_ = 0;
-		fake_end_node_->height_ = 0;
+	~AVL_Tree() {
+		clear();
+		delete fake_begin_node_;
+		delete fake_end_node_;
 	}
 
 	std::pair<iterator, bool> insert(const value_type& value) {
@@ -655,9 +658,8 @@ public:
 		root_ = nullptr;
 		begin_node_ = nullptr;
 		end_node_ = nullptr;
-		fake_begin_node_ = nullptr;
-		fake_end_node_ = nullptr;
 		size_ = 0;
+		elem_list_.clear();
 	}
 
 	iterator find(const key_type& key) {
@@ -1014,6 +1016,16 @@ private:
 		else if (new_node->value_.first > end_node_->value_.first) {
 			end_node_ = new_node;
 		}
+		if (!fake_begin_node_)
+		{
+			fake_begin_node_ = new AVL_Node(value_type(), false);
+			fake_begin_node_->height_ = 0;
+		}
+		if (!fake_end_node_)
+		{
+			fake_end_node_ = new AVL_Node(value_type(), false);
+			fake_end_node_->height_ = 0;
+		}
 		end_node_->right_ = fake_end_node_;
 		begin_node_->left_ = fake_begin_node_;
 		fake_end_node_->parent_ = end_node_;
@@ -1021,12 +1033,20 @@ private:
 	}
 
 	void update_begin_end_nodes_after_erase() {
-		begin_node_ = elem_list_.front();
-		end_node_ = elem_list_.back();
-		fake_end_node_->parent_ = end_node_;
-		fake_begin_node_->parent_ = begin_node_;
-		end_node_->right_ = fake_end_node_;
-		begin_node_->left_ = fake_begin_node_;
+		if (!elem_list_.empty())
+		{
+			begin_node_ = elem_list_.front();
+			end_node_ = elem_list_.back();
+			fake_end_node_->parent_ = end_node_;
+			fake_begin_node_->parent_ = begin_node_;
+			end_node_->right_ = fake_end_node_;
+			begin_node_->left_ = fake_begin_node_;
+			return;
+		}
+		begin_node_ = nullptr;
+		end_node_ = nullptr;
+		fake_end_node_ = nullptr;
+		fake_begin_node_ = nullptr;
 	}
 
 	void list_insert(std::list<AVL_Node*>& list, AVL_Node* node_to_insert) {

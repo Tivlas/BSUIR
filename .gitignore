@@ -293,3 +293,6 @@ OAiP/lab3/task1_1/stdafx.cpp
 *.bin
 /OAiP/lab7/x64/Debug
 /Data structures/AVL_Tree/x64/Debug
+/OAiP/lab7/map_visualization/x64
+/OAiP/lab7/set_visualization/x64
+/OAiP/lab7/BitSet_Visualization/x64

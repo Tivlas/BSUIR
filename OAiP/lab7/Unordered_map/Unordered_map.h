@@ -147,10 +147,8 @@ public:
 	}
 
 	iterator erase(iterator first, iterator last) {
-		size_type count = 0;
 		while (first != last) {
 			first = erase(first);
-			++count;
 		}
 		return last;
 	}
