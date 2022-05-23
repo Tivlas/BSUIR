@@ -1,7 +1,6 @@
 #pragma once
 #include <functional>
 #include <list>
-#include <type_traits>
 #include <algorithm>
 #include <stdexcept>
 template <typename Key, typename T, typename Compare = std::less<Key>>
@@ -493,8 +492,6 @@ public:
 
 	using const_iterator = Const_Iterator;
 	using const_reverse_iterator = Const_Reverse_Iterator;
-	//using iterator = std::conditional_t<std::is_same_v<key_type, mapped_type>, const_iterator, Iterator>;
-	//using reverse_iterator = std::conditional_t<std::is_same_v<key_type, mapped_type>, const_reverse_iterator, Reverse_Iterator>;
 	using iterator = Iterator;
 	using reverse_iterator = Reverse_Iterator;
 private:

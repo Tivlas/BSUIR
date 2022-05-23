@@ -73,7 +73,7 @@ public:
 
 	std::pair<iterator, bool> insert(const value_type& value) { return tree.insert(value); }
 
-	std::pair<iterator, bool> insert(value_type&& value) { return tree.insert(value)); }
+	std::pair<iterator, bool> insert(value_type&& value) { return tree.insert(value); }
 
 	size_type erase(const key_type& key) { return tree.erase(key); }
 
