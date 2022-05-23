@@ -1,3 +1,4 @@
 
-My projects during studying
+My projects during studying;
+
 Vlasenko, 153501
