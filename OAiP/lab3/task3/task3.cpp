@@ -6,7 +6,7 @@ task3::task3(QWidget* parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
-	this->setFixedHeight(499);
+	this->setFixedHeight(544);
 	this->setFixedWidth(849);
 	ui.tableWidget->setHorizontalHeaderLabels(QStringList() << "Expression" << "a" << "b" << "c" << "d" << "e" << "Result");
 	ui.tableWidget->setVerticalHeaderLabels(QStringList() << "1" << "2" << "3" << "4" << "5" << "6" << "7" << "8" << "9" << "10" << "11" << "12" << "13" << "14" << "15");
@@ -20,12 +20,15 @@ int task3::precedence(QChar op)
 	else if (op == '*' || op == '/') {
 		return 2;
 	}
+	else if (op == '^') {
+		return 3;
+	}
 	return -1;
 }
 
 bool task3::isOperator(QChar op)
 {
-	return (op == '+' || op == '-' || op == '*' || op == '/');
+	return (op == '+' || op == '-' || op == '*' || op == '/' || op == '^');
 }
 
 bool task3::infixValidation(const QString& infix)
@@ -154,7 +157,7 @@ void task3::infixToPostfix(const QString& infix, QString& postfix)
 			}
 			s.pop();
 		}
-		else if (infix[i] == '+' || infix[i] == '-' || infix[i] == '*' || infix[i] == '/') {
+		else if (isOperator(infix[i])) {
 			if (s.empty()) {
 				s.push(infix[i]);
 			}
@@ -246,6 +249,7 @@ void task3::on_calcBtn_clicked() {
 			return;
 		}
 		infixToPostfix(infix, postfix);
+		ui.postfixEdit->setText(postfix);
 
 		if (!variableValidation(ui.tableWidget->item(i, 1)->text())) {
 			return;
