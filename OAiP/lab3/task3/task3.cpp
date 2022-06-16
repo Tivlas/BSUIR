@@ -162,7 +162,7 @@ void task3::infixToPostfix(const QString& infix, QString& postfix)
 				s.push(infix[i]);
 			}
 			else {
-				if (precedence(infix[i]) > precedence(s.peek())) {
+				if (precedence(infix[i]) > precedence(s.peek()) || infix[i] == '^') {
 					s.push(infix[i]);
 				}
 				else {
