@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="Stack">
+    <Position X="5.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAQAAAAAAAAACAAAAIgCgAAAAAAAAAAIAAAAAAA=</HashCode>
+      <FileName>Stack.h</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="top" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="task2">
+    <Position X="7.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAAAAAAQAAEAAAAAAAAAAAAAACAIAIAEBAAQAAAAA=</HashCode>
+      <FileName>task2.h</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="stack" />
+    </ShowAsAssociation>
+  </Class>
+  <Struct Name="Node">
+    <Position X="3" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAQAAAAAQAAAAAACAAAAAAAAAAAgBAAAAAQAAMAAAA=</HashCode>
+      <FileName>Stack.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
