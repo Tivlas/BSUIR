@@ -1,4 +1,8 @@
 env/
+obj/
+bin/
+.vs/
+.vscode/
 # Prerequisites
 *.d
 
