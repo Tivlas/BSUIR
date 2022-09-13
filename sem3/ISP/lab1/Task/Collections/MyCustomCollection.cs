@@ -1,8 +1,10 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Task
 {
-    public class MyCustomCollection<T> : ICustomCollection<T>
+    public class MyCustomCollection<T> : ICustomCollection<T>, IEnumerable<T>
     {
         private CollectionHelper.Node<T>? _head = null;
         private CollectionHelper.Node<T>? _tail = null;
@@ -14,6 +16,28 @@ namespace Task
         {
         }
 
+        private CollectionHelper.Node<T> FindNodeByIndex(int index)
+        {
+            CollectionHelper.Node<T>? node = null;
+            if (index > Count / 2)
+            {
+                node = _tail;
+                for (int i = Count - 1; i > index; i--)
+                {
+                    node = node!.Prev;
+                }
+            }
+            else
+            {
+                node = _head;
+                for (int i = 0; i < index; i++)
+                {
+                    node = node!.Next;
+                }
+            }
+            return node!;
+        }
+        
         public T this[int index]
         {
             get
@@ -22,12 +46,8 @@ namespace Task
                 {
                     throw new IndexOutOfRangeException();
                 }
-                var node = _head;
-                for (int i = 0; i < index; i++)
-                {
-                    node = node!.Next;
-                }
-                return node!.RealObject;
+                CollectionHelper.Node<T> node = FindNodeByIndex(index);
+                return node.RealObject!;
             }
             set
             {
@@ -35,12 +55,8 @@ namespace Task
                 {
                     throw new IndexOutOfRangeException();
                 }
-                var node = _head;
-                for (int i = 0; i < index; i++)
-                {
-                    node = node!.Next;
-                }
-                node!.RealObject = value;
+                CollectionHelper.Node<T> node = FindNodeByIndex(index);
+                node.RealObject = value;
             }
         }
 
@@ -140,6 +156,16 @@ namespace Task
             RemoveNode(curNode);
             return currentObjectCopy;
         }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            return new CustomEnumerator.MyCustomEnumerator<T>(this);
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
     }
 }
 
@@ -157,4 +183,40 @@ namespace CollectionHelper
         }
     }
 }
+
+namespace CustomEnumerator
+{
+    using Task;
+    public class MyCustomEnumerator<T> : IEnumerator<T>
+    {
+        private readonly MyCustomCollection<T> _collection;
+        private int _index = -1;
+
+        public MyCustomEnumerator(MyCustomCollection<T> collection)
+        {
+            _collection = collection;
+        }
+
+        public bool MoveNext()
+        {
+            _index++;
+            return _index < _collection.Count;
+        }
+
+        public void Reset()
+        {
+            _index = -1;
+        }
+
+        public void Dispose()
+        {
+            
+        }
+
+        public T Current => _collection[_index];
+
+        object IEnumerator.Current => Current;
+    }
+}
+
 

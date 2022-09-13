@@ -7,6 +7,8 @@ class Program
     {
         Test();
         AddRemoveTest();
+        ForeachTest();
+        IndexerTest();
     }
 
     public static void Test()
@@ -73,6 +75,40 @@ class Program
 
         company.AddOrder(new Order(100, "Moscow - Saint-Petersburg"));
 
+    }
+
+    public static void IndexerTest()
+    {
+        MyCustomCollection<string> words = new();
+        words.Add("Hello");
+        words.Add("Hi");
+        words.Add("Apple");
+        words.Add("Orange");
+        words.Add("Ball");
+        words.Add("Cucumber");
+        string word2 = words[2];
+        string word5 = words[5];
+        Console.WriteLine(word2);
+        Console.WriteLine(word5);
+        words[2] = "AppleChanged";
+        words[5] = "CucumberChanged";
+        Console.WriteLine(words[2]);
+        Console.WriteLine(words[5]);
+    }
+
+    public static void ForeachTest()
+    {
+        MyCustomCollection<string> words = new();
+        words.Add("Hello");
+        words.Add("Hi");
+        words.Add("Apple");
+        words.Add("Orange");
+        words.Add("Ball");
+        words.Add("Cucumber");
+        foreach(string word in words)
+        {
+            Console.WriteLine($"Foreach {word}");
+        }
     }
 }
 
