@@ -2,7 +2,7 @@ using System;
 
 namespace Task
 {
-    public class MyCustomCollection<T> : ICustomCollection<T> where T : class
+    public class MyCustomCollection<T> : ICustomCollection<T>
     {
         private CollectionHelper.Node<T>? _head = null;
         private CollectionHelper.Node<T>? _tail = null;
@@ -14,49 +14,57 @@ namespace Task
         {
         }
 
-        public T? this[int index]
+        public T this[int index]
         {
             get
             {
-                var node = _head;
-                do
+                if (index < 0 || index >= Count)
                 {
-                    if (node == null)
-                    {
-                        throw new IndexOutOfRangeException();
-                    }
-                    node = node.Next;
-                } while (index-- > 0);
+                    throw new IndexOutOfRangeException();
+                }
+                var node = _head;
+                for (int i = 0; i < index; i++)
+                {
+                    node = node!.Next;
+                }
                 return node!.RealObject;
             }
             set
             {
-                var node = _head;
-                do
+                if (index < 0 || index >= Count)
                 {
-                    if (node == null)
-                    {
-                        throw new IndexOutOfRangeException();
-                    }
-                    node = node.Next;
-                } while (index-- > 0);
+                    throw new IndexOutOfRangeException();
+                }
+                var node = _head;
+                for (int i = 0; i < index; i++)
+                {
+                    node = node!.Next;
+                }
                 node!.RealObject = value;
             }
         }
 
         public void Reset()
         {
-            _current = _head;
+            _current = _head?.Prev;
         }
 
-        public void Next()
+        public bool Next()
         {
-            _current = _current?.Next;
+            if (_current == _head?.Prev)
+            {
+                _current = _head;
+            }
+            else
+            {
+                _current = _current?.Next;
+            }
+            return _current != null;
         }
 
-        public T? Current()
+        public T Current()
         {
-            return _current?.RealObject;
+            return _current.RealObject;
         }
 
         public void Add(T item)
@@ -102,12 +110,16 @@ namespace Task
             Count--;
         }
 
-        public void Remove(T item)
+        public void Remove(T itemToRemove)
         {
+            if (itemToRemove == null)
+            {
+                throw new ArgumentNullException("itemToRemove");
+            }
             var curNode = _head;
             while (curNode != null)
             {
-                if (item.Equals(curNode.RealObject))
+                if (itemToRemove.Equals(curNode.RealObject))
                 {
                     RemoveNode(curNode);
                     return;
@@ -116,7 +128,7 @@ namespace Task
             }
         }
 
-        public T? RemoveCurrent()
+        public T RemoveCurrent()
         {
             if (_current == null)
             {

@@ -31,13 +31,12 @@ namespace Task
         private Client? FindClient(string id)
         {
             _clients.Reset();
-            while (_clients.Current() != null)
+            while (_clients.Next())
             {
                 if (_clients.Current()!.ID == id)
                 {
                     return _clients.Current();
                 }
-                _clients.Next();
             }
             return null;
         }
@@ -58,13 +57,12 @@ namespace Task
         private bool IsOrderAvailable(Order order)
         {
             _availableOrdersList.Reset();
-            while (_availableOrdersList.Current() != null)
+            while (_availableOrdersList.Next())
             {
                 if (order.Equals(_availableOrdersList.Current()))
                 {
                     return true;
                 }
-                _availableOrdersList.Next();
             }
             return false;
         }
@@ -87,10 +85,9 @@ namespace Task
         {
             int totalCost = 0;
             _clients.Reset();
-            while (_clients.Current() != null)
+            while (_clients.Next())
             {
                 totalCost += _clients.Current()!.CalculateTotalOrdersCost();
-                _clients.Next();
             }
             return totalCost;
         }

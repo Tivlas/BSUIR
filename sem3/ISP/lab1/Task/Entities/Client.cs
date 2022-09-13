@@ -24,10 +24,9 @@ public class Client
     {
         int totalCost = 0;
         _placedOrders.Reset();
-        while (_placedOrders.Current() != null)
+        while (_placedOrders.Next())
         {
             totalCost += _placedOrders.Current()!.Cost;
-            _placedOrders.Next();
         }
         return totalCost;
     }
