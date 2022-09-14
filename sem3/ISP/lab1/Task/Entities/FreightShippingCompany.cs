@@ -31,7 +31,7 @@ namespace Task
         private Client? FindClient(string id)
         {
             _clients.Reset();
-            while (_clients.Next())
+            while (_clients.MoveNext())
             {
                 if (_clients.Current()!.ID == id)
                 {
@@ -57,7 +57,7 @@ namespace Task
         private bool IsOrderAvailable(Order order)
         {
             _availableOrdersList.Reset();
-            while (_availableOrdersList.Next())
+            while (_availableOrdersList.MoveNext())
             {
                 if (order.Equals(_availableOrdersList.Current()))
                 {
@@ -85,7 +85,7 @@ namespace Task
         {
             int totalCost = 0;
             _clients.Reset();
-            while (_clients.Next())
+            while (_clients.MoveNext())
             {
                 totalCost += _clients.Current()!.CalculateTotalOrdersCost();
             }

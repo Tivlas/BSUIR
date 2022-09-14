@@ -4,7 +4,7 @@ public interface ICustomCollection<T>
 {
     T this[int index] { get; set; }
     void Reset();
-    bool Next();
+    bool MoveNext();
     T Current();
     int Count { get; }
     void Add(T item);

@@ -2,7 +2,7 @@ using System.Collections;
 
 namespace Task;
 
-public class Client 
+public class Client
 {
     private MyCustomCollection<Order> _placedOrders = new MyCustomCollection<Order>();
 
@@ -24,7 +24,7 @@ public class Client
     {
         int totalCost = 0;
         _placedOrders.Reset();
-        while (_placedOrders.Next())
+        while (_placedOrders.MoveNext())
         {
             totalCost += _placedOrders.Current()!.Cost;
         }

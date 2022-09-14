@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Task
 {
-    public class MyCustomCollection<T> : ICustomCollection<T>, IEnumerable<T>
+    public class MyCustomCollection<T> : ICustomCollection<T>, IEnumerable<T>, IEnumerator<T>
     {
         private CollectionHelper.Node<T>? _head = null;
         private CollectionHelper.Node<T>? _tail = null;
@@ -37,7 +37,7 @@ namespace Task
             }
             return node!;
         }
-        
+
         public T this[int index]
         {
             get
@@ -65,7 +65,7 @@ namespace Task
             _current = _head?.Prev;
         }
 
-        public bool Next()
+        public bool MoveNext()
         {
             if (_current == _head?.Prev)
             {
@@ -159,13 +159,21 @@ namespace Task
 
         public IEnumerator<T> GetEnumerator()
         {
-            return new CustomEnumerator.MyCustomEnumerator<T>(this);
+            return this;
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
         }
+
+        public void Dispose()
+        {
+        }
+
+        object IEnumerator.Current => Current();
+
+        T IEnumerator<T>.Current => Current();
     }
 }
 
@@ -181,41 +189,6 @@ namespace CollectionHelper
         {
             RealObject = value;
         }
-    }
-}
-
-namespace CustomEnumerator
-{
-    using Task;
-    public class MyCustomEnumerator<T> : IEnumerator<T>
-    {
-        private readonly MyCustomCollection<T> _collection;
-        private int _index = -1;
-
-        public MyCustomEnumerator(MyCustomCollection<T> collection)
-        {
-            _collection = collection;
-        }
-
-        public bool MoveNext()
-        {
-            _index++;
-            return _index < _collection.Count;
-        }
-
-        public void Reset()
-        {
-            _index = -1;
-        }
-
-        public void Dispose()
-        {
-            
-        }
-
-        public T Current => _collection[_index];
-
-        object IEnumerator.Current => Current;
     }
 }
 
