@@ -18,7 +18,7 @@ namespace Task
 
         private CollectionHelper.Node<T> FindNodeByIndex(int index)
         {
-            CollectionHelper.Node<T>? node = null;
+            CollectionHelper.Node<T>? node;
             if (index > Count / 2)
             {
                 node = _tail;

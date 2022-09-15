@@ -7,10 +7,10 @@ class Journal
 {
     private List<string> _registeredEvents = new();
 
-    public void RecordChangesInOrdersOrClientsList(object sender, CompanyEvents.CompanyEventArgs e)
+    public void RecordChangesInOrdersOrClientsList(object? sender, CompanyEvents.CompanyEventArgs e)
     {
         {
-            _registeredEvents.Add($"Event #{_registeredEvents.Count + 1}:{Environment.NewLine}Message: {e.Message}. From {sender.GetType().Name}");
+            _registeredEvents.Add($"Event #{_registeredEvents.Count + 1}:{Environment.NewLine}Message: {e.Message} From {sender?.GetType().Name}\n");
         }
     }
 
