@@ -28,29 +28,20 @@ class Program
         company.RegisterClient(new Client("3333333333"));
         company.RegisterClient(new Client("4444444444"));
 
-        try
-        {
-            company.PlaceOrderToClient(new Order(100, "Moscow - Saint-Petersburg"), "1234567890");
-            company.PlaceOrderToClient(new Order(200, "Minsk - Gomel"), "1234567890");
-            //company.PlaceOrderToClient(new Order(300, "Minsk - Moscow"), "0234567890");
-            //.PlaceOrderToClient(new Order(400, "Vitebsk - Saint-Petersburg"), "1234567890");
-            company.PlaceOrderToClient(new Order(500, "Grodno - Brest"), "1111111111");
-            Console.WriteLine($"Total cost for 1234567890 {company.CalculateTotalOrdersCostForClient("1234567890")}");
-            Console.WriteLine($"Total cost for 1111111111 {company.CalculateTotalOrdersCostForClient("1111111111")}");
-            Console.WriteLine($"Total cost for all clients {company.CalculateTotalOrdersCostForAllClients()}");
-            company.RemoveClient(new Client("1234567890"));
-            //company.PlaceOrderToClient(new Order(500, "Grodno - Brest"), "1234567890");
-            company.RemoveOrder(new Order(500, "Grodno - Brest"));
-            company.PlaceOrderToClient(new Order(500, "Grodno - Brest"), "4444444444");
-        }
-        catch (CustomExceptions.OrderNotFoundException e)
-        {
-            Console.WriteLine(e.Message);
-        }
-        catch (CustomExceptions.ClientNotFoundException e)
-        {
-            Console.WriteLine(e.Message);
-        }
+
+        company.PlaceOrderToClient(new Order(100, "Moscow - Saint-Petersburg"), "1234567890");
+        company.PlaceOrderToClient(new Order(200, "Minsk - Gomel"), "1234567890");
+        //company.PlaceOrderToClient(new Order(300, "Minsk - Moscow"), "0234567890");
+        //.PlaceOrderToClient(new Order(400, "Vitebsk - Saint-Petersburg"), "1234567890");
+        company.PlaceOrderToClient(new Order(500, "Grodno - Brest"), "1111111111");
+        Console.WriteLine($"Total cost for 1234567890 {company.CalculateTotalOrdersCostForClient("1234567890")}");
+        Console.WriteLine($"Total cost for 1111111111 {company.CalculateTotalOrdersCostForClient("1111111111")}");
+        Console.WriteLine($"Total cost for all clients {company.CalculateTotalOrdersCostForAllClients()}");
+        company.RemoveClient(new Client("1234567890"));
+        //company.PlaceOrderToClient(new Order(500, "Grodno - Brest"), "1234567890");
+        company.RemoveOrder(new Order(500, "Grodno - Brest"));
+        company.PlaceOrderToClient(new Order(500, "Grodno - Brest"), "4444444444");
+
     }
 
     public static void AddRemoveTest()
@@ -105,7 +96,7 @@ class Program
         words.Add("Orange");
         words.Add("Ball");
         words.Add("Cucumber");
-        foreach(string word in words)
+        foreach (string word in words)
         {
             Console.WriteLine($"Foreach {word}");
         }

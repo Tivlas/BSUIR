@@ -128,19 +128,21 @@ namespace Task
 
         public void Remove(T itemToRemove)
         {
-            if (itemToRemove == null)
-            {
-                throw new ArgumentNullException("itemToRemove");
-            }
             var curNode = _head;
+            bool itemWasRemoved = false;
             while (curNode != null)
             {
                 if (itemToRemove.Equals(curNode.RealObject))
                 {
                     RemoveNode(curNode);
+                    itemWasRemoved = true;
                     return;
                 }
                 curNode = curNode.Next;
+            }
+            if (!itemWasRemoved)
+            {
+                throw new CustomExceptions.ItemDoesNotExistException("Trying to remove item that does not exist.");
             }
         }
 
@@ -148,7 +150,7 @@ namespace Task
         {
             if (_current == null)
             {
-                throw new InvalidOperationException("Current was null");
+                throw new InvalidOperationException("Current was null.");
             }
             var currentObjectCopy = _current.RealObject;
             var curNode = _current;
@@ -191,5 +193,17 @@ namespace CollectionHelper
         }
     }
 }
+
+namespace CustomExceptions
+{
+    
+    public class ItemDoesNotExistException : Exception
+    {
+        public ItemDoesNotExistException(string message) : base(message)
+        {
+        }
+    }
+}
+
 
 

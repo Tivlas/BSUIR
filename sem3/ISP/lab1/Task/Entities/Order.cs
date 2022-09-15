@@ -25,4 +25,9 @@ public class Order
     {
         return Route.GetHashCode();
     }
+
+    public override string ToString()
+    {
+        return $"Route: {Route}, Cost: {Cost}";
+    }
 }

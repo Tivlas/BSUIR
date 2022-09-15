@@ -55,4 +55,9 @@ public class Client
     {
         return ID.GetHashCode();
     }
+
+    public override string ToString()
+    {
+        return $"Name: {Name}, ID: {ID}";
+    }
 }

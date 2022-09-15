@@ -5,27 +5,34 @@ namespace Task
 
     public class FreightShippingCompany
     {
+        public EventHandler<CompanyEvents.CompanyEventArgs>? OrdersOrClientsListChanged;
+        public EventHandler<CompanyEvents.CompanyEventArgs>? ClientPlacedAnOrder;
+
         private MyCustomCollection<Order> _availableOrdersList = new MyCustomCollection<Order>();
         private MyCustomCollection<Client> _clients = new MyCustomCollection<Client>();
 
         public void AddOrder(Order order)
         {
             _availableOrdersList.Add(order);
+            OrdersOrClientsListChanged?.Invoke(this, new CompanyEvents.CompanyEventArgs($"Order \"{order}\" was added to the list of available orders."));
         }
 
         public void RemoveOrder(Order order)
         {
             _availableOrdersList.Remove(order);
+            OrdersOrClientsListChanged?.Invoke(this, new CompanyEvents.CompanyEventArgs($"Order \"{order}\" was removed from the list of available orders."));
         }
 
         public void RegisterClient(Client client)
         {
             _clients.Add(client);
+            OrdersOrClientsListChanged?.Invoke(this, new CompanyEvents.CompanyEventArgs($"Client \"{client}\" was registered."));
         }
 
         public void RemoveClient(Client client)
         {
             _clients.Remove(client);
+            OrdersOrClientsListChanged?.Invoke(this, new CompanyEvents.CompanyEventArgs($"Client \"{client}\" was removed from the list of registered clients list."));
         }
 
         private Client? FindClient(string id)
@@ -79,6 +86,7 @@ namespace Task
                 throw new CustomExceptions.OrderNotFoundException($"Order {order.Route} is not available.");
             }
             client.PlaceOrder(order);
+            ClientPlacedAnOrder?.Invoke(this, new CompanyEvents.CompanyEventArgs($"Client \"{client}\" placed an order \"{order}\"."));
         }
 
         public int CalculateTotalOrdersCostForAllClients()
@@ -107,6 +115,18 @@ namespace CustomExceptions
     {
         public ClientNotFoundException(string message) : base(message)
         {
+        }
+    }
+}
+
+namespace CompanyEvents
+{
+    public class CompanyEventArgs : EventArgs
+    {
+        public readonly string Message;
+        public CompanyEventArgs(string message)
+        {
+            Message = message;
         }
     }
 }
