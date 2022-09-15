@@ -5,8 +5,8 @@ namespace Task
 
     public class FreightShippingCompany
     {
-        public EventHandler<CompanyEvents.CompanyEventArgs>? OrdersOrClientsListChanged;
-        public EventHandler<CompanyEvents.CompanyEventArgs>? ClientPlacedAnOrder;
+        public event EventHandler<CompanyEvents.CompanyEventArgs>? OrdersOrClientsListChanged;
+        public event EventHandler<CompanyEvents.CompanyEventArgs>? ClientPlacedAnOrder;
 
         private MyCustomCollection<Order> _availableOrdersList = new MyCustomCollection<Order>();
         private MyCustomCollection<Client> _clients = new MyCustomCollection<Client>();
