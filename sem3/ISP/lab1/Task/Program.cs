@@ -37,13 +37,14 @@ class Program
             company.RemoveClient(new Client("1234567890"));
             //company.PlaceOrderToClient(new Order(500, "Grodno - Brest"), "1234567890");
             company.RemoveOrder(new Order(500, "Grodno - Brest"));
-            //company.PlaceOrderToClient(new Order(500, "Grodno - Brest"), "4444444444");
+            company.PlaceOrderToClient(new Order(500, "Grodno - Brest"), "4444444444");
             company.RemoveOrder(new Order(500, "Grodnnno - Brest"));
         }
         catch (Exception ex)
         {
-            Console.WriteLine("********************* Handle exception *********************");
-            Console.WriteLine(ex.Message); ;
+            Console.WriteLine("********************* Handling exception *********************");
+            Console.WriteLine($"Exception type: {ex.GetType().Name}");
+            Console.WriteLine(ex.Message);
             Console.WriteLine(ex.StackTrace);
             Console.WriteLine("************************ Done ******************************");
         }
