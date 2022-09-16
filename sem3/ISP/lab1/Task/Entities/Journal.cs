@@ -16,10 +16,7 @@ class Journal
 
     public void PrintRegisteredEvents()
     {
-        foreach (string eventMessage in _registeredEvents)
-        {
-            Console.WriteLine(eventMessage);
-        }
+        Console.WriteLine(string.Join(Environment.NewLine, _registeredEvents));
     }
 }
 
