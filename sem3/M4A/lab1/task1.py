@@ -1,4 +1,5 @@
 import numpy
+numpy.set_printoptions(suppress=True, precision=3, floatmode="fixed")
 
 
 def input():
@@ -43,37 +44,66 @@ def gauss_method(A, b):
     return x
 
 
-def gauss_jordan(A, b):
+def gauss_jordan_inverse_matrix(A):
     n = A.shape[0]
     E = numpy.array([[1, 0, 0, 0, 0], [0, 1, 0, 0, 0], [
                     0, 0, 1, 0, 0], [0, 0, 0, 1, 0], [0, 0, 0, 0, 1]])
     B = numpy.concatenate((A, E), axis=1)
+
     for k in range(n):
         for i in range(2*n):
+            if (A[k, k] == 0.0):
+                return "Обратной матрицы не существует"
             B[k, i] /= A[k, k]
         for i in range(k+1, n):
             q = B[i, k] / B[k, k]
             for j in range(2*n):
                 B[i, j] -= B[k, j] * q
-            b[i] -= b[k] * q
+
         for i in range(n):
             for j in range(n):
                 A[i, j] = B[i, j]
 
     for k in range(n-1, -1, -1):
         for i in range(2*n-1, -1, -1):
+
             B[k, i] /= A[k, k]
         for i in range(k-1, -1, -1):
             q = B[i, k] / B[k, k]
-            b[i] -= b[k] * q
             for j in range(2*n-1, -1, -1):
                 B[i, j] -= B[k, j] * q
 
-    print("+++++++++++++++++++++++++++++++++++++++++++++")
-    print(B)
-    print("+++++++++++++++++++++++++++++++++++++++++++++")
+    return B[:, n:]
 
-    return b
+def matrix_method(A, b):
+    inverse_matrix = gauss_jordan_inverse_matrix(A)
+    return inverse_matrix.dot(b)
+
+def gauss_jordan_solve(A, b):
+    n = A.shape[0]
+    B = numpy.concatenate((A, b), axis=1)
+    for k in range(n):
+        for i in range(n+1):
+            if (A[k, k] == 0.0):
+                return "Обратной матрицы не существует"
+            B[k, i] /= A[k, k]
+        for i in range(k+1, n):
+            q = B[i, k] / B[k, k]
+            for j in range(n+1):
+                B[i, j] -= B[k, j] * q
+        for i in range(n):
+            for j in range(n):
+                A[i, j] = B[i, j]
+
+    for k in range(n-1, -1, -1):
+        for i in range(n-1, -1, -1):
+            B[k, i] /= A[k, k]
+        for i in range(k-1, -1, -1):
+            q = B[i, k] / B[k, k]
+            for j in range(n, -1, -1):
+                B[i, j] -= B[k, j] * q
+
+    return B[:, n:]
 
 
 def gauss_main_selection_partial(A, b):
@@ -106,43 +136,34 @@ def gauss_main_selection_partial(A, b):
     return x
 
 
-# def fullchoice(A, b):
-#    n = A.shape[0]
-#
-#    for i in range(n):
-#        maxi = (i, 0)
-#        for k in range(i, n):
-#            for j in range(n):
-#                if (abs(A[k, j]) > abs(A[maxi[0], maxi[1]])):
-#                    maxi = (k, j)
-#        A[[i, maxi[0]]] = A[[maxi[0], i]]
-#        b[[i, maxi[0]]] = b[[maxi[0], i]]
-#
-#        for k in range(n):
-#            if (k != i):
-#                if (A[i, maxi[1]] == 0.0):
-#                    return nan(n)
-#                q = A[k, maxi[1]] / A[i, maxi[1]]
-#                for j in range(n):
-#                    A[k, j] -= A[i, j] * q
-#                b[k] -= b[i] * q
-#
-#    x = numpy.zeros((n, 1))
-#    for j in range(n):
-#        maxi = (i, 0)
-#        for i in range(n):
-#            if (abs(A[i, j]) > abs(A[maxi[0], maxi[1]])):
-#                maxi = (i, j)
-#        if (A[maxi[0], maxi[1]] == 0.0):
-#            return nan(n)
-#        x[j] = b[maxi[0]] / A[maxi[0], maxi[1]]
-#
-#    return x
+def matrix_determinant(A):
+    n = A.shape[0]
+    rows_swapped = 0
+    for k in range(n):
+        maxi = k
+        for i in range(k, n):
+            if (abs(A[i, k]) > abs(A[maxi, k])):
+                maxi = i
+        if (maxi != k):
+            A[[k, maxi]] = A[[maxi, k]]
+            rows_swapped += 1
+
+        for i in range(k + 1, n):
+            if (A[k, k] == 0.0):
+                return 0
+            q = A[i, k] / A[k, k]
+            for j in range(n):
+                A[i, j] -= A[k, j] * q
+
+    det = 1
+    for i in range(n):
+        det *= A[i, i]
+    return rows_swapped % 2 == 0 and det or -det
 
 
 def output(A, x, b):
 
-    numpy.set_printoptions(suppress=True, precision=3, floatmode="fixed")
+    numpy.set_printoptions(suppress=True, precision=6, floatmode="fixed")
 
     print("A = ")
     print(A)
@@ -162,6 +183,11 @@ def test(method):
     output(A, x, b)
 
 
-test(gauss_method)
-test(gauss_main_selection_partial)
-test(gauss_jordan)
+# test(gauss_method)
+# test(gauss_main_selection_partial)
+# test(gauss_jordan_solve)
+test(matrix_method)
+
+(A, b) = input()
+#print(gauss_jordan_inverse_matrix(A))
+# print(matrix_determinant(A))
