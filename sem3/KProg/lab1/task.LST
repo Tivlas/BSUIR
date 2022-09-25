@@ -1,11 +1,12 @@
-  ADDR B1 B2 B3 B4 D:\University\BSUIR\sem3\KProg\lab1\task.asm     PAGE       1
+  ADDR B1 B2 B3 B4 thrass11.tmp                                     PAGE       1
 
-                    org &8000
-  1F40 86 A9        ldaa #$a9
-  1F42 C6 3B        ldab #$3b
-  1F44 CE 11 F5     ldx #$11f5
-  1F47 36           psha
-  1F48 8F           xgdx
-  1F49 36           psha
-  1F4A 17           tba
-  1F4B 38           pulx
+                    org &7000
+                    ldaa &#a9
+E                         ^ Unexpected character in operand.
+  1B58 C6 3B        ldab #$3b
+  1B5A CE 11 F5     ldx #$11f5
+  1B5D 36           psha
+  1B5E 8F           xgdx
+  1B5F 36           psha
+  1B60 17           tba
+  1B61 38           pulx
