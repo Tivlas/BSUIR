@@ -1,0 +1,11 @@
+  ADDR B1 B2 B3 B4 thrass11.tmp                                     PAGE       1
+
+                    org $8000
+  8000 5F           clrb
+  8001 86 03        ldaa #3
+  8003 C6 FF        ldab #$ff
+  8005 B7 01 00     staa $100
+  8008 F0 01 00     subb $100
+  800B 5C           incb
+
+
