@@ -2,16 +2,16 @@ import numpy
 
 
 def input():
-    custom_precision = 4
-    # b = numpy.array([[4.2], [4.2], [4.2], [4.2], [4.2]])
-
-   # A = numpy.array([
-   #    [2.33,  0.81,  0.67,  0.92, -0.53],
-   #    [-0.53,  2.33,  0.81,  0.67,  0.92],
-   #    [0.92, -0.53,  2.33,  0.81,  0.67],
-   #    [0.67,  0.92, -0.53,  2.33,  0.81],
-   #    [0.81,  0.67,  0.92, -0.53,  2.33]
-   # ])
+    custom_precision = 2
+    #b = numpy.array([[4.2], [4.2], [4.2], [4.2], [4.2]])
+#
+    # A = numpy.array([
+    #    [0,  0,  0.67,  0.92, -0.53],
+    #    [-0.53,  2.33,  0.81,  0.67,  0.92],
+    #    [0.92, -0.53,  2.33,  0.81,  0.67],
+    #    [0.67,  0.92, -0.53,  2.33,  0.81],
+    #    [0.81,  0.67,  0.92, -0.53,  2.33]
+    # ])
 
     #b = numpy.array([[8], [10], [12]], dtype=float)
     # A = numpy.array([
@@ -19,8 +19,9 @@ def input():
     #    [2,  1,  2],
     #    [3, 3,  1]], dtype=float)
 
-    b = numpy.array([[1], [10]], dtype=float)
-    A = numpy.array([[0, 0], [0, 0]], dtype=float)
+    b = numpy.array([[23], [-23]],dtype=float)
+
+    A = numpy.array([[1, 2], [-1, -2]],dtype=float)
 
     return (A, b, custom_precision)
 
@@ -43,7 +44,8 @@ def gauss_method(A, b):
             for j in range(n):
                 A[i, j] -= A[k, j] * q
             b[i] -= b[k] * q
-
+    print("Матрица после прямого хода:")
+    print(A)
     x = numpy.zeros((n, 1))
     for i in range(n - 1, -1, -1):
         for j in range(i + 1, n):
@@ -120,6 +122,9 @@ def gauss_jordan_solve(A, b):
             for j in range(n, -1, -1):
                 B[i, j] -= B[k, j] * q
 
+    print("Матрица после прямого хода:")
+    print(B)
+
     return B[:, n:]
 
 
@@ -142,6 +147,9 @@ def gauss_main_selection_partial(A, b):
             for j in range(n):
                 A[i, j] -= A[k, j] * q
             b[i] -= b[k] * q
+
+    print("Матрица после прямого хода:")
+    print(A)
 
     x = numpy.zeros((n, 1))
     for k in range(n - 1, -1, -1):
