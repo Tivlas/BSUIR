@@ -32,7 +32,7 @@
 
         public override string ToString()
         {
-            return $"Company name: {Name}.\n{_hrDepartment}\n";
+            return $"Company name: {Name}.\nNumber of employees: {NumberOfEmployees}\n{_hrDepartment}\n";
         }
     }
 }

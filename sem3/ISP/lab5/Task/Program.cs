@@ -1,5 +1,4 @@
 ﻿using lab5.Domain;
-using Serializer;
 
 namespace Task
 {
@@ -9,26 +8,43 @@ namespace Task
         {
             var companies = CreateListOfCompanies();
             Serializer.Serializer serializer = new();
-            serializer.SerializeByLinq(companies, "companiesByLing.xml");
-            serializer.SerializeByXml(companies, "companiesByXml.xml");
-            var companies1 = serializer.DeSerializeByLinq("companiesByLing.xml");
-            var companies2 = serializer.DeSerializeByXml("companiesByXml.xml");
-            Console.WriteLine("---------------------Исходные данные---------------------");
-            foreach (var company in companies)
+            try
             {
-                Console.WriteLine(company);
-            }
+                serializer.SerializeByLinq(companies, "companiesByLing.xml");
+                serializer.SerializeByXml(companies, "companiesByXml.xml");
+                serializer.SerializeByJson(companies, "companiesByJson.json");
+                var companies1 = serializer.DeSerializeByLinq("companiesByLing.xml");
+                var companies2 = serializer.DeSerializeByXml("companiesByXml.xml");
+                var companies3 = serializer.DeSerializeByJson("companiesByJson.json");
+                Console.WriteLine("---------------------Исходные данные---------------------");
+                foreach (var company in companies)
+                {
+                    Console.WriteLine(company);
+                }
 
-            Console.WriteLine("---------------------Данные после десериализации ling---------------------");
-            foreach (var company in companies1)
-            {
-                Console.WriteLine(company);
-            }
+                Console.WriteLine("---------------------Данные после десериализации ling---------------------");
+                foreach (var company in companies1)
+                {
+                    Console.WriteLine(company);
+                }
 
-            Console.WriteLine("---------------------Данные после десериализации xml---------------------");
-            foreach (var company in companies2)
+                Console.WriteLine("---------------------Данные после десериализации xml---------------------");
+                foreach (var company in companies2)
+                {
+                    Console.WriteLine(company);
+                }
+
+                Console.WriteLine("---------------------Данные после десериализации json---------------------");
+                foreach (var company in companies3)
+                {
+                    Console.WriteLine(company);
+                }
+            }
+            catch (Exception e)
             {
-                Console.WriteLine(company);
+                Console.WriteLine(e.GetType());
+                Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace);
             }
         }
 

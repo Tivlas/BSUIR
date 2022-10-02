@@ -1,4 +1,5 @@
 ﻿using lab5.Domain;
+using System.Text.Json;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 
@@ -8,12 +9,19 @@ namespace Serializer
     {
         public void SerializeByJson(IEnumerable<Company> companies, string fileName)
         {
-            throw new NotImplementedException();
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true
+            };
+            var json = JsonSerializer.Serialize(companies, options);
+            File.WriteAllText(fileName, json);
         }
 
         public IEnumerable<Company>? DeSerializeByJson(string fileName)
         {
-            throw new NotImplementedException();
+            var json = File.ReadAllText(fileName);
+            var companies = JsonSerializer.Deserialize<IEnumerable<Company>>(json);
+            return companies;
         }
 
         public void SerializeByLinq(IEnumerable<Company> companies, string fileName)
