@@ -1,0 +1,33 @@
+  ADDR B1 B2 B3 B4 thrass11.tmp                                     PAGE       1
+
+
+                    org $8000
+
+  8000 86 F0        ldaa #%11110000
+  8002 B7 08 00     staa $800
+  8005 86 0F        ldaa #%00001111
+  8007 B7 08 01     staa $801
+
+  800A 86 A0        ldaa #%10100000
+  800C C6 5C        ldab #%01011100
+  800E B7 07 00     staa $700
+  8011 F7 07 01     stab $701
+
+  8014 B4 08 00     anda $800
+  8017 54           lsrb
+  8018 54           lsrb
+  8019 54           lsrb
+  801A 54           lsrb
+  801B 1B           aba
+  801C B7 05 00     staa $500
+
+  801F B6 07 00     ldaa $700
+  8022 48           lsla
+  8023 48           lsla
+  8024 48           lsla
+  8025 48           lsla
+  8026 F6 07 01     ldab $701
+  8029 F4 08 01     andb $801
+  802C 1B           aba
+  802D B7 05 01     staa $501
+  8030 FE 05 00     ldx $500

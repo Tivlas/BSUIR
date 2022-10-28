@@ -1,0 +1,70 @@
+  ADDR B1 B2 B3 B4 D:\University\BSUIR\sem3\KProg\lab4\lab4.asm     PAGE       1
+
+                    org $8000
+  8000 18 CE 82 00  ldy #$8200
+  8004 CE 05 00     ldx #fill
+  8007 FF FF F6     stx $fff6
+  800A CE 80 00     ldx #$8000
+  800D 3F           swi
+  800E 86 0A        ldaa #10
+  8010 18 CE 82 09  ldy #$8209
+
+                   bubblesort:
+  8014 18 3C        pshy
+  8016 38           pulx
+  8017 09           dex
+  8018 B7 02 00     staa $200
+  801B F6 02 00     ldab $200
+  801E 5A           decb
+  801F BD 05 0C     jsr innerloop
+  8022 18 CE 82 09  ldy #$8209
+  8026 4A           deca
+  8027 26 EB        bne bubblesort
+
+
+                    org $500
+                   fill:
+  0500 A6 00        ldaa $0,x
+  0502 18 A7 00     staa $0,y
+  0505 08           inx
+  0506 18 08        iny
+  0508 5A           decb
+  0509 26 F5        bne fill
+  050B 3B           rti
+
+                   innerloop:
+  050C 97 10        staa $10
+  050E D7 11        stab $11
+  0510 A6 00        ldaa 0,x
+  0512 18 A1 00     cmpa 0,y
+  0515 25 03        bcs swap
+  0517 7E 05 24     jmp continue
+
+                   swap:
+  051A 18 A6 00     ldaa 0,y
+  051D E6 00        ldab 0,x
+  051F A7 00        staa 0,x
+  0521 18 E7 00     stab 0,y
+
+                   continue:
+  0524 96 10        ldaa $10
+  0526 D6 11        ldab $11
+  0528 09           dex
+  0529 18 09        dey
+  052B 5A           decb
+  052C 26 DE        bne innerloop
+  052E 39           rts
+
+
+
+
+
+  Symbol Table 
+
+  INNERLOOP          050C
+  SWAP               051A
+  FILL               0500
+  CONTINUE           0524
+  Symbol Table     D:\University\BSUIR\sem3\KProg\lab4\lab4.asm     PAGE       2
+
+  BUBBLESORT         8014
