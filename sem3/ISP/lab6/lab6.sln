@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32901.215
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Task", "task\Task.csproj", "{63A434B6-A8FB-4E54-8A84-18B6AA4D65AE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileServiceLib", "FileServiceLib\FileServiceLib.csproj", "{3D2CC043-7D43-48D8-A3DB-FAB4A0AE27B2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{63A434B6-A8FB-4E54-8A84-18B6AA4D65AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63A434B6-A8FB-4E54-8A84-18B6AA4D65AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63A434B6-A8FB-4E54-8A84-18B6AA4D65AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63A434B6-A8FB-4E54-8A84-18B6AA4D65AE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D2CC043-7D43-48D8-A3DB-FAB4A0AE27B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D2CC043-7D43-48D8-A3DB-FAB4A0AE27B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D2CC043-7D43-48D8-A3DB-FAB4A0AE27B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D2CC043-7D43-48D8-A3DB-FAB4A0AE27B2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DD7115ED-70CA-414D-9FCD-856A58B96A02}
+	EndGlobalSection
+EndGlobal
