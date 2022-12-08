@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Runtime.Loader;
 
 namespace task
 {
@@ -14,8 +15,10 @@ namespace task
                 new Employee { Name = "Дана", Age = 18, IsMarried = false },
                 new Employee { Name = "Эмилия", Age = 19, IsMarried = false }
             };
+            var context = new AssemblyLoadContext("FileServiceLib.dll", isCollectible: true);
+            //Assembly assembly = context.LoadFromAssemblyPath("D:\\University\\BSUIR\\sem3\\ISP\\lab6\\task\\bin\\Debug\\net6.0\\FileServiceLib.dll");
+            Assembly assembly = context.LoadFromAssemblyName(new AssemblyName("FileServiceLib.dll"));
 
-            Assembly assembly = Assembly.LoadFrom("FileServiceLib.dll");
             Type? type = assembly.GetType("FileServiceLib.FileService`1")?.MakeGenericType(typeof(Employee));
             if (type != null)
             {
@@ -29,7 +32,7 @@ namespace task
                     Console.WriteLine(item);
                 }
             }
-
+            context.Unload();
         }
     }
 }
