@@ -1,0 +1,431 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+lab8.exe -- emu8086 assembler version: 4.05  
+ 
+[ 11.12.2022  --  17:13:24 ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       .model small
+[   2]        :                                       .stack 100h
+[   3]        :                                       .data
+[   4]    0100: 0D 0A 24                              crlf db 0Dh, 0Ah, '$'
+[   5]    0103: 0A 00 24 24 24 24 24 24 24 24 24 24   word db 10, 0, 15 dup('$'), '$'
+                24 24 24 24 24 24                   
+[   6]    0115: 02 00 24 24 24                        buf db 2, 0, 2 dup('$'), '$'
+[   7]    011A: 45 6E 74 65 72 20 74 68 65 20 77 6F   msg_prompt_to_input db 'Enter the word to search', 0Dh, 0Ah, '$'
+                72 64 20 74 6F 20 73 65 61 72 63 68 
+                0D 0A 24                            
+[   8]    0135: 0D 0A 43 6F 75 6E 74 20 6F 66 20 73   msg_result db 0Dh, 0Ah, 'Count of strings: $'
+                74 72 69 6E 67 73 3A 20 24          
+[   9]    014A: 0D 0A 6F 76 65 72 66 6C 6F 77 24      msg_bad db 0Dh, 0Ah, 'overflow$'
+[  10]    0155: 63 6F 6D 6D 61 6E 64 20 6C 69 6E 65   msg_bad_args db 'command line parse error', 0Dh, 0Ah, '$'
+                20 70 61 72 73 65 20 65 72 72 6F 72 
+                0D 0A 24                            
+[  11]    0170: 6E 6F 20 63 6F 6D 6D 61 6E 64 20 6C   msg_empty_args db 'no command line args', 0Dh, 0Ah, '$'
+                69 6E 65 20 61 72 67 73 0D 0A 24    
+[  12]    0187: 0D 0A 65 72 72 6F 72 0D 0A 24         msg_error db 0Dh, 0Ah, 'error', 0Dh, 0Ah, '$'
+[  13]        :                                       word_capacity equ 50
+[  14]    0191: 00 00 00 00 00 00 00 00 00 00 00 00   word_buffer db word_capacity + 2 dup(0)
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00                         
+[  15]        :                                       cmd_capacity equ 127
+[  16]    01C5: 00                                    cmd_length db ?
+[  17]    01C6: 24 24 24 24 24 24 24 24 24 24 24 24   cmd_text db cmd_capacity dup('$')
+                24 24 24 24 24 24 24 24 24 24 24 24 
+                24 24 24 24 24 24 24 24 24 24 24 24 
+                24 24 24 24 24 24 24 24 24 24 24 24 
+                24 24 24 24 24 24 24 24 24 24 24 24 
+                24 24 24 24 24 24 24 24 24 24 24 24 
+                24 24 24 24 24 24 24 24 24 24 24 24 
+                24 24 24 24 24 24 24 24 24 24 24 24 
+                24 24 24 24 24 24 24 24 24 24 24 24 
+                24 24 24 24 24 24 24 24 24 24 24 24 
+                24 24 24 24 24 24 24                
+[  18]    0245: 24 24 24 24 24 24 24 24 24 24 24 24   file_path db cmd_capacity dup('$')
+                24 24 24 24 24 24 24 24 24 24 24 24 
+                24 24 24 24 24 24 24 24 24 24 24 24 
+                24 24 24 24 24 24 24 24 24 24 24 24 
+                24 24 24 24 24 24 24 24 24 24 24 24 
+                24 24 24 24 24 24 24 24 24 24 24 24 
+                24 24 24 24 24 24 24 24 24 24 24 24 
+                24 24 24 24 24 24 24 24 24 24 24 24 
+                24 24 24 24 24 24 24 24 24 24 24 24 
+                24 24 24 24 24 24 24 24 24 24 24 24 
+                24 24 24 24 24 24 24                
+[  19]        :                                       
+[  20]        :                                       .code
+[  21]        :                                       
+[  22]        :                                       ;-----macros--------------------
+[  23]        :                                       
+[  24]        :                                       is_empty macro str, is_0
+[  25]        :                                       push si
+[  26]        :                                       lea si, str
+[  27]        :                                       call strlen
+[  28]        :                                       pop si
+[  29]        :                                       
+[  30]        :                                       cmp ax, 0
+[  31]        :                                       je is_0
+[  32]        :                                       endm
+[  33]        :                                       
+[  34]        :                                       ; string output macro
+[  35]        :                                       puts macro str
+[  36]        :                                       push ax
+[  37]        :                                       push dx
+[  38]        :                                       lea dx, str
+[  39]        :                                       mov ah, 9
+[  40]        :                                       int 21h
+[  41]        :                                       pop dx
+[  42]        :                                       pop ax
+[  43]        :                                       endm
+[  44]        :                                       
+[  45]        :                                       ; string input marco
+[  46]        :                                       gets macro str
+[  47]        :                                       push bx
+[  48]        :                                       push cx
+[  49]        :                                       push dx
+[  50]        :                                       
+[  51]        :                                       again:                          ; check empty word input
+[  52]        :                                       mov ah, 0Ah
+[  53]        :                                       lea dx, str
+[  54]        :                                       int 21h
+[  55]        :                                       
+[  56]        :                                       xor ax, ax
+[  57]        :                                       xor cx, cx
+[  58]        :                                       
+[  59]        :                                       mov cl, [word + 1]
+[  60]        :                                       cmp cl, 0                   ; if str is empty
+[  61]        :                                       je again
+[  62]        :                                       
+[  63]        :                                       pop dx
+[  64]        :                                       pop cx
+[  65]        :                                       pop bx
+[  66]        :                                       endm
+[  67]        :                                       
+[  68]        :                                       puti macro                      ; integer number output
+[  69]        :                                       local put1
+[  70]        :                                       local put2
+[  71]        :                                       local ex
+[  72]        :                                       
+[  73]        :                                       push ax
+[  74]        :                                       push cx
+[  75]        :                                       push -1                     ; break condition
+[  76]        :                                       mov cx, 10
+[  77]        :                                       put1:
+[  78]        :                                       xor dx, dx
+[  79]        :                                       xor ah, ah
+[  80]        :                                       div cl                      ; al - result, ah - remainder
+[  81]        :                                       mov dl, ah
+[  82]        :                                       push dx
+[  83]        :                                       cmp al, 0
+[  84]        :                                       jne put1
+[  85]        :                                       
+[  86]        :                                       mov ah, 2
+[  87]        :                                       
+[  88]        :                                       put2:
+[  89]        :                                       pop dx
+[  90]        :                                       cmp dx, -1          ; if -1 break
+[  91]        :                                       je ex
+[  92]        :                                       add dl, '0'         ; to char
+[  93]        :                                       int 21h
+[  94]        :                                       jmp put2
+[  95]        :                                       ex:
+[  96]        :                                       mov dl, ' '
+[  97]        :                                       int 21h
+[  98]        :                                       pop cx
+[  99]        :                                       pop ax
+[ 100]        :                                       endm
+[ 101]        :                                       
+[ 102]        :                                       fopen macro
+[ 103]        :                                       lea dx, file_path
+[ 104]        :                                       mov ah, 3Dh
+[ 105]        :                                       mov al, 00h
+[ 106]        :                                       int 21h
+[ 107]        :                                       jc exit
+[ 108]        :                                       
+[ 109]        :                                       mov bx, ax
+[ 110]        :                                       endm
+[ 111]        :                                       
+[ 112]        :                                       fclose macro
+[ 113]        :                                       mov ah, 3Eh     ; close file function
+[ 114]        :                                       int 21h
+[ 115]        :                                       endm
+[ 116]        :                                       
+[ 117]        :                                       fread macro
+[ 118]        :                                       local continue
+[ 119]        :                                       push ax
+[ 120]        :                                       push cx
+[ 121]        :                                       push dx
+[ 122]        :                                       
+[ 123]        :                                       mov cx, 1
+[ 124]        :                                       lea dx, buf
+[ 125]        :                                       
+[ 126]        :                                       mov ah, 3Fh         ; read from file
+[ 127]        :                                       int 21h             ; bx - file id
+[ 128]        :                                       jc exit             ; cx - bytes count for reading
+[ 129]        :                                       ; cf == 1 -> error
+[ 130]        :                                       mov cx, ax          ; returns bytes have been read to ax
+[ 131]        :                                       test cx, cx         ; if eof
+[ 132]        :                                       jnz continue
+[ 133]        :                                       fclose
+[ 134]        :                                       
+[ 135]        :                                       jmp good_exit
+[ 136]        :                                       
+[ 137]        :                                       continue:
+[ 138]        :                                       pop dx
+[ 139]        :                                       pop cx
+[ 140]        :                                       pop ax
+[ 141]        :                                       endm
+[ 142]        :                                       
+[ 143]        :                                       ;------procedures---------------
+[ 144]        :                                       
+[ 145]        :                                       ;   returns 0 if an error has occured else 1 to ax
+[ 146]    02D0:                                       parse_cmd_text proc
+[ 147]    02D0: 53                                    push bx
+[ 148]    02D1: 51                                    push cx
+[ 149]    02D2: 52                                    push dx
+[ 150]        :                                       
+[ 151]    02D3: 8A 0E C5 00                           mov cl, cmd_length
+[ 152]    02D7: 32 ED                                 xor ch, ch
+[ 153]        :                                       
+[ 154]    02D9: BE C6 00                              lea si, cmd_text                           ; cmd text offset to source
+[ 155]    02DC: BF 45 01                              lea di, file_path                          ; parsing result offset to data
+[ 156]    02DF: E8 37 00                              call to_asciiz                             ; convert to asciiz
+[ 157]        :                                       
+[ 158]    02E2: 56 BE 45 01 E8 65 00 5E 3D 00 00 74   is_empty file_path, bad_cmd_args
+                13                                  
+[ 159]        :                                       
+[ 160]    02EF: BF 91 00                              lea di, word_buffer
+[ 161]    02F2: E8 24 00                              call to_asciiz
+[ 162]        :                                       
+[ 163]    02F5: 56 BE 91 00 E8 52 00 5E 3D 00 00 74   is_empty word_buffer, good_cmd_args
+                10                                  
+[ 164]        :                                       
+[ 165]        :                                       ;-----errors handle
+[ 166]        :                                       
+[ 167]    0302:                                       bad_cmd_args:
+[ 168]    0302: 50 52 BA 55 00 B4 09 CD 21 5A 58      puts msg_bad_args
+[ 169]    030D: B8 01 00                              mov ax, 1
+[ 170]    0310: EB 03                                 jmp end_parse_cmd_text
+[ 171]        :                                       
+[ 172]    0312:                                       good_cmd_args:
+[ 173]    0312: B8 00 00                              mov ax, 0
+[ 174]        :                                       
+[ 175]    0315:                                       end_parse_cmd_text:
+[ 176]    0315: 5B                                    pop bx
+[ 177]    0316: 59                                    pop cx
+[ 178]    0317: 5B                                    pop bx
+[ 179]    0318: C3                                    ret
+[ 180]        :                                       parse_cmd_text endp
+[ 181]        :                                       
+[ 182]        :                                       ;
+[ 183]    0319:                                       to_asciiz proc
+[ 184]    0319: 50                                    push ax
+[ 185]    031A: 51                                    push cx
+[ 186]    031B: 57                                    push di
+[ 187]        :                                       
+[ 188]        :                                       ;---------------------;
+[ 189]        :                                       
+[ 190]    031C:                                       parse_to_asciiz:
+[ 191]    031C: 3E 8A 04                              mov al, ds:[si]
+[ 192]    031F: 3C 20                                 cmp al, ' '
+[ 193]    0321: 74 1B                                 je is_delimeter
+[ 194]    0323: 3C 0D                                 cmp al, 0Dh
+[ 195]    0325: 74 17                                 je is_delimeter
+[ 196]    0327: 3C 09                                 cmp al, 09h
+[ 197]    0329: 74 13                                 je is_delimeter
+[ 198]    032B: 3C 0A                                 cmp al, 0Ah
+[ 199]    032D: 74 0F                                 je is_delimeter
+[ 200]    032F: 3C 00                                 cmp al, 00h
+[ 201]    0331: 74 0B                                 je is_delimeter
+[ 202]    0333: 3C 24                                 cmp al, '$'
+[ 203]    0335: 74 07                                 je is_delimeter
+[ 204]        :                                       
+[ 205]    0337: 26 88 05                              mov es:[di], al        ; write symbol
+[ 206]    033A: 47                                    inc di
+[ 207]    033B: 46                                    inc si
+[ 208]    033C: E2 DE                                 loop parse_to_asciiz
+[ 209]        :                                       
+[ 210]    033E:                                       is_delimeter:
+[ 211]    033E: B0 00                                 mov al, 00h
+[ 212]    0340: 26 88 05                              mov es:[di], al
+[ 213]    0343: B0 24                                 mov al, '$'
+[ 214]    0345: 47                                    inc di
+[ 215]    0346: 26 88 05                              mov es:[di], al
+[ 216]    0349: 46                                    inc si
+[ 217]        :                                       
+[ 218]        :                                       ;---------------------;
+[ 219]        :                                       
+[ 220]    034A: 5F                                    pop di
+[ 221]    034B: 59                                    pop cx
+[ 222]    034C: 58                                    pop ax
+[ 223]    034D: C3                                    ret
+[ 224]        :                                       to_asciiz endp
+[ 225]        :                                       
+[ 226]    034E:                                       strlen proc
+[ 227]    034E: 53                                    push bx
+[ 228]    034F: 56                                    push si
+[ 229]        :                                       
+[ 230]    0350: 33 C0                                 xor ax, ax
+[ 231]    0352:                                       start_strlen:
+[ 232]    0352: 3E 8A 1C                              mov bl, ds:[si]
+[ 233]    0355: 80 FB 00                              cmp bl, 00h
+[ 234]    0358: 74 04                                 je end_strlen
+[ 235]    035A: 46                                    inc si
+[ 236]    035B: 40                                    inc ax
+[ 237]    035C: EB F4                                 jmp start_strlen
+[ 238]    035E:                                       end_strlen:
+[ 239]    035E: 5E                                    pop si
+[ 240]    035F: 5B                                    pop bx
+[ 241]    0360: C3                                    ret
+[ 242]        :                                       strlen endp
+[ 243]        :                                       
+[ 244]        :                                       ;------main---------------------------------
+[ 245]        :                                       
+[ 246]    0361:                                       count_raws:
+[ 247]    0361: 33 D2                                 xor dx, dx
+[ 248]        :                                       
+[ 249]    0363:                                       search:
+[ 250]    0363: 50 51 52 B9 01 00 BA 15 00 B4 3F CD   fread
+                21 73 03 E9 0E 01 8B C8 85 C9 75 07 
+                B4 3E CD 21 E9 14 01 5A 59 58       
+[ 251]    0385: A0 05 00                              mov al, [word+2]
+[ 252]    0388: 8A 0E 15 00                           mov cl, [buf]
+[ 253]    038C: 3A C8                                 cmp cl, al
+[ 254]    038E: 74 02                                 je check_word
+[ 255]    0390: EB D1                                 jmp search
+[ 256]        :                                       
+[ 257]    0392:                                       check_word:
+[ 258]    0392: BE 05 00                              lea si, word+2
+[ 259]    0395: 8A 04                                 mov al, [si]
+[ 260]    0397: B4 01                                 mov ah, 1
+[ 261]        :                                       
+[ 262]    0399:                                       while:
+[ 263]    0399: FE C4                                 inc ah
+[ 264]    039B: 46                                    inc si
+[ 265]    039C: 8A 04                                 mov al, [si]
+[ 266]    039E: 8A 0E 04 00                           mov cl, [word+1]
+[ 267]    03A2: 3A E1                                 cmp ah, cl
+[ 268]    03A4: 7F 2C                                 jg success
+[ 269]    03A6: 50 51 52 B9 01 00 BA 15 00 B4 3F CD   fread
+                21 73 03 E9 CB 00 8B C8 85 C9 75 07 
+                B4 3E CD 21 E9 D1 00 5A 59 58       
+[ 270]    03C8: 8A 0E 15 00                           mov cl, [buf]
+[ 271]    03CC: 3A C1                                 cmp al, cl
+[ 272]    03CE: 75 93                                 jne search
+[ 273]    03D0: 74 C7                                 je while
+[ 274]        :                                       
+[ 275]    03D2:                                       success:
+[ 276]    03D2: 42                                    inc dx
+[ 277]        :                                       
+[ 278]    03D3:                                       skip:
+[ 279]    03D3: 50 51 52 B9 01 00 BA 15 00 B4 3F CD   fread
+                21 73 03 E9 9E 00 8B C8 85 C9 75 07 
+                B4 3E CD 21 E9 A4 00 5A 59 58       
+[ 280]    03F5: B0 0D                                 mov al, 13             ;    \n
+[ 281]    03F7: 8A 0E 15 00                           mov cl, [buf]
+[ 282]    03FB: 3A C1                                 cmp al, cl
+[ 283]    03FD: 75 D4                                 jne skip
+[ 284]    03FF: 50 51 52 B9 01 00 BA 15 00 B4 3F CD   fread
+                21 72 75 8B C8 85 C9 75 06 B4 3E CD 
+                21 EB 7C 5A 59 58                   
+[ 285]    041D: E9 43 FF                              jmp search
+[ 286]        :                                       
+[ 287]    0420: EB 61                                 jmp count_raws_end
+[ 288]        :                                       
+[ 289]    0422:                                       start:
+[ 290]    0422: B8 10 00                              mov ax, @data
+[ 291]    0425: 8E C0                                 mov es, ax
+[ 292]    0427: 32 ED                                 xor ch, ch
+[ 293]    0429: 3E 8A 0E 80 00                        mov cl, ds:[80h]
+[ 294]    042E: 88 0E C5 00                           mov cmd_length, cl
+[ 295]    0432: BE 82 00                              mov si, 82h
+[ 296]    0435: BF C6 00                              lea di, cmd_text
+[ 297]    0438: F3 A4                                 rep movsb               ;text from command line to variable cmd_text
+[ 298]    043A: 8E D8                                 mov ds, ax
+[ 299]        :                                       
+[ 300]    043C: E8 91 FE                              call parse_cmd_text
+[ 301]    043F: 85 C0                                 test ax, ax
+[ 302]    0441: 75 40                                 jne exit
+[ 303]        :                                       
+[ 304]    0443: 50 52 BA 1A 00 B4 09 CD 21 5A 58      puts msg_prompt_to_input
+[ 305]    044E: 53 51 52 B4 0A BA 03 00 CD 21 33 C0   gets word
+                33 C9 8A 0E 04 00 80 F9 00 74 EC 5A 
+                59 5B                               
+[ 306]    0468: BA 45 01 B4 3D B0 00 CD 21 72 10 8B   fopen
+                D8                                  
+[ 307]    0475: 50 52 BA 35 00 B4 09 CD 21 5A 58      puts msg_result
+[ 308]    0480: E9 DE FE                              jmp count_raws
+[ 309]        :                                       
+[ 310]    0483:                                       count_raws_end:
+[ 311]        :                                       
+[ 312]    0483:                                       exit:
+[ 313]    0483: 50 52 BA 87 00 B4 09 CD 21 5A 58      puts msg_error
+[ 314]    048E: 5A                                    pop dx
+[ 315]    048F: 59                                    pop cx
+[ 316]    0490: 58                                    pop ax
+[ 317]    0491: B8 00 4C                              mov ax, 4c00h
+[ 318]    0494: CD 21                                 int 21h
+[ 319]    0496:                                       good_exit:
+[ 320]    0496: 50 52 BA 00 00 B4 09 CD 21 5A 58      puts crlf
+[ 321]    04A1: 5A                                    pop dx
+[ 322]    04A2: 59                                    pop cx
+[ 323]    04A3: 58                                    pop ax
+[ 324]    04A4: 8B C2                                 mov ax, dx
+[ 325]    04A6: 50 51 6A FF B9 0A 00 33 D2 32 E4 F6   puti
+                F1 8A D4 52 3C 00 75 F3 B4 02 5A 83 
+                FA FF 74 07 80 C2 30 CD 21 EB F3 B2 
+                20 CD 21 59 58                      
+[ 326]    04CF: B8 00 4C                              mov ax, 4c00h
+[ 327]    04D2: CD 21                                 int 21h
+[ 328]        :                                       end start
+[ 329]        :                                       
+ 
+===================================================================================================
+ 
+EXE HEADER - bytes from 0000 to 01FF inclusive.
+
+0000: 4D      -   exe signature (M)
+0001: 5A      -   exe signature (Z)
+0002: D4      -   bytes on last page (l.byte)
+0003: 00      -   bytes on last page (h.byte)
+0004: 04      -   512 byte pages in file (l.byte)
+0005: 00      -   512 byte pages in file (h.byte)
+0006: 01      -   relocations (l.byte)
+0007: 00      -   relocations (h.byte)
+0008: 20      -   paragraphs in header (l.byte)
+0009: 00      -   paragraphs in header (h.byte)
+000A: 00      -   minimum memory (l.byte)
+000B: 00      -   minimum memory (h.byte)
+000C: FF      -   maximum memory (l.byte)
+000D: FF      -   maximum memory (h.byte)
+000E: 00      -   SS - stack segment (l.byte)
+000F: 00      -   SS - stack segment (h.byte)
+0010: 00      -   SP - stack pointer (l.byte)
+0011: 01      -   SP - stack pointer (h.byte)
+0012: FA      -   check sum (l.byte)
+0013: 79      -   check sum (h.byte)
+0014: 52      -   IP - instruction pointer (l.byte)
+0015: 01      -   IP - instruction pointer (h.byte)
+0016: 2D      -   CS - code segment (l.byte)
+0017: 00      -   CS - code segment (h.byte)
+0018: 1E      -   relocation table adress (l.byte)
+0019: 00      -   relocation table adress (h.byte)
+001A: 00      -   overlay number (l.byte)
+001B: 00      -   overlay number (h.byte)
+001C: 01      -   signature (l.byte)
+001D: 00      -   signature (h.byte)
+001E: 53      -   relocation table - offset inside segment (l.byte)
+001F: 01      -   relocation table - offset inside segment (h.byte)
+0020: 2D      -   relocation table - segment anchor (l.byte)
+0021: 00      -   relocation table - segment anchor (h.byte)
+0022 to 01FF  -   reserved relocation area  (00) 
+
+
+
+
+===================================================================================================

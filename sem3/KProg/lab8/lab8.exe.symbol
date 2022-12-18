@@ -1,0 +1,52 @@
+< THE SYMBOL TABLE >  lab8.exe  --  emu8086 assembler version: 4.05 
+===================================================================================================
+Name                     	Offset    	Size      	Type      	Segment   
+===================================================================================================
+STACK                    	00000     	-5        	SEGMENT   	(ITSELF)  
+DATA                     	00010     	-5        	SEGMENT   	(ITSELF)  
+CRLF                     	00000     	1         	VAR       	data      
+WORD                     	00003     	1         	VAR       	data      
+BUF                      	00015     	1         	VAR       	data      
+MSG_PROMPT_TO_INPUT      	0001A     	1         	VAR       	data      
+MSG_RESULT               	00035     	1         	VAR       	data      
+MSG_BAD                  	0004A     	1         	VAR       	data      
+MSG_BAD_ARGS             	00055     	1         	VAR       	data      
+MSG_EMPTY_ARGS           	00070     	1         	VAR       	data      
+MSG_ERROR                	00087     	1         	VAR       	data      
+WORD_BUFFER              	00091     	1         	VAR       	data      
+CMD_LENGTH               	000C5     	1         	VAR       	data      
+CMD_TEXT                 	000C6     	1         	VAR       	data      
+FILE_PATH                	00145     	1         	VAR       	data      
+CODE                     	0002D     	-5        	SEGMENT   	(ITSELF)  
+PARSE_CMD_TEXT           	00000     	-1        	NEAR      	code      
+BAD_CMD_ARGS             	00032     	-1        	LABEL     	code      
+GOOD_CMD_ARGS            	00042     	-1        	LABEL     	code      
+END_PARSE_CMD_TEXT       	00045     	-1        	LABEL     	code      
+TO_ASCIIZ                	00049     	-1        	NEAR      	code      
+PARSE_TO_ASCIIZ          	0004C     	-1        	LABEL     	code      
+IS_DELIMETER             	0006E     	-1        	LABEL     	code      
+STRLEN                   	0007E     	-1        	NEAR      	code      
+START_STRLEN             	00082     	-1        	LABEL     	code      
+END_STRLEN               	0008E     	-1        	LABEL     	code      
+COUNT_RAWS               	00091     	-1        	LABEL     	code      
+SEARCH                   	00093     	-1        	LABEL     	code      
+CONTINUE_LOC1TMP         	000B2     	-1        	LABEL     	code      
+CHECK_WORD               	000C2     	-1        	LABEL     	code      
+WHILE                    	000C9     	-1        	LABEL     	code      
+CONTINUE_LOC2TMP         	000F5     	-1        	LABEL     	code      
+SUCCESS                  	00102     	-1        	LABEL     	code      
+SKIP                     	00103     	-1        	LABEL     	code      
+CONTINUE_LOC3TMP         	00122     	-1        	LABEL     	code      
+CONTINUE_LOC4TMP         	0014A     	-1        	LABEL     	code      
+START                    	00152     	-1        	LABEL     	code      
+AGAIN                    	00181     	-1        	LABEL     	code      
+COUNT_RAWS_END           	001B3     	-1        	LABEL     	code      
+EXIT                     	001B3     	-1        	LABEL     	code      
+GOOD_EXIT                	001C6     	-1        	LABEL     	code      
+PUT1_LOC5TMP             	001DD     	-1        	LABEL     	code      
+PUT2_LOC6TMP             	001EC     	-1        	LABEL     	code      
+EX_LOC7TMP               	001F9     	-1        	LABEL     	code      
+===================================================================================================
+[ 11.12.2022  --  17:13:24 ] 
+< END >
+ 
