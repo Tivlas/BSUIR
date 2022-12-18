@@ -8,10 +8,9 @@ namespace SinLibSpace
         public event EventHandler<IntSinEventArgs>? SinCalculated;
         public event EventHandler<ProgressEventArgs>? ProgressEvent;
         private double _step = 0.000000001;
-        private Semaphore _semaphore = new(4, 10);
+        private Semaphore _semaphore = new(2, 2);
         public void CalcSinIntegral()
         {
-            //lock (_calcLock)
             {
                 _semaphore.WaitOne();
 

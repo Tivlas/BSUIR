@@ -10,14 +10,14 @@ namespace Task
             Console.Clear();
             IntSin obj = new();
             StringBuilder progress = new();
-            int size = 10;
+            const int size = 5;
             obj.SinCalculated += (_, eventArgs) =>
             {
                 lock (_lock)
                 {
                     int top = int.Parse(Thread.CurrentThread.Name!);
                     Console.SetCursorPosition(0, size + top);
-                    Console.WriteLine($"Sin equals: {eventArgs.Sin:f4}. Elapsed time: {eventArgs.ElapsedTime}. Thread ID = {eventArgs.ThreadID,2}/Name = {eventArgs.ThreadName,-2} has finished it's work.\n"); 
+                    Console.WriteLine($"Sin equals: {eventArgs.Sin:f4}. Elapsed time: {eventArgs.ElapsedTime}. Thread ID = {eventArgs.ThreadID,-2}/Name = {eventArgs.ThreadName,-2} has finished it's work.\n"); 
                 }
             };
 
