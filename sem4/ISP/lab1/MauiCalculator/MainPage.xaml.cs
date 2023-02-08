@@ -189,7 +189,7 @@ public partial class MainPage : ContentPage
 
     private void OnBackspaceClicked(object sender, EventArgs e)
     {
-        if(_areSomeButtonsDisabled) EnableSomeButtons();
+        if (_areSomeButtonsDisabled) EnableSomeButtons();
         _ = ButtonClickVisualization(sender as Button);
         if (_currentInput.Length > 0 && !_isOperatorSelected && !_wasFunctionCalled)
         {
@@ -365,7 +365,7 @@ public partial class MainPage : ContentPage
     private void OnEqualsClicked(object sender, EventArgs e)
     {
         if (_areSomeButtonsDisabled) EnableSomeButtons();
-            _ = ButtonClickVisualization(sender as Button);
+        _ = ButtonClickVisualization(sender as Button);
         if (_operator != Operations.NoOperation)
         {
             try

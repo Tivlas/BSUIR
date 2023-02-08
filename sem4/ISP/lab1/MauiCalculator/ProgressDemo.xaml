@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MauiCalculator.ProgressDemo"
+             Title="ProgressDemo">
+
+    <Grid BackgroundColor="DarkSlateGray"
+          Padding="10"
+          RowSpacing="10"
+          HorizontalOptions="Fill"
+          VerticalOptions="Fill"
+          RowDefinitions="*,*,*">
+
+        <Label x:Name="output"
+               Text="Welcome to .NET MAUI!"
+               VerticalOptions="Start"
+               HorizontalOptions="Center"
+               FontSize="Medium"
+               Grid.Row="0" />
+
+        <HorizontalStackLayout Spacing="15"
+                               Grid.Row="1"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center">
+
+            <ProgressBar x:Name="progressBar"
+                         Progress="0"
+                         WidthRequest="400"
+                         HeightRequest="5"
+                         BackgroundColor="Gray"
+                         ProgressColor="Chocolate" />
+
+            <Label x:Name="percentLbl"
+                   Text="0%"
+                   FontSize="Medium" />
+        </HorizontalStackLayout>
+
+        <HorizontalStackLayout HorizontalOptions="Center"
+                               VerticalOptions="Center"
+                               Spacing="15"
+                               Grid.Row="2">
+            <Button Text="Start"
+                    Clicked="OnStartClicked"
+                    FontSize="Medium"
+                    WidthRequest="150"
+                    />
+
+            <Button Text="Cancel"
+                    Clicked="OnCancelClicked"
+                    FontSize="Medium"
+                    WidthRequest="150"
+                     />
+        </HorizontalStackLayout>
+    </Grid>
+</ContentPage>
