@@ -13,11 +13,8 @@ public partial class App : Application
     {
         var windows = base.CreateWindow(activationState);
 
-        windows.MinimumHeight = 600;
-        windows.MinimumWidth = 720;
-
-        windows.MaximumHeight = 800;
-        windows.MaximumWidth = 780;
+        windows.MinimumHeight = 550;
+        windows.MinimumWidth = 650;
 
         return windows;
     }
