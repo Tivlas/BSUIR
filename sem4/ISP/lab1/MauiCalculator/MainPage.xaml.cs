@@ -4,7 +4,7 @@ namespace MauiCalculator;
 
 enum Operations : byte
 {
-    NoOperation, // user has not yet selected an operation
+    NoOperation, // пользователь еще не выбрал операцию
     Add,
     Subtract,
     Divide,
@@ -26,12 +26,15 @@ public partial class MainPage : ContentPage
     private double _firstOperand;
     private double _secondOperand;
     private Operations _operator = Operations.NoOperation;
-    private bool _haveToCalculate = false;
-    private bool _isOperatorSelected = false; // + - * / are considered operators
+    private bool _haveToCalculate = false; // нужно ли после нажатия на оператор производить вычисления или пользователь все еще выбирает
+    private bool _isOperatorSelected = false; // + - * / считаются операторами в данном проекте (может быть false, даже если _operator != NoOperation)
     private bool _wasEqualSignClicked = false;
-    private bool _wasFunctionCalled = false; // square square-root negate power etc are considered functions
+    private bool _wasFunctionCalled = false; // возведение в квадрат, корень, степень двойки и т.д. считаются функциями
     private int _digitCounter = 0;
 
+    private double _equalSecondOperand; // при многократном нажатии на = один из операндов все время одинаковый
+    private double _percentTempOperand; // при нажатии на процент (несколько раз) после нажатия на = один из операндов все время одинаковый
+    // эти две переменные это копии _currentValue, но иногда (когда нужно сохранить предыдущее значение _currentValue) их значения могут отличаться от _currentValue
 
     public MainPage()
     {
@@ -56,26 +59,28 @@ public partial class MainPage : ContentPage
         output.Text = value;
     }
 
-    private async void ButtonClickedColorChange(Button clickedButton)
+    private async void ButtonClickVisualization(Button clickedButton)
     {
+        // Свойства типа Hover я не нашел, поэтому визуализирую нажатие таким образом
         var prevColor = clickedButton.BackgroundColor;
         clickedButton.BackgroundColor = Color.FromArgb("#4B3F3F");
         await Task.Delay(30);
         clickedButton.BackgroundColor = prevColor;
     }
 
-    private void ClearInput()
+    private void ClearCurrentInput()
     {
         _currentInput.Clear();
         _digitCounter = 0;
     }
 
-    private void SetDefaultValues()
+    private void Reset()
     {
-        ClearInput();
+        ClearCurrentInput();
         _haveToCalculate = false;
         _isOperatorSelected = false;
         _wasEqualSignClicked = false;
+        _wasFunctionCalled = false;
         _operator = Operations.NoOperation;
         _memory = 0;
         DisableMemoryClearAndRecallButtons();
@@ -84,68 +89,75 @@ public partial class MainPage : ContentPage
     private void OnMemoryClearClicked(object sender, EventArgs e)
     {
         _memory = 0;
-        ButtonClickedColorChange(sender as Button);
+        ButtonClickVisualization(sender as Button);
         DisableMemoryClearAndRecallButtons();
-        ClearInput();
+        ClearCurrentInput();
+    }
+
+    private void UpdateCurrentValue(double newValue)
+    {
+        _currentValue = newValue;
+        _equalSecondOperand = _currentValue;
+        _percentTempOperand = _currentValue;
     }
 
 
     private void OnMemoryRecallClicked(object sender, EventArgs e)
     {
-        ButtonClickedColorChange(sender as Button);
-        _currentValue = _memory;
+        ButtonClickVisualization(sender as Button);
+        UpdateCurrentValue(_memory);
         UpdateOutput(_currentValue.ToString());
-        ClearInput();
+        ClearCurrentInput();
         _currentInput.Append(_currentValue.ToString());
     }
 
     private void OnMemoryAddClicked(object sender, EventArgs e)
     {
-        ButtonClickedColorChange(sender as Button);
+        ButtonClickVisualization(sender as Button);
         EnableMemoryClearAndRecallButtons();
         _memory += _currentValue;
-        ClearInput();
+        ClearCurrentInput();
     }
 
     private void OnMemorySubClicked(object sender, EventArgs e)
     {
-        ButtonClickedColorChange(sender as Button);
+        ButtonClickVisualization(sender as Button);
         EnableMemoryClearAndRecallButtons();
         _memory -= _currentValue;
-        ClearInput();
+        ClearCurrentInput();
     }
 
     private void OnMemorySaveClicked(object sender, EventArgs e)
     {
-        ButtonClickedColorChange(sender as Button);
+        ButtonClickVisualization(sender as Button);
         EnableMemoryClearAndRecallButtons();
         _memory = _currentValue;
-        ClearInput();
+        ClearCurrentInput();
     }
 
 
     private void OnClearEntryClicked(object sender, EventArgs e)
     {
-        ButtonClickedColorChange(sender as Button);
-        ClearInput();
+        ButtonClickVisualization(sender as Button);
+        ClearCurrentInput();
         UpdateOutput("0");
     }
 
     private void OnClearClicked(object sender, EventArgs e)
     {
-        ButtonClickedColorChange(sender as Button);
+        ButtonClickVisualization(sender as Button);
         UpdateOutput("0");
-        SetDefaultValues();
+        Reset();
     }
 
     private void OnBackspaceClicked(object sender, EventArgs e)
     {
-        ButtonClickedColorChange(sender as Button);
-        if (_currentInput.Length > 0 && !_isOperatorSelected)
+        ButtonClickVisualization(sender as Button);
+        if (_currentInput.Length > 0 && !_isOperatorSelected && !_wasFunctionCalled)
         {
             _currentInput.Remove(_currentInput.Length - 1, 1);
             string temp = _currentInput.ToString();
-            _currentValue = double.Parse(temp != "" ? temp : "0");
+            UpdateCurrentValue(double.Parse(temp != "" ? temp : "0"));
             UpdateOutput(_currentValue.ToString());
         }
     }
@@ -155,12 +167,12 @@ public partial class MainPage : ContentPage
         if (_wasFunctionCalled)
         {
             _wasFunctionCalled = false;
-            ClearInput();
+            ClearCurrentInput();
         }
-        if (_isOperatorSelected )
+        if (_isOperatorSelected)
         {
             _firstOperand = _currentValue;
-            ClearInput();
+            ClearCurrentInput();
             _isOperatorSelected = false;
             if (!_wasEqualSignClicked)
             {
@@ -170,19 +182,18 @@ public partial class MainPage : ContentPage
         }
     }
 
-
     private void OnDigitClicked(object sender, EventArgs e)
     {
+        ButtonClickVisualization(sender as Button);
         PrepareToEnterNewNumber();
         if (_digitCounter < 16)
         {
-            _digitCounter++;
             var digit = (sender as Button).Text;
-
-            ButtonClickedColorChange(sender as Button);
             string temp = _currentInput.Append(digit).ToString();
             UpdateOutput(temp);
-            _currentValue = double.Parse(temp);
+            UpdateCurrentValue(double.Parse(temp));
+            _digitCounter++;
+            if (_currentInput.ToString() == "0") ClearCurrentInput();
         }
     }
 
@@ -190,7 +201,7 @@ public partial class MainPage : ContentPage
     {
         _isOperatorSelected = true;
         _wasEqualSignClicked = false;
-        if (_operator == Operations.NoOperation && !_haveToCalculate)
+        if (_operator == Operations.NoOperation || !_haveToCalculate)
         {
             _operator = op;
             _firstOperand = _currentValue;
@@ -200,38 +211,41 @@ public partial class MainPage : ContentPage
             try
             {
                 _secondOperand = _currentValue;
+                _percentTempOperand = _currentValue; // возможно нужно на одну строчку вниз
                 _currentValue = Calculate(_operator, _firstOperand, _secondOperand);
+                _equalSecondOperand = _currentValue;
+                _firstOperand = _currentValue;
                 UpdateOutput(_currentValue.ToString());
                 _operator = op;
                 _haveToCalculate = false;
             }
             catch (Exception ex)
             {
-                DetermineCalcErrorType(ex);
+                HandleException(ex);
             }
         }
     }
 
     private void OnDivideClicked(object sender, EventArgs e)
     {
-        ButtonClickedColorChange(sender as Button);
+        ButtonClickVisualization(sender as Button);
         BasicOperatorClicked(Operations.Divide);
     }
     private void OnMultiplyClicked(object sender, EventArgs e)
     {
-        ButtonClickedColorChange(sender as Button);
+        ButtonClickVisualization(sender as Button);
         BasicOperatorClicked(Operations.Multiply);
     }
 
     private void OnSubtractClicked(object sender, EventArgs e)
     {
-        ButtonClickedColorChange(sender as Button);
+        ButtonClickVisualization(sender as Button);
         BasicOperatorClicked(Operations.Subtract);
     }
 
     private void OnAddClicked(object sender, EventArgs e)
     {
-        ButtonClickedColorChange(sender as Button);
+        ButtonClickVisualization(sender as Button);
         BasicOperatorClicked(Operations.Add);
     }
 
@@ -241,106 +255,109 @@ public partial class MainPage : ContentPage
         {
             _wasFunctionCalled = true;
             _currentValue = Calculate(op, _currentValue);
+            _equalSecondOperand = _currentValue;
             UpdateOutput(_currentValue.ToString());
             _currentInput.Clear().Append(_currentValue.ToString());
         }
         catch (Exception ex)
         {
-            DetermineCalcErrorType(ex);
+            HandleException(ex);
         }
     }
 
     private void OnPowerOfTwoClicked(object sender, EventArgs e)
     {
-        ButtonClickedColorChange(sender as Button);
+        ButtonClickVisualization(sender as Button);
         FunctionClicked(Operations.PowerOfTwo);
     }
 
     private void OnPercentClicked(object sender, EventArgs e)
     {
-        ButtonClickedColorChange(sender as Button);
+        ButtonClickVisualization(sender as Button);
         FunctionClicked(Operations.Percent);
     }
-    
+
     private void OnDivideByXClicked(object sender, EventArgs e)
     {
-        ButtonClickedColorChange(sender as Button);
+        ButtonClickVisualization(sender as Button);
         FunctionClicked(Operations.DivideByX);
     }
 
     private void OnSquareClicked(object sender, EventArgs e)
     {
-        ButtonClickedColorChange(sender as Button);
+        ButtonClickVisualization(sender as Button);
         FunctionClicked(Operations.Square);
     }
 
     private void OnSquareRootClicked(object sender, EventArgs e)
     {
-        ButtonClickedColorChange(sender as Button);
+        ButtonClickVisualization(sender as Button);
         FunctionClicked(Operations.SquareRoot);
     }
 
     private void OnNegateClicked(object sender, EventArgs e)
     {
-        ButtonClickedColorChange(sender as Button);
-        FunctionClicked(Operations.Negate);
+        ButtonClickVisualization(sender as Button);
+        // для этой операции не вызывается FunctionClicked так как после нее можно продолжать ввод числа
+        UpdateCurrentValue(Calculate(Operations.Negate, _currentValue));
+        if (_currentValue < 0)
+        {
+            _currentInput.Insert(0, '-');
+        }
+        else if (_currentValue > 0)
+        {
+            _currentInput.Remove(0, 1);
+        }
+        UpdateOutput(_currentValue.ToString());
     }
 
     private void OnSeparatorClicked(object sender, EventArgs e)
     {
-        ButtonClickedColorChange(sender as Button);
+        ButtonClickVisualization(sender as Button);
         PrepareToEnterNewNumber();
         if (!_currentInput.ToString().Contains(","))
         {
             UpdateOutput(_currentInput.Length == 0 ? _currentInput.Append("0,").ToString() : _currentInput.Append(",").ToString());
-            _currentValue = double.Parse(_currentInput.ToString());
+            UpdateCurrentValue(double.Parse(_currentInput.ToString()));
         }
     }
 
 
     private void OnEqualsClicked(object sender, EventArgs e)
     {
-        ButtonClickedColorChange(sender as Button);
+        ButtonClickVisualization(sender as Button);
         if (_operator != Operations.NoOperation)
         {
-            _secondOperand = double.Parse(_currentInput.ToString());
-            _currentValue = Calculate(_operator, _firstOperand, _secondOperand);
+            _secondOperand = _equalSecondOperand;
+            try
+            {
+                _currentValue = Calculate(_operator, _firstOperand, _secondOperand);
+            }
+            catch (Exception ex)
+            {
+                HandleException(ex);
+            }
+            _percentTempOperand = _currentValue;
             UpdateOutput(_currentValue.ToString());
             _firstOperand = _currentValue;
 
             _isOperatorSelected = true;
             _haveToCalculate = false;
             _wasEqualSignClicked = true;
+            _wasFunctionCalled = false;
         }
     }
 
-    private double Calculate(Operations op, double first, double second = 1) // 1 is default when we don't need the second parameter
+    private double Calculate(Operations op, double first, double second = 1) // 1 это случайное число на случай, когда второй параметр не нужен
     {
-        //checked
-        //{
-        //    return op switch
-        //    {
-        //        Operations.Add => first + second,
-        //        Operations.Subtract => first - second,
-        //        Operations.Multiply => first * second,
-        //        Operations.Divide => first / second,
-        //        Operations.DivideByX => 1 / first,
-        //        Operations.Square => first * first,
-        //        Operations.SquareRoot => Math.Sqrt(first),
-        //        Operations.Percent => first/100,
-        //        Operations.PowerOfTwo => Math.Pow(2,first),
-        //        Operations.Negate => -first,
-        //        _ => throw new InvalidOperationException("Invalid operatoion"),
-
-        //    };
-        //}
-        double ans; 
+        double ans;
+        bool wasDividedByZero = false;
         switch (op)
         {
             case Operations.Add:
                 ans = first + second;
                 break;
-                
+
             case Operations.Subtract:
                 ans = first - second;
                 break;
@@ -350,52 +367,60 @@ public partial class MainPage : ContentPage
                 break;
 
             case Operations.Divide:
-                if (first == 0) throw new DivideByZeroException("Division by zero!");
-                return first / second;
+                if (second == 0) wasDividedByZero = true;
+                ans = first / second;
+                break;
 
             case Operations.DivideByX:
-                if (first == 0) throw new DivideByZeroException("Division by zero!");
-                return 1 / first;
-                
+                if (first == 0) wasDividedByZero = true;
+                ans = 1 / first;
+                break;
+
             case Operations.Square:
                 ans = first * first;
                 break;
 
             case Operations.SquareRoot:
                 return Math.Sqrt(first);
-                
+
             case Operations.Percent:
-                return first / 100;
-                
+                _haveToCalculate = false;
+                if ((_operator == Operations.Multiply || _operator == Operations.Divide) && !_wasEqualSignClicked)
+                {
+                    ans = first / 100;
+                }
+                else if ((_operator == Operations.Add || _operator == Operations.Subtract) && !_wasEqualSignClicked)
+                {
+                    ans = first * 0.01 * _firstOperand;
+                }
+                else if (_wasEqualSignClicked)
+                {
+                    ans = first * _percentTempOperand * 0.01;
+                }
+                else
+                {
+                    ans = 0;
+                }
+                break;
+
             case Operations.PowerOfTwo:
                 ans = Math.Pow(2, first);
                 break;
 
             case Operations.Negate:
-                return -first;
+                return Math.Sign(first) == 0 ? first : -first;
             default:
                 throw new InvalidOperationException("Invalid operatoion");
         }
-        if (ans == double.PositiveInfinity || ans == double.NegativeInfinity) throw new OverflowException("Overflow!");
+        if (!double.IsFinite(ans)) throw new Exception(wasDividedByZero ? "Division by zero is impossible!" : "Overflow!");
         return ans;
     }
 
-    private void DetermineCalcErrorType(Exception ex)
+    private void HandleException(Exception ex)
     {
-        if (ex is OverflowException)
-        {
-            UpdateOutput("Overflow!");
-        }
-        else if (ex is DivideByZeroException)
-        {
-            UpdateOutput("Division by zero is impossible!");
-        }
-        else
-        {
-            UpdateOutput("Error!");
-        }
-        ClearInput();
-        SetDefaultValues();
+        UpdateOutput(ex.Message);
+        ClearCurrentInput();
+        Reset();
     }
 }
 

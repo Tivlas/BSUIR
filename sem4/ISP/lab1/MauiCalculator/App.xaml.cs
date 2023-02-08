@@ -17,7 +17,7 @@ public partial class App : Application
         windows.MinimumWidth = 720;
 
         windows.MaximumHeight = 800;
-        windows.MaximumWidth = 720;
+        windows.MaximumWidth = 780;
 
         return windows;
     }
