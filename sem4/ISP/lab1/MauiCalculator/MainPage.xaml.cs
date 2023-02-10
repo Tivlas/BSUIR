@@ -36,8 +36,6 @@ public partial class MainPage : ContentPage
     private double _percentTempOperand; // при нажатии на процент (несколько раз) после нажатия на = один из операндов все время одинаковый
     // эти две переменные это копии _currentValue, но иногда (когда нужно сохранить предыдущее значение _currentValue) их значения могут отличаться от _currentValue
 
-    private Color _defaultButtonColor = Color.FromArgb("#808080");
-    private Color _disabledButtonColor = Color.FromArgb("#4B3F3F");
     private List<Button> _buttonsToDisableAfterException;
 
     private bool _isMemoryCleared = true;
@@ -54,16 +52,12 @@ public partial class MainPage : ContentPage
     {
         mcBtn.IsEnabled = false;
         mrBtn.IsEnabled = false;
-        mcBtn.BackgroundColor = _disabledButtonColor;
-        mrBtn.BackgroundColor = _disabledButtonColor;
     }
 
     private void EnableMemoryClearAndRecallButtons()
     {
         mcBtn.IsEnabled = true;
         mrBtn.IsEnabled = true;
-        mcBtn.BackgroundColor = _defaultButtonColor;
-        mrBtn.BackgroundColor = _defaultButtonColor;
     }
 
     private void DisableSomeButtons()
@@ -71,7 +65,6 @@ public partial class MainPage : ContentPage
         foreach (var button in _buttonsToDisableAfterException)
         {
             button.IsEnabled = false;
-            button.BackgroundColor = _disabledButtonColor;
         }
         _areSomeButtonsDisabled = true;
     }
@@ -82,7 +75,6 @@ public partial class MainPage : ContentPage
         {
             if ((button == mcBtn || button == mrBtn) && _isMemoryCleared) continue;
             button.IsEnabled = true;
-            button.BackgroundColor = _defaultButtonColor;
         }
         _areSomeButtonsDisabled = false;
     }
@@ -92,14 +84,6 @@ public partial class MainPage : ContentPage
         output.Text = value;
     }
 
-    private async Task ButtonClickVisualization(Button clickedButton)
-    {
-        // Свойства типа Hover я не нашел, поэтому визуализирую нажатие таким образом
-        var prevColor = clickedButton.BackgroundColor;
-        clickedButton.BackgroundColor = Color.FromArgb("#4B3F3F");
-        await Task.Delay(50);
-        clickedButton.BackgroundColor = prevColor;
-    }
 
     private void ClearCurrentInput()
     {
@@ -116,13 +100,17 @@ public partial class MainPage : ContentPage
         _wasFunctionCalled = false;
         _operator = Operations.NoOperation;
         _memory = 0;
+        _currentValue = 0;
+        _firstOperand = 0;
+        _secondOperand = 0;
+        _equalSecondOperand = 0;
+        _percentTempOperand = 0;
         DisableMemoryClearAndRecallButtons();
     }
 
-    private async void OnMemoryClearClicked(object sender, EventArgs e)
+    private void OnMemoryClearClicked(object sender, EventArgs e)
     {
         _memory = 0;
-        await ButtonClickVisualization(sender as Button);
         DisableMemoryClearAndRecallButtons();
         ClearCurrentInput();
         _isMemoryCleared = true;
@@ -138,7 +126,6 @@ public partial class MainPage : ContentPage
 
     private void OnMemoryRecallClicked(object sender, EventArgs e)
     {
-        _ = ButtonClickVisualization(sender as Button);
         UpdateCurrentValue(_memory);
         UpdateOutput(_currentValue.ToString());
         ClearCurrentInput();
@@ -147,7 +134,6 @@ public partial class MainPage : ContentPage
 
     private void OnMemoryAddClicked(object sender, EventArgs e)
     {
-        _ = ButtonClickVisualization(sender as Button);
         EnableMemoryClearAndRecallButtons();
         _memory += _currentValue;
         ClearCurrentInput();
@@ -155,7 +141,6 @@ public partial class MainPage : ContentPage
 
     private void OnMemorySubClicked(object sender, EventArgs e)
     {
-        _ = ButtonClickVisualization(sender as Button);
         EnableMemoryClearAndRecallButtons();
         _memory -= _currentValue;
         ClearCurrentInput();
@@ -163,7 +148,6 @@ public partial class MainPage : ContentPage
 
     private void OnMemorySaveClicked(object sender, EventArgs e)
     {
-        _ = ButtonClickVisualization(sender as Button);
         EnableMemoryClearAndRecallButtons();
         _memory = _currentValue;
         ClearCurrentInput();
@@ -173,7 +157,6 @@ public partial class MainPage : ContentPage
 
     private void OnClearEntryClicked(object sender, EventArgs e)
     {
-        _ = ButtonClickVisualization(sender as Button);
         ClearCurrentInput();
         UpdateOutput("0");
         if (_areSomeButtonsDisabled) EnableSomeButtons();
@@ -181,7 +164,6 @@ public partial class MainPage : ContentPage
 
     private void OnClearClicked(object sender, EventArgs e)
     {
-        _ = ButtonClickVisualization(sender as Button);
         UpdateOutput("0");
         Reset();
         if (_areSomeButtonsDisabled) EnableSomeButtons();
@@ -190,7 +172,6 @@ public partial class MainPage : ContentPage
     private void OnBackspaceClicked(object sender, EventArgs e)
     {
         if (_areSomeButtonsDisabled) EnableSomeButtons();
-        _ = ButtonClickVisualization(sender as Button);
         if (_currentInput.Length > 0 && !_isOperatorSelected && !_wasFunctionCalled)
         {
             _currentInput.Remove(_currentInput.Length - 1, 1);
@@ -223,7 +204,6 @@ public partial class MainPage : ContentPage
     private void OnDigitClicked(object sender, EventArgs e)
     {
         if (_areSomeButtonsDisabled) EnableSomeButtons();
-        _ = ButtonClickVisualization(sender as Button);
         PrepareToEnterNewNumber();
         if (_digitCounter < 16)
         {
@@ -267,24 +247,20 @@ public partial class MainPage : ContentPage
 
     private void OnDivideClicked(object sender, EventArgs e)
     {
-        _ = ButtonClickVisualization(sender as Button);
         BasicOperatorClicked(Operations.Divide);
     }
     private void OnMultiplyClicked(object sender, EventArgs e)
     {
-        _ = ButtonClickVisualization(sender as Button);
         BasicOperatorClicked(Operations.Multiply);
     }
 
     private void OnSubtractClicked(object sender, EventArgs e)
     {
-        _ = ButtonClickVisualization(sender as Button);
         BasicOperatorClicked(Operations.Subtract);
     }
 
     private void OnAddClicked(object sender, EventArgs e)
     {
-        _ = ButtonClickVisualization(sender as Button);
         BasicOperatorClicked(Operations.Add);
     }
 
@@ -306,37 +282,31 @@ public partial class MainPage : ContentPage
 
     private void OnPowerOfTwoClicked(object sender, EventArgs e)
     {
-        _ = ButtonClickVisualization(sender as Button);
         FunctionClicked(Operations.PowerOfTwo);
     }
 
     private void OnPercentClicked(object sender, EventArgs e)
     {
-        _ = ButtonClickVisualization(sender as Button);
         FunctionClicked(Operations.Percent);
     }
 
     private void OnDivideByXClicked(object sender, EventArgs e)
     {
-        _ = ButtonClickVisualization(sender as Button);
         FunctionClicked(Operations.DivideByX);
     }
 
     private void OnSquareClicked(object sender, EventArgs e)
     {
-        _ = ButtonClickVisualization(sender as Button);
         FunctionClicked(Operations.Square);
     }
 
     private void OnSquareRootClicked(object sender, EventArgs e)
     {
-        _ = ButtonClickVisualization(sender as Button);
         FunctionClicked(Operations.SquareRoot);
     }
 
     private void OnNegateClicked(object sender, EventArgs e)
     {
-        _ = ButtonClickVisualization(sender as Button);
         // для этой операции не вызывается FunctionClicked так как после нее можно продолжать ввод числа
         UpdateCurrentValue(Calculate(Operations.Negate, _currentValue));
         if (_currentValue < 0)
@@ -352,7 +322,6 @@ public partial class MainPage : ContentPage
 
     private void OnSeparatorClicked(object sender, EventArgs e)
     {
-        _ = ButtonClickVisualization(sender as Button);
         PrepareToEnterNewNumber();
         if (!_currentInput.ToString().Contains(","))
         {
@@ -365,7 +334,6 @@ public partial class MainPage : ContentPage
     private void OnEqualsClicked(object sender, EventArgs e)
     {
         if (_areSomeButtonsDisabled) EnableSomeButtons();
-        _ = ButtonClickVisualization(sender as Button);
         if (_operator != Operations.NoOperation)
         {
             try
