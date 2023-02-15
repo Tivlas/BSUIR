@@ -4,7 +4,7 @@
              x:Class="MauiCalculator.ProgressDemo"
              Title="ProgressDemo">
 
-    <Grid BackgroundColor="DarkSlateGray"
+    <Grid BackgroundColor="{StaticResource BackgroundColor}"
           Padding="10"
           RowSpacing="10"
           HorizontalOptions="Fill"
@@ -27,7 +27,7 @@
                          Progress="0"
                          WidthRequest="400"
                          HeightRequest="5"
-                         BackgroundColor="Gray"
+                         BackgroundColor="{StaticResource DigitColor}"
                          ProgressColor="Chocolate" />
 
             <Label x:Name="percentLbl"
@@ -43,13 +43,13 @@
                     Clicked="OnStartClicked"
                     FontSize="Medium"
                     WidthRequest="150"
-                    />
+                    BackgroundColor="{StaticResource DigitColor}" />
 
             <Button Text="Cancel"
                     Clicked="OnCancelClicked"
                     FontSize="Medium"
                     WidthRequest="150"
-                     />
+                    BackgroundColor="{StaticResource DigitColor}" />
         </HorizontalStackLayout>
     </Grid>
 </ContentPage>

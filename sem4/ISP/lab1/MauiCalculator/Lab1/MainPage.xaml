@@ -11,7 +11,7 @@
           ColumnDefinitions="*,*,*,*,*"
           HorizontalOptions="Fill"
           VerticalOptions="Fill"
-          BackgroundColor="DarkSlateGray">
+          BackgroundColor="{StaticResource BackgroundColor}">
 
         <Label x:Name="output"
                Text="0"
@@ -28,14 +28,15 @@
                 Grid.Row="1"
                 Grid.Column="0"
                 FontSize="Large"
-                Style="{StaticResource buttonStyle}"
-                 />
+                BackgroundColor="{StaticResource OperationColor}"
+                Style="{StaticResource buttonStyle}" />
         <Button x:Name="mrBtn"
                 Text="MR"
                 Clicked="OnMemoryRecallClicked"
                 Grid.Row="1"
                 Grid.Column="1"
                 FontSize="Large"
+                BackgroundColor="{StaticResource OperationColor}"
                 Style="{StaticResource buttonStyle}" />
         <Button x:Name="memAddBtn"
                 Text="M+"
@@ -43,6 +44,7 @@
                 Grid.Row="1"
                 Grid.Column="2"
                 FontSize="Large"
+                BackgroundColor="{StaticResource OperationColor}"
                 Style="{StaticResource buttonStyle}" />
         <Button x:Name="memSubBtn"
                 Text="M-"
@@ -50,6 +52,7 @@
                 Grid.Row="1"
                 Grid.Column="3"
                 FontSize="Large"
+                BackgroundColor="{StaticResource OperationColor}"
                 Style="{StaticResource buttonStyle}" />
         <Button x:Name="msBtn"
                 Text="MS"
@@ -57,6 +60,7 @@
                 Grid.Row="1"
                 Grid.Column="4"
                 FontSize="Large"
+                BackgroundColor="{StaticResource OperationColor}"
                 Style="{StaticResource buttonStyle}" />
 
         <Button x:Name="twoPowerBtn"
@@ -65,6 +69,7 @@
                 Grid.Row="2"
                 Grid.Column="0"
                 FontSize="Large"
+                BackgroundColor="{StaticResource OperationColor}"
                 Style="{StaticResource buttonStyle}" />
         <Button x:Name="percentBtn"
                 Text="%"
@@ -72,24 +77,28 @@
                 Grid.Row="2"
                 Grid.Column="1"
                 FontSize="Large"
+                BackgroundColor="{StaticResource OperationColor}"
                 Style="{StaticResource buttonStyle}" />
         <Button Text="CE"
                 Clicked="OnClearEntryClicked"
                 Grid.Row="2"
                 Grid.Column="2"
                 FontSize="Large"
+                BackgroundColor="{StaticResource OperationColor}"
                 Style="{StaticResource buttonStyle}" />
         <Button Text="C"
                 Clicked="OnClearClicked"
                 Grid.Row="2"
                 Grid.Column="3"
                 FontSize="Large"
+                BackgroundColor="{StaticResource OperationColor}"
                 Style="{StaticResource buttonStyle}" />
         <Button Text="⌫"
                 Clicked="OnBackspaceClicked"
                 Grid.Row="2"
                 Grid.Column="4"
                 FontSize="Large"
+                BackgroundColor="{StaticResource OperationColor}"
                 Style="{StaticResource buttonStyle}" />
 
         <Button x:Name="divByXBtn"
@@ -98,6 +107,7 @@
                 Grid.Row="3"
                 Grid.Column="0"
                 FontSize="Large"
+                BackgroundColor="{StaticResource OperationColor}"
                 Style="{StaticResource buttonStyle}" />
         <Button x:Name="squareBtn"
                 Text="x²"
@@ -105,6 +115,7 @@
                 Grid.Row="3"
                 Grid.Column="1"
                 FontSize="Large"
+                BackgroundColor="{StaticResource OperationColor}"
                 Style="{StaticResource buttonStyle}" />
         <Button x:Name="squareRootBtn"
                 Text="√x"
@@ -112,6 +123,7 @@
                 Grid.Row="3"
                 Grid.Column="2"
                 FontSize="Large"
+                BackgroundColor="{StaticResource OperationColor}"
                 Style="{StaticResource buttonStyle}" />
         <Button x:Name="divBtn"
                 Text="÷"
@@ -120,6 +132,7 @@
                 Grid.Column="3"
                 Grid.ColumnSpan="2"
                 FontSize="Large"
+                BackgroundColor="{StaticResource OperationColor}"
                 Style="{StaticResource buttonStyle}" />
 
         <Button Text="7"
@@ -127,18 +140,21 @@
                 Grid.Row="4"
                 Grid.Column="0"
                 FontSize="Large"
+                BackgroundColor="{StaticResource DigitColor}"
                 Style="{StaticResource buttonStyle}" />
         <Button Text="8"
                 Clicked="OnDigitClicked"
                 Grid.Row="4"
                 Grid.Column="1"
                 FontSize="Large"
+                BackgroundColor="{StaticResource DigitColor}"
                 Style="{StaticResource buttonStyle}" />
         <Button Text="9"
                 Clicked="OnDigitClicked"
                 Grid.Row="4"
                 Grid.Column="2"
                 FontSize="Large"
+                BackgroundColor="{StaticResource DigitColor}"
                 Style="{StaticResource buttonStyle}" />
         <Button x:Name="mulBtn"
                 Text="×"
@@ -147,6 +163,7 @@
                 Grid.Column="3"
                 Grid.ColumnSpan="2"
                 FontSize="Large"
+                BackgroundColor="{StaticResource OperationColor}"
                 Style="{StaticResource buttonStyle}" />
 
         <Button Text="4"
@@ -154,18 +171,21 @@
                 Grid.Row="5"
                 Grid.Column="0"
                 FontSize="Large"
+                BackgroundColor="{StaticResource DigitColor}"
                 Style="{StaticResource buttonStyle}" />
         <Button Text="5"
                 Clicked="OnDigitClicked"
                 Grid.Row="5"
                 Grid.Column="1"
                 FontSize="Large"
+                BackgroundColor="{StaticResource DigitColor}"
                 Style="{StaticResource buttonStyle}" />
         <Button Text="6"
                 Clicked="OnDigitClicked"
                 Grid.Row="5"
                 Grid.Column="2"
                 FontSize="Large"
+                BackgroundColor="{StaticResource DigitColor}"
                 Style="{StaticResource buttonStyle}" />
         <Button x:Name="subBtn"
                 Text="-"
@@ -174,6 +194,7 @@
                 Grid.Column="3"
                 Grid.ColumnSpan="2"
                 FontSize="Large"
+                BackgroundColor="{StaticResource OperationColor}"
                 Style="{StaticResource buttonStyle}" />
 
         <Button Text="1"
@@ -181,18 +202,21 @@
                 Grid.Row="6"
                 Grid.Column="0"
                 FontSize="Large"
+                BackgroundColor="{StaticResource DigitColor}"
                 Style="{StaticResource buttonStyle}" />
         <Button Text="2"
                 Clicked="OnDigitClicked"
                 Grid.Row="6"
                 Grid.Column="1"
                 FontSize="Large"
+                BackgroundColor="{StaticResource DigitColor}"
                 Style="{StaticResource buttonStyle}" />
         <Button Text="3"
                 Clicked="OnDigitClicked"
                 Grid.Row="6"
                 Grid.Column="2"
                 FontSize="Large"
+                BackgroundColor="{StaticResource DigitColor}"
                 Style="{StaticResource buttonStyle}" />
         <Button x:Name="addBtn"
                 Text="+"
@@ -201,6 +225,7 @@
                 Grid.Column="3"
                 Grid.ColumnSpan="2"
                 FontSize="Large"
+                BackgroundColor="{StaticResource OperationColor}"
                 Style="{StaticResource buttonStyle}" />
 
         <Button x:Name="negBtn"
@@ -209,12 +234,14 @@
                 Grid.Row="7"
                 Grid.Column="0"
                 FontSize="Large"
+                BackgroundColor="{StaticResource DigitColor}"
                 Style="{StaticResource buttonStyle}" />
         <Button Text="0"
                 Clicked="OnDigitClicked"
                 Grid.Row="7"
                 Grid.Column="1"
                 FontSize="Large"
+                BackgroundColor="{StaticResource DigitColor}"
                 Style="{StaticResource buttonStyle}" />
         <Button x:Name="sepBtn"
                 Text=","
@@ -222,6 +249,7 @@
                 Grid.Row="7"
                 Grid.Column="2"
                 FontSize="Large"
+                BackgroundColor="{StaticResource DigitColor}"
                 Style="{StaticResource buttonStyle}" />
 
         <Button Text="="
@@ -229,7 +257,7 @@
                 Grid.Row="7"
                 Grid.Column="3"
                 Grid.ColumnSpan="2"
-                BackgroundColor="Chocolate"
+                BackgroundColor="{StaticResource EqualSignColor}"
                 Style="{StaticResource buttonStyle}"
                 FontSize="Large" />
 

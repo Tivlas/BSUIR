@@ -9,20 +9,11 @@ public partial class ProgressDemo : ContentPage
 
     private Task<double> _calcSinTask;
     private CancellationTokenSource _cts = null;
-    private Color _defaultButtonColor = Color.FromArgb("#000000");
     private double _step = 0.000000002;
 
-    private async Task ButtonClickVisualization(Button clickedButton)
-    {
-        var prevColor = clickedButton.BackgroundColor;
-        clickedButton.BackgroundColor = Color.FromArgb("#4B3F3F");
-        await Task.Delay(50);
-        clickedButton.BackgroundColor = prevColor;
-    }
     private double CalculateSin()
     {
-        BindableObject obj = this;
-        obj.Dispatcher.Dispatch(() =>
+        MainThread.BeginInvokeOnMainThread(() =>
         {
             output.Text = "Вычисление";
         });
@@ -34,7 +25,7 @@ public partial class ProgressDemo : ContentPage
         {
             if (_cts.IsCancellationRequested)
             {
-                obj.Dispatcher.Dispatch(() =>
+                MainThread.BeginInvokeOnMainThread(() =>
                 {
                     output.Text = "Задание отменено";
                 });
@@ -47,7 +38,7 @@ public partial class ProgressDemo : ContentPage
             if (percent != prevPercent)
             {
                 prevPercent = percent;
-                obj.Dispatcher.Dispatch(() =>
+                MainThread.BeginInvokeOnMainThread(() =>
                 {
                     progressBar.Progress = percent / 100.0;
                     percentLbl.Text = percent + "%";
@@ -58,7 +49,6 @@ public partial class ProgressDemo : ContentPage
     }
     private async void OnStartClicked(object sender, EventArgs e)
     {
-        _ = ButtonClickVisualization(sender as Button);
         if (_calcSinTask?.Status != TaskStatus.Running)
         {
             _cts = new CancellationTokenSource();
@@ -72,7 +62,6 @@ public partial class ProgressDemo : ContentPage
 
     private void OnCancelClicked(object sender, EventArgs e)
     {
-        _ = ButtonClickVisualization(sender as Button);
         if (_calcSinTask?.Status == TaskStatus.Running)
         {
             _cts.Cancel();
