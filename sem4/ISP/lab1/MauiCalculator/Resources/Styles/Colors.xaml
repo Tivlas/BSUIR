@@ -41,4 +41,9 @@
     <Color x:Key="Blue200Accent">#72ACF1</Color>
     <Color x:Key="Blue300Accent">#A7CBF6</Color>
 
+    <Color x:Key="DigitColor">#36393a</Color>
+    <Color x:Key="OperationColor">#2d2e31</Color>
+    <Color x:Key="BackgroundColor">#181a1c</Color>
+    <Color x:Key="EqualSignColor">#4bc3ff</Color>
+
 </ResourceDictionary>

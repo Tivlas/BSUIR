@@ -4,8 +4,8 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:MauiCalculator"
-    FlyoutBackgroundColor="DarkSlateGray"
-    BackgroundColor="Chocolate"
+    FlyoutBackgroundColor="{StaticResource DigitColor}"
+    BackgroundColor="{StaticResource OperationColor}"
     Title="Labs"
     TitleColor="White"
     >
@@ -18,5 +18,8 @@
     <ShellContent Title="ProgressDemo"
                   ContentTemplate="{DataTemplate local:ProgressDemo}"
                   />
+
+    <ShellContent Title="Lab3"
+                  ContentTemplate="{DataTemplate local:lab3}" />
 
 </Shell>
