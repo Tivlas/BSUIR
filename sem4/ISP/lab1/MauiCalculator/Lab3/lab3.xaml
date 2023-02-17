@@ -12,7 +12,7 @@
           Padding="40"
           BackgroundColor="{StaticResource BackgroundColor}">
         <Picker x:Name="picker"
-                BackgroundColor="{StaticResource OperationColor}"
+                BackgroundColor="{StaticResource EqualSignColor}"
                 Grid.Row="0"
                 Title="Select position"
                 ItemsSource="{Binding EmployeePositions}"
@@ -35,7 +35,6 @@
                     <ViewCell>
                         <Label Text="{Binding Description}"
                                TextColor="White"
-                               FontSize="Large"
                                VerticalTextAlignment="Center"
                                HorizontalTextAlignment="Center"
                                HorizontalOptions="Fill"
