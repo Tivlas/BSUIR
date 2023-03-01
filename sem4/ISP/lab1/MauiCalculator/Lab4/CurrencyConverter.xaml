@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="MauiCalculator.CurrencyConverter"
+             Title="CurrencyConverter"
+             Loaded="OnLoaded"
+             >
+    <Grid Padding="10"
+          RowDefinitions="*,*,3*"
+          BackgroundColor="{StaticResource BackgroundColor}">
+        <VerticalStackLayout Grid.Row="0">
+            <Label x:Name="upperLabel"
+                   FontSize="Large"
+                   Text="0" />
+            <Picker x:Name="upperPicker"
+                    Title="Select currency"
+                    SelectedIndexChanged="OnSelectedIndexChanged"
+                    BackgroundColor="{StaticResource EqualSignColor}"
+                    ItemDisplayBinding="{Binding Cur_Name}" />
+        </VerticalStackLayout>
+
+        <VerticalStackLayout Grid.Row="1">
+            <Label x:Name="lowerLabel"
+                   FontSize="Large"
+                   Text="0" />
+            <Picker x:Name="lowerPicker"
+                    Title="Select currency"
+                    BackgroundColor="{StaticResource EqualSignColor}"
+                    ItemDisplayBinding="{Binding Cur_Name}" />
+        </VerticalStackLayout>
+
+        <Grid Grid.Row="2"
+              RowDefinitions="*,*,*,*,*"
+              ColumnDefinitions="*,*,*"
+              HorizontalOptions="Fill"
+              VerticalOptions="Fill"
+              ColumnSpacing="2"
+              RowSpacing="2">
+            <Button Text="0"
+                    Clicked="OnDigitClicked"
+                    Grid.Row="4"
+                    Grid.Column="1"
+                    BackgroundColor="{StaticResource DigitColor}"
+                    Style="{StaticResource buttonStyle}" />
+            <Button Text="1"
+                    Clicked="OnDigitClicked"
+                    Grid.Row="3"
+                    Grid.Column="0"
+                    BackgroundColor="{StaticResource DigitColor}"
+                    Style="{StaticResource buttonStyle}" />
+            <Button Text="2"
+                    Clicked="OnDigitClicked"
+                    Grid.Row="3"
+                    Grid.Column="1"
+                    BackgroundColor="{StaticResource DigitColor}"
+                    Style="{StaticResource buttonStyle}" />
+            <Button Text="3"
+                    Clicked="OnDigitClicked"
+                    Grid.Row="3"
+                    Grid.Column="2"
+                    BackgroundColor="{StaticResource DigitColor}"
+                    Style="{StaticResource buttonStyle}" />
+            <Button Text="4"
+                    Clicked="OnDigitClicked"
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    BackgroundColor="{StaticResource DigitColor}"
+                    Style="{StaticResource buttonStyle}" />
+            <Button Text="5"
+                    Clicked="OnDigitClicked"
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    BackgroundColor="{StaticResource DigitColor}"
+                    Style="{StaticResource buttonStyle}" />
+            <Button Text="6"
+                    Clicked="OnDigitClicked"
+                    Grid.Row="2"
+                    Grid.Column="2"
+                    BackgroundColor="{StaticResource DigitColor}"
+                    Style="{StaticResource buttonStyle}" />
+            <Button Text="7"
+                    Clicked="OnDigitClicked"
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    BackgroundColor="{StaticResource DigitColor}"
+                    Style="{StaticResource buttonStyle}" />
+            <Button Text="8"
+                    Clicked="OnDigitClicked"
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    BackgroundColor="{StaticResource DigitColor}"
+                    Style="{StaticResource buttonStyle}" />
+            <Button Text="9"
+                    Clicked="OnDigitClicked"
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    BackgroundColor="{StaticResource DigitColor}"
+                    Style="{StaticResource buttonStyle}" />
+
+            <Button Text=","
+                    Clicked="OnSeparatorClicked"
+                    Grid.Row="4"
+                    Grid.Column="2"
+                    BackgroundColor="{StaticResource DigitColor}"
+                    Style="{StaticResource buttonStyle}" />
+            <Button Text="CE"
+                    Clicked="OnCeClicked"
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    BackgroundColor="{StaticResource OperationColor}"
+                    Style="{StaticResource buttonStyle}" />
+            <Button Text="⌫"
+                    Clicked="OnBackspaceClicked"
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    BackgroundColor="{StaticResource OperationColor}"
+                    Style="{StaticResource buttonStyle}" />
+
+
+        </Grid>
+
+    </Grid>
+</ContentPage>

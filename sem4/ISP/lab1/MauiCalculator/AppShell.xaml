@@ -22,4 +22,7 @@
     <ShellContent Title="Lab3"
                   ContentTemplate="{DataTemplate local:lab3}" />
 
+    <ShellContent Title="CurrencyConverter"
+                  ContentTemplate="{DataTemplate local:CurrencyConverter}" />
+
 </Shell>
