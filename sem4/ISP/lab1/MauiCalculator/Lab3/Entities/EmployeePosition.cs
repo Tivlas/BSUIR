@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SQLite;
+﻿using SQLite;
 
 namespace MauiCalculator.Lab3.Entities
 {
@@ -17,6 +12,6 @@ namespace MauiCalculator.Lab3.Entities
         public string Name { get; set; }
 
         public int Salary { get; set; }
-        
+
     }
 }

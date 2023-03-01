@@ -1,5 +1,5 @@
-using MauiCalculator.Lab3.Services;
 using MauiCalculator.Lab3.Entities;
+using MauiCalculator.Lab3.Services;
 namespace MauiCalculator;
 
 public partial class lab3 : ContentPage

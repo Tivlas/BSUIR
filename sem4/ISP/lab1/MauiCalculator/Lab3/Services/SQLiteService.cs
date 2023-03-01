@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MauiCalculator.Lab3.Entities;
+﻿using MauiCalculator.Lab3.Entities;
 using SQLite;
 
 namespace MauiCalculator.Lab3.Services
 {
-    
+
     public class SQLiteService : IDbService
     {
         private string _dbPath;
@@ -18,13 +13,13 @@ namespace MauiCalculator.Lab3.Services
             if (_conn != null) return;
             _dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "lab3.db");
 
-            _conn = new SQLiteConnection(_dbPath); 
-            
+            _conn = new SQLiteConnection(_dbPath);
+
             _conn.DropTable<JobResponsibilities>();
             _conn.DropTable<EmployeePosition>();
             _conn.CreateTable<EmployeePosition>();
             _conn.CreateTable<JobResponsibilities>();
-            
+
             List<EmployeePosition> employeePositions = new List<EmployeePosition> {
                 new EmployeePosition { Name = "CEO", Salary = 100000 },
                 new EmployeePosition { Name = "Manager", Salary = 50000 },
@@ -37,7 +32,7 @@ namespace MauiCalculator.Lab3.Services
                 new JobResponsibilities { Description = "Setting goals", EmployeePositionID = 1 },
                 new JobResponsibilities { Description = "Monitor company perfomance", EmployeePositionID = 1 },
                 new JobResponsibilities { Description = "Setting precedence for the working culture and environment", EmployeePositionID = 1 },
-                
+
                 new JobResponsibilities { Description = "Manage the software development team", EmployeePositionID = 2 },
                 new JobResponsibilities { Description = "Control troject timelines", EmployeePositionID = 2 },
                 new JobResponsibilities { Description = "Hiring and recruiting", EmployeePositionID = 2 },
