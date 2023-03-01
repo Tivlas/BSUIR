@@ -55,7 +55,7 @@ public partial class ProgressDemo : ContentPage
             _calcSinTask = new Task<double>(CalculateSin);
             _calcSinTask.Start();
             double sin = await _calcSinTask;
-            output.Text = "Значение синуса = "+sin.ToString();
+            output.Text = "Значение синуса = " + sin.ToString();
             _cts.Dispose();
             _cts = null;
         }

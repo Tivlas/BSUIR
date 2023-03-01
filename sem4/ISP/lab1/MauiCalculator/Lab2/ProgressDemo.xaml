@@ -25,7 +25,7 @@
 
             <ProgressBar x:Name="progressBar"
                          Progress="0"
-                         WidthRequest="400"
+                         WidthRequest="{OnPlatform Android=200, WinUI=400}"
                          HeightRequest="5"
                          BackgroundColor="{StaticResource DigitColor}"
                          ProgressColor="Chocolate" />
