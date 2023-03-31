@@ -1,28 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<Shell
-    x:Class="MauiCalculator.AppShell"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:MauiCalculator"
-    FlyoutBackgroundColor="{StaticResource DigitColor}"
-    BackgroundColor="{StaticResource OperationColor}"
-    Title="Labs"
-    TitleColor="White"
-    >
+<Shell x:Class="MauiCalculator.AppShell"
+       xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:local="clr-namespace:MauiCalculator"
+       FlyoutBackgroundColor="{StaticResource DigitColor}"
+       BackgroundColor="{StaticResource OperationColor}"
+       Title="Labs"
+       TitleColor="White">
 
+    <ShellContent Title="CurrencyConverter"
+                  ContentTemplate="{DataTemplate local:CurrencyConverter}" />
 
     <ShellContent Title="Calculator"
-                  ContentTemplate= "{DataTemplate local:MainPage}"
-         />
+                  ContentTemplate="{DataTemplate local:MainPage}" />
 
     <ShellContent Title="ProgressDemo"
-                  ContentTemplate="{DataTemplate local:ProgressDemo}"
-                  />
+                  ContentTemplate="{DataTemplate local:ProgressDemo}" />
 
     <ShellContent Title="Lab3"
                   ContentTemplate="{DataTemplate local:lab3}" />
 
-    <ShellContent Title="CurrencyConverter"
-                  ContentTemplate="{DataTemplate local:CurrencyConverter}" />
 
 </Shell>
