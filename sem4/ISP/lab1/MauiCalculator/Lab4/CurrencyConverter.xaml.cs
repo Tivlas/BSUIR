@@ -1,7 +1,6 @@
 using MauiCalculator.Lab4.Services;
 using MauiCalculator.Lab4.Entities;
-using System.Text;
-
+using System.Collections.ObjectModel;
 
 namespace MauiCalculator;
 
@@ -14,86 +13,127 @@ public partial class CurrencyConverter : ContentPage
 
     private RateService _rateService;
     private CurrencyService _currencyService;
-    private int _digitCounter = 0;
-    private StringBuilder _currentInput = new StringBuilder(18);
-    public List<Currency> Currencies { get; set; }
+    private Currency? _fromCurrency = null;
+    private Currency? _toCurrency = null;
+
+    private Color _errorColor;
+    private Color _defaultColor;
+    public DateTime TodaysDate { get; init; } = DateTime.Today;
+    public ObservableCollection<Currency> Currencies { get; set; }
 
     public CurrencyConverter(IRateService rateService, ICurrencyService currencyService)
     {
         InitializeComponent();
         _currencyService = currencyService as CurrencyService;
         _rateService = rateService as RateService;
+        Currencies = new();
         BindingContext = this;
+        _errorColor = Color.FromArgb("#FF9494");
+        _defaultColor = entry.TextColor;
     }
+
 
     private void OnLoaded(object sender, EventArgs e)
     {
         Task.Run(() => _currencyService?.GetCurrenciesAsync()).ContinueWith((currency) =>
           {
-              Currencies = currency.Result.Where(c => _trackedCurrenciesNames.Contains(c.Cur_Name)).ToList();
               MainThread.BeginInvokeOnMainThread(() =>
               {
-                  upperPicker.ItemsSource = Currencies;
-                  lowerPicker.ItemsSource = Currencies;
+                  var curs = currency.Result.Where(c => _trackedCurrenciesNames.Contains(c.Cur_Name)).ToList();
+                  foreach (var cur in curs)
+                  {
+                      Currencies.Add(cur);
+                  }
+                  Currencies.Add(new Currency { Cur_Name = "Белорусский рубль", Cur_Scale = 1 });
               });
           });
-
-        //var currs = await _currencyService?.GetCurrenciesAsync();
-        //Currencies = currs?.Where(c => _trackedCurrenciesNames.Contains(c.Cur_Name)).ToList();
-        //upperPicker.ItemsSource = Currencies;
-        //lowerPicker.ItemsSource = Currencies;
     }
 
-    private void UpdateUpperLabelText(string text)
+    private async Task Convert()
     {
-        upperLabel.Text = text;
-    }
+        DateTime date = datePicker.Date;
+        _fromCurrency = upperPicker?.SelectedItem as Currency;
+        _toCurrency = lowerPicker?.SelectedItem as Currency;
 
-    private void ClearInput()
-    {
-        _currentInput.Clear();
-        _digitCounter = 0;
-    }
-
-    private void OnDigitClicked(object sender, EventArgs e)
-    {
-        if (_digitCounter < 16)
+        if (_fromCurrency is null || _toCurrency is null)
         {
-            _currentInput.Append((sender as Button).Text).ToString();
-            _digitCounter++;
-            if (_currentInput.ToString() == "0")
+            MainThread.BeginInvokeOnMainThread(() =>
             {
-                ClearInput();
-                UpdateUpperLabelText("0");
-            }
-            else
-            {
-                UpdateUpperLabelText(_currentInput.ToString());
-            }
+                resultLabel.Text = "ERROR";
+            });
+            return;
+        }
 
+        decimal number;
+        if (!decimal.TryParse(entry.Text, out number))
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                resultLabel.Text = "ERROR";
+            });
+            return;
+        }
+
+        decimal? result = number;
+        if (!(_fromCurrency?.Cur_Name == _toCurrency?.Cur_Name))
+        {
+            Rate fromRate = _fromCurrency?.Cur_Name == "Белорусский рубль" ?
+                new Rate { Cur_OfficialRate = 1, Cur_Scale = 1 } :
+                await _rateService.GetRate(date, _fromCurrency);
+
+            Rate toRate = _toCurrency!.Cur_Name == "Белорусский рубль" ?
+                new Rate { Cur_OfficialRate = 1, Cur_Scale = 1 } :
+                await _rateService.GetRate(date, _toCurrency);
+
+
+            decimal? BYN = number * fromRate?.Cur_OfficialRate / fromRate?.Cur_Scale;
+
+            result = BYN / toRate?.Cur_OfficialRate * toRate?.Cur_Scale;
+        }
+        MainThread.BeginInvokeOnMainThread(() => { resultLabel.Text = $"{result:0.##}"; });
+    }
+
+    #region User actions
+    private void entry_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        string input = e.NewTextValue;
+        if (!EntryInputValidator.IsValid(input))
+        {
+            entry.TextColor = _errorColor;
+            resultLabel.TextColor = _errorColor;
+            resultLabel.Text = "ERROR";
+        }
+        else
+        {
+            entry.TextColor = _defaultColor;
+            resultLabel.TextColor = _defaultColor;
+            Task.Run(Convert);
         }
     }
 
-    private void OnSeparatorClicked(object sender, EventArgs e)
+
+    private void upperPicker_SelectedIndexChanged(object sender, EventArgs e)
     {
-        if (!_currentInput.ToString().Contains(",") && !(_currentInput.Length == 0))
+        if (lowerPicker.SelectedIndex != -1)
         {
-            UpdateUpperLabelText(_currentInput.Append(",").ToString());
+            Task.Run(Convert);
         }
     }
 
-    private void OnCeClicked(object sender, EventArgs e)
+    private void lowerPicker_SelectedIndexChanged(object sender, EventArgs e)
     {
-
+        if (upperPicker.SelectedIndex != -1)
+        {
+            Task.Run(Convert);
+        }
     }
 
-    private void OnBackspaceClicked(object sender, EventArgs e)
+    private void datePicker_DateSelected(object sender, DateChangedEventArgs e)
     {
-
+        if (upperPicker.SelectedIndex != -1 && lowerPicker.SelectedIndex != -1)
+        {
+            Task.Run(Convert);
+        }
     }
-
-    private void OnSelectedIndexChanged(object sender, EventArgs e)
-    {
-
-    }
+    #endregion
 }

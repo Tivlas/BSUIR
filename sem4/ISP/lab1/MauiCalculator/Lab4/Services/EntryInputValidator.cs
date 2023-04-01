@@ -11,7 +11,7 @@ namespace MauiCalculator.Lab4.Services
     {
         public static bool IsValid(string input)
         {
-            string pattern = @"^[1-9]{1,7}(\.\d{0,2})?$";
+            string pattern = @"^[1-9]{1,7}(,\d{0,2})?$";
             return Regex.IsMatch(input, pattern);
         }
     }

@@ -1,36 +1,47 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="MauiCalculator.CurrencyConverter"
              Title="CurrencyConverter"
              Loaded="OnLoaded"
-             >
+             xmlns:local="clr-namespace:MauiCalculator"
+             xmlns:entity="clr-namespace:MauiCalculator.Lab4.Entities"
+             x:DataType="local:CurrencyConverter">
     <Grid Padding="10"
-          RowDefinitions="*,*,3*"
+          RowDefinitions="*,*,0.3*"
           BackgroundColor="{StaticResource BackgroundColor}">
         <VerticalStackLayout Grid.Row="0">
-            <Label x:Name="upperLabel"
-                   FontSize="Large"
-                   Text="0" />
+            <Entry x:Name="entry"
+                   Placeholder="Enter value"
+                   TextChanged="entry_TextChanged"
+                   FontSize="Medium" />
             <Picker x:Name="upperPicker"
                     Title="Select currency"
-                    SelectedIndexChanged="OnSelectedIndexChanged"
+                    SelectedIndexChanged="upperPicker_SelectedIndexChanged" 
                     BackgroundColor="{StaticResource EqualSignColor}"
+                    ItemsSource="{Binding Currencies}"
                     ItemDisplayBinding="{Binding Cur_Name}" />
         </VerticalStackLayout>
 
         <VerticalStackLayout Grid.Row="1">
-            <Label x:Name="lowerLabel"
-                   FontSize="Large"
+            <Label x:Name="resultLabel"
+                   FontSize="Medium"
                    Text="0" />
             <Picker x:Name="lowerPicker"
                     Title="Select currency"
+                    SelectedIndexChanged="lowerPicker_SelectedIndexChanged" 
                     BackgroundColor="{StaticResource EqualSignColor}"
-                    ItemDisplayBinding="{Binding Cur_Name}" />
+                    ItemsSource="{Binding Currencies}"
+                    ItemDisplayBinding="{Binding Cur_Name }" />
         </VerticalStackLayout>
 
-        <Grid Grid.Row="2"
+        
+
+        <DatePicker x:Name="datePicker" DateSelected="datePicker_DateSelected"  Date="{Binding TodaysDate}" Grid.Row="2" FontSize="Large"/>
+
+
+
+        <!--<Grid Grid.Row="2"
               RowDefinitions="*,*,*,*,*"
               ColumnDefinitions="*,*,*"
               HorizontalOptions="Fill"
@@ -118,7 +129,7 @@
                     Style="{StaticResource buttonStyle}" />
 
 
-        </Grid>
+        </Grid>-->
 
     </Grid>
 </ContentPage>
