@@ -1,0 +1,1 @@
+Лучше используйте [этот](https://www.maplesoft.com/support/help/maple/view.aspx?path=orthopoly) пакет для генерации многочленов, не используйте самописные процедуры, может быть очень долго.
