@@ -17,6 +17,7 @@
 </head>
 <body>
 	<script src="~/lib/jquery/dist/jquery.min.js"></script>
+	<script src="~/lib/font-awesome/js/all.js"></script>
 	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 	<script src="~/js/site.js" asp-append-version="true"></script>
 	<header>
@@ -72,10 +73,24 @@ btn btn-link text-dark">
 	<main class="container">
 		Содержимое страницы
 	</main>
-	<footer>
+	<footer><><!-- footer -->
 		<div class="container">
-			<span class="nav-color">Подвал страницы</span>
 		</div>
-	</footer>
+			<nav class="navbar navbar-dark navbar-expand-md bg-dark">
+				<div class="navbar-nav ms-auto">
+					<a class="nav-item nav-link" href="http://www.facebook.com">
+						<i class="fa-brands fa-facebook-f fa-2x"></i>
+					</a>
+
+					<a class="nav-item nav-link" href="http://www.vk.com">
+						<i class="fa-brands fa-vk fa-2x"></i>
+					</a>
+
+					<a class="nav-item nav-link" href="http://www.twitter.com">
+						<i class="fa-brands fa-twitter fa-2x"></i>
+					</a>
+				</div>
+			</nav>
+	</footer><!-- /footer-->
 </body>
 </html>
