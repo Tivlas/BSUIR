@@ -9,10 +9,8 @@
 	<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
 
 	<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-	<link rel="stylesheet" href="~/lib/font-awesome/all.min.css" />
+	<link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css" />
 
-	<link rel="stylesheet" href="~/WebLabs_BSUIR_V02.styles.css" asp-append-
-		  version="true" />
 
 </head>
 <body>
@@ -71,11 +69,67 @@ btn btn-link text-dark">
 		</div><!-- container - конец -->
 	</header><!-- header - конец -->
 	<main class="container">
-		Содержимое страницы
-	</main>
-	<footer><><!-- footer -->
+		<!-- main -->
 		<div class="container">
+			<h2><strong>Лабораторная работа 1</strong></h2>
+			<h2><strong>Список</strong></h2>
+			<ol type="A">
+				<li>элемент списка 1</li>
+				<li>элемент списка 2</li>
+			</ol>
+			<hr class="hr hr-blurry " />
+			<h2><strong>Форма</strong></h2>
+			<form method="post"><!-- form -->
+				<div class="row mb-3">
+					<div class="col-lg-4 offset-sm-2">
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" id="checkbox1">
+							<label class="form-check-label" for="checkbox1">Чек-бокс 1</label>
+						</div>
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" id="checkbox2">
+							<label class="form-check-label" for="checkbox2">Чек-бокс 2</label>
+						</div>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-lg-8 offset-lg-2">
+						<div class="form-check-inline">
+							<input class="form-check-input" type="radio" name="radioGroup" id="radioOption1" value="option1">
+							<label class="form-check-label" for="radioOption1">Радио-1</label>
+						</div>
+						<div class="form-check-inline">
+							<input class="form-check-input" type="radio" name="radioGroup" id="radioOption2" value="option2">
+							<label class="form-check-label" for="radioOption2">Радио-2</label>
+						</div>
+						<div class="form-check-inline">
+							<input class="form-check-input" type="radio" name="radioGroup" id="radioOption3" value="option3">
+							<label class="form-check-label" for="radioOption3">Радио-3</label>
+						</div>
+					</div>
+				</div>
+
+				<div class="form-group row mb-3 mt-3">
+					<label for="inputEmail" class="col-sm-2 col-form-label">Логин</label>
+					<div class="col-sm-10">
+						<input type="email" class="form-control" id="inputEmail" placeholder="логин">
+					</div>
+				</div>
+				<div class="form-group row mb-3">
+					<label for="inputPassword" class="col-sm-2 col-form-label">Пароль</label>
+					<div class="col-sm-10">
+						<input type="password" class="form-control" id="inputPassword" placeholder="пароль">
+					</div>
+				</div>
+
+				<button type="submit" class="btn btn-primary mb-1">Отправить</button>
+			</form><!-- /form -->
 		</div>
+	</main> <!-- /main -->
+	<footer>
+		<><!-- footer -->
+		<div class="container">
 			<nav class="navbar navbar-dark navbar-expand-md bg-dark">
 				<div class="navbar-nav ms-auto">
 					<a class="nav-item nav-link" href="http://www.facebook.com">
@@ -91,6 +145,8 @@ btn btn-link text-dark">
 					</a>
 				</div>
 			</nav>
+		</div>
+
 	</footer><!-- /footer-->
 </body>
 </html>
