@@ -1,5 +1,5 @@
 ﻿@{
-	Layout = null;
+	ViewBag.Title = "Index";
 }
 <!DOCTYPE html>
 <html>
@@ -14,56 +14,6 @@
 
 </head>
 <body>
-	<header>
-		<div class="container">
-			<!-- Панель навигации -->
-			<nav class="navbar navbar-expand-md navbar-dark bg-dark">
-				<!-- меню сайта -->
-				<a class="navbar-brand" href="#">15350022</a>
-				<div class="navbar-nav">
-					<a class="nav-item nav-link active" href="#">Лб 1</a>
-					<a class="nav-item nav-link" href="#">Каталог</a>
-					<a class="nav-item nav-link" href="#">Администрирование</a>
-				</div>
-				<!-- меню сайта - конец -->
-				<!-- Информация пользователя -->
-				<a href="#" class="navbar-text ms-auto">
-					00,0 руб <i class="fa-solid fa-cart-shopping"></i> (0)
-				</a>
-				<div class="dropdown ms-4 nav-color">
-					<button class="btn btn-secondary dropdown-toggle"
-							type="button" id="dropdownMenuButton"
-							data-bs-toggle="dropdown"
-							aria-expanded="false">
-						User@gmail.com
-						<img src="images/user-secret-solid.svg" width="30"
-							 alt="User" class="rounded nav-color" />
-					</button>
-					<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-						<li>
-							<span class="dropdown-item-text">
-								<img src="images/user-secret-solid.svg"
-									 width="50" alt="User" class="rounded" />
-								user@gmail.com
-							</span>
-						</li>
-
-						<li><hr class="dropdown-divider"></li>
-
-						<li>
-							<form id="logoutForm" class="form-inline">
-								<button id="logout" type="submit" class="nav-link
-btn btn-link text-dark">
-									Logout
-								</button>
-							</form>
-						</li>
-					</ul>
-				</div>
-				<!-- Информация пользователя - конец -->
-			</nav> <!-- Панель навигации - конец -->
-		</div><!-- container - конец -->
-	</header><!-- header - конец -->
 	<main class="container">
 		<!-- main -->
 		<div class="container">
@@ -80,11 +30,11 @@ btn btn-link text-dark">
 				<div class="row mb-3">
 					<div class="col-lg-4 offset-sm-2">
 						<div class="form-check">
-							<input class="form-check-input" type="checkbox" id="checkbox1">
+							<input class="form-check-input" type="checkbox" id="checkbox1" name="checkbox1" />
 							<label class="form-check-label" for="checkbox1">Чек-бокс 1</label>
 						</div>
 						<div class="form-check">
-							<input class="form-check-input" type="checkbox" id="checkbox2">
+							<input class="form-check-input" type="checkbox" id="checkbox2" name="checkbox2">
 							<label class="form-check-label" for="checkbox2">Чек-бокс 2</label>
 						</div>
 					</div>
@@ -110,13 +60,13 @@ btn btn-link text-dark">
 				<div class="form-group row mb-3 mt-3">
 					<label for="inputEmail" class="col-sm-2 col-form-label">Логин</label>
 					<div class="col-sm-10">
-						<input type="email" class="form-control" id="inputEmail" placeholder="логин">
+						<input type="email" class="form-control" id="inputEmail" placeholder="логин" name="inputEmail">
 					</div>
 				</div>
 				<div class="form-group row mb-3">
 					<label for="inputPassword" class="col-sm-2 col-form-label">Пароль</label>
 					<div class="col-sm-10">
-						<input type="password" class="form-control" id="inputPassword" placeholder="пароль">
+						<input type="password" class="form-control" id="inputPassword" placeholder="пароль" name="inputPassword">
 					</div>
 				</div>
 
@@ -124,30 +74,5 @@ btn btn-link text-dark">
 			</form><!-- /form -->
 		</div>
 	</main> <!-- /main -->
-	<footer>
-		<><!-- footer -->
-		<div class="container">
-			<nav class="navbar navbar-dark navbar-expand-md bg-dark">
-				<div class="navbar-nav ms-auto">
-					<a class="nav-item nav-link" href="http://www.facebook.com">
-						<i class="fa-brands fa-facebook-f fa-2x"></i>
-					</a>
-
-					<a class="nav-item nav-link" href="http://www.vk.com">
-						<i class="fa-brands fa-vk fa-2x"></i>
-					</a>
-
-					<a class="nav-item nav-link" href="http://www.twitter.com">
-						<i class="fa-brands fa-twitter fa-2x"></i>
-					</a>
-				</div>
-			</nav>
-		</div>
-
-	</footer><!-- /footer-->
-	<script src="~/lib/jquery/dist/jquery.min.js"></script>
-	<script src="~/lib/font-awesome/js/all.js"></script>
-	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-	<script src="~/js/site.js" asp-append-version="true"></script>
 </body>
 </html>
