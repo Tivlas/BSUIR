@@ -1,0 +1,81 @@
+﻿@{
+	Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width" />
+	<title>Index</title>
+	<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+	<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/lib/font-awesome/all.min.css" />
+
+	<link rel="stylesheet" href="~/WebLabs_BSUIR_V02.styles.css" asp-append-
+		  version="true" />
+
+</head>
+<body>
+	<script src="~/lib/jquery/dist/jquery.min.js"></script>
+	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+	<script src="~/js/site.js" asp-append-version="true"></script>
+	<header>
+		<div class="container">
+			<!-- Панель навигации -->
+			<nav class="navbar navbar-expand-md navbar-dark bg-dark">
+				<!-- меню сайта -->
+				<a class="navbar-brand" href="#">15350022</a>
+				<div class="navbar-nav">
+					<a class="nav-item nav-link active" href="#">Лб 1</a>
+					<a class="nav-item nav-link" href="#">Каталог</a>
+					<a class="nav-item nav-link" href="#">Администрирование</a>
+				</div>
+				<!-- меню сайта - конец -->
+				<!-- Информация пользователя -->
+				<a href="#" class="navbar-text ms-auto">
+					00,0 руб <i class="fa-solid fa-cart-shopping"></i> (0)
+				</a>
+				<div class="dropdown ms-4 nav-color">
+					<button class="btn btn-secondary dropdown-toggle"
+							type="button" id="dropdownMenuButton"
+							data-bs-toggle="dropdown"
+							aria-expanded="false">
+						User@gmail.com
+						<img src="images/default-profile-picture.png" width="30"
+							 alt="User" class="rounded nav-color" />
+					</button>
+					<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+						<li>
+							<span class="dropdown-item-text">
+								<img src="images/default-profile-picture.png"
+									 width="50" alt="User" class="rounded" />
+								user@gmail.com
+							</span>
+						</li>
+
+						<li><hr class="dropdown-divider"></li>
+
+						<li>
+							<form id="logoutForm" class="form-inline">
+								<button id="logout" type="submit" class="nav-link
+btn btn-link text-dark">
+									Logout
+								</button>
+							</form>
+						</li>
+					</ul>
+				</div>
+				<!-- Информация пользователя - конец -->
+			</nav> <!-- Панель навигации - конец -->
+		</div><!-- container - конец -->
+	</header><!-- header - конец -->
+	<main class="container">
+		Содержимое страницы
+	</main>
+	<footer>
+		<div class="container">
+			<span class="nav-color">Подвал страницы</span>
+		</div>
+	</footer>
+</body>
+</html>
