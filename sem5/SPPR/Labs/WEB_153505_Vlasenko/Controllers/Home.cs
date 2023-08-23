@@ -5,6 +5,7 @@ public class Home : Controller
 {
     public IActionResult Index()
     {
+        ViewData["LabMessage"] = "Лабораторная работа №2";
         return View();
     }
 }
