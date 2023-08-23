@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34009.444
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WEB_153505_Vlasenko", "WEB_153505_Vlasenko\WEB_153505_Vlasenko.csproj", "{C729BE8B-90B9-42A5-A2A3-8FBC8B9A140D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WEB_153505_Vlasenko", "WEB_153505_Vlasenko\WEB_153505_Vlasenko.csproj", "{C729BE8B-90B9-42A5-A2A3-8FBC8B9A140D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csproj", "{5033C674-3EB0-4635-8C91-EA23582583DA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{C729BE8B-90B9-42A5-A2A3-8FBC8B9A140D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C729BE8B-90B9-42A5-A2A3-8FBC8B9A140D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C729BE8B-90B9-42A5-A2A3-8FBC8B9A140D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5033C674-3EB0-4635-8C91-EA23582583DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5033C674-3EB0-4635-8C91-EA23582583DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5033C674-3EB0-4635-8C91-EA23582583DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5033C674-3EB0-4635-8C91-EA23582583DA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
