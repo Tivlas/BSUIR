@@ -1,7 +1,6 @@
-﻿<!-- Информация пользователя -->
-<a class="navbar-text ms-auto" asp-controller="Cart" asp-action="Index">
-	00,0 руб <i class="fa-solid fa-cart-shopping"></i> (0)
-</a>
+﻿@using WEB_153505_Vlasenko.ViewComponents;
+<!-- Информация пользователя -->
+@await Component.InvokeAsync(typeof(Cart))
 <div class="dropdown ms-4 nav-color">
 	<button class="btn btn-secondary dropdown-toggle"
 			type="button" id="dropdownMenuButton"
