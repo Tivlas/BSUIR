@@ -1,7 +1,10 @@
+using WEB_153505_Vlasenko.Services.ClothesCategoryService;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<IClothesCategoryService, MemoryClothesCategoryService>();
 
 var app = builder.Build();
 
