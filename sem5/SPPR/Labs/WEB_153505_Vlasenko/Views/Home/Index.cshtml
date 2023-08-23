@@ -20,8 +20,10 @@
 			<h2><strong>Лабораторная работа 1</strong></h2>
 			<h2><strong>Список</strong></h2>
 			<ol type="A">
-				<li>элемент списка 1</li>
-				<li>элемент списка 2</li>
+				@for (int i = 0; i < 2; i++)
+				{
+					<li>элемент списка @(i + 1)</li>
+				}
 			</ol>
 			<hr class="hr hr-blurry " />
 			<h2><strong>Форма</strong></h2>
