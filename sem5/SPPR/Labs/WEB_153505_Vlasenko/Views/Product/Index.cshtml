@@ -1,5 +1,4 @@
-﻿@model List<Clothes>
-
+﻿@model (List<Clothes> ClothesList, List<ClothesCategory> ClothesCategoryList)
 @{
 	ViewData["Title"] = "Список позиций";
 	var request = ViewContext.HttpContext.Request;
@@ -7,13 +6,32 @@
 }
 
 <div class="container">
-	<div class="row">
-		@foreach (var item in Model)
+	<div class="dropdown col-sm-1">
+		<!-- categories dropdown -->
+		<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+			@(ViewData["currentCategory"] ?? "Все")
+		</button>
+		<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1" aria-haspopup="true" aria-expanded="false">
+			<li>
+				<a class="dropdown-item"
+				   asp-controller="Product"
+				   asp-action="Index"
+				   asp-route-category=@null>Все</a>
+			</li>
+			@foreach (var item in Model.ClothesCategoryList)
+			{
+				<li><a class="dropdown-item" asp-controller="Product" asp-action="Index" asp-route-categoryNormalizedName=@item.NormalizedName asp-route-currentCategory=@item.Name>@item.Name</a></li>
+			}
+		</ul>
+	</div> <!-- /categories dropdown -->
+
+	<div class="row offset-sm-2">
+		@foreach (var item in Model.ClothesList)
 		{
 			<div class="col-md-4 mb-4">
 				<div class="card">
-					<img src="@item.ImagePath" class="card-img-top" style="width: 100%; max-height: 200px; object-fit: contain;">
-					<div class="card-body" style="min-height: 150px;">
+					<img src="@item.ImagePath" class="card-img-top" style="width: 100%; max-height: 200px; min-height: 200px; object-fit: contain;">
+					<div class="card-body">
 						<h5 class="card-title">@item.Name</h5>
 						<p class="card-text">@item.Description</p>
 						<p class="card-text">$@item.Price</p>

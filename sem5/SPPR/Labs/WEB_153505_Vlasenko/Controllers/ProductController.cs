@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Domain.Entities;
+using Microsoft.AspNetCore.Mvc;
 using WEB_153505_Vlasenko.Services.ClothesCategoryService;
 using WEB_153505_Vlasenko.Services.ClothesService;
 
@@ -14,13 +15,15 @@ public class ProductController : Controller
 		_clothesCategoryService = clothesCategoryService;
 	}
 
-	public async Task<IActionResult> Index()
+	public async Task<IActionResult> Index(string? categoryNormalizedName, string? currentCategory)
 	{
-		var productResponse = await _clothesService.GetClothesListAsync(null);
+		ViewData["currentcategory"] = currentCategory;
+		var productResponse = await _clothesService.GetClothesListAsync(categoryNormalizedName);
 		if (!productResponse.Success)
 		{
 			return NotFound(productResponse.ErrorMessage);
 		}
-		return View(productResponse.Data!.Items);
+		var allCategories = await _clothesCategoryService.GetClothesCategoryListAsync();
+		return View((productResponse.Data!.Items, allCategories.Data));
 	}
 }
