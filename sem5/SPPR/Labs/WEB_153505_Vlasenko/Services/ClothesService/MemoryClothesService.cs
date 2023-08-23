@@ -43,7 +43,7 @@ public class MemoryClothesService : IClothesService
 			{
 				Id = 3,
 				Name = "Туфли",
-				Description = "Бархатные",
+				Description = "Чудесные",
 				Price=1000000,
 				ImagePath="images/VelvetShoes.jpg",
 				Mime = "image/jpeg",
@@ -54,7 +54,7 @@ public class MemoryClothesService : IClothesService
 			{
 				Id = 4,
 				Name = "Туфли",
-				Description = "Бархатные",
+				Description = "Не очень",
 				Price=1000000,
 				ImagePath="images/VelvetShoes.jpg",
 				Mime = "image/jpeg",
@@ -65,8 +65,8 @@ public class MemoryClothesService : IClothesService
 			{
 				Id = 5,
 				Name = "Туфли",
-				Description = "Бархатные",
-				Price=1000000,
+				Description = "Для настоящих мужчин",
+				Price=10315,
 				ImagePath="images/VelvetShoes.jpg",
 				Mime = "image/jpeg",
 				Category = shoesCategory,
@@ -76,7 +76,7 @@ public class MemoryClothesService : IClothesService
 			{
 				Id = 6,
 				Name = "Туфли",
-				Description = "Бархатные",
+				Description = "Дорогие",
 				Price=1000000,
 				ImagePath="images/VelvetShoes.jpg",
 				Mime = "image/jpeg",
@@ -87,8 +87,8 @@ public class MemoryClothesService : IClothesService
 			{
 				Id = 7,
 				Name = "Туфли",
-				Description = "Бархатные",
-				Price=1000000,
+				Description = "Огонь!",
+				Price=15090,
 				ImagePath="images/VelvetShoes.jpg",
 				Mime = "image/jpeg",
 				Category = shoesCategory,
@@ -115,7 +115,8 @@ public class MemoryClothesService : IClothesService
 			.ToList();
 		return Task.FromResult(new ResponseData<ListModel<Clothes>>()
 		{
-			Success = !(items.Count() == 0),
+			//Success = !(items.Count() == 0),
+			Success = true,
 			Data = new ListModel<Clothes>()
 			{
 				Items = items,
