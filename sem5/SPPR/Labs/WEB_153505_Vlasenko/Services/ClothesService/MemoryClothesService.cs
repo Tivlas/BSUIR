@@ -1,5 +1,6 @@
 ﻿using Domain.Entities;
 using Domain.Models;
+using Microsoft.AspNetCore.Mvc;
 using WEB_153505_Vlasenko.Services.ClothesCategoryService;
 
 namespace WEB_153505_Vlasenko.Services.ClothesService;
@@ -8,6 +9,7 @@ public class MemoryClothesService : IClothesService
 {
 	List<ClothesCategory>? _categories;
 	List<Clothes> _clothes;
+	private readonly IConfiguration _configuration;
 
 	private void SetupData()
 	{
@@ -37,74 +39,79 @@ public class MemoryClothesService : IClothesService
 				Category = shoesCategory,
 				CategoryId = shoesCategory?.Id ?? 0
 			},
-            new Clothes()
-            {
-                Id = 3,
-                Name = "Туфли",
-                Description = "Бархатные",
-                Price=1000000,
-                ImagePath="images/VelvetShoes.jpg",
-                Mime = "image/jpeg",
-                Category = shoesCategory,
-                CategoryId = shoesCategory?.Id ?? 0
-            },
-            new Clothes()
-            {
-                Id = 4,
-                Name = "Туфли",
-                Description = "Бархатные",
-                Price=1000000,
-                ImagePath="images/VelvetShoes.jpg",
-                Mime = "image/jpeg",
-                Category = shoesCategory,
-                CategoryId = shoesCategory?.Id ?? 0
-            },
-            new Clothes()
-            {
-                Id = 5,
-                Name = "Туфли",
-                Description = "Бархатные",
-                Price=1000000,
-                ImagePath="images/VelvetShoes.jpg",
-                Mime = "image/jpeg",
-                Category = shoesCategory,
-                CategoryId = shoesCategory?.Id ?? 0
-            },
-            new Clothes()
-            {
-                Id = 6,
-                Name = "Туфли",
-                Description = "Бархатные",
-                Price=1000000,
-                ImagePath="images/VelvetShoes.jpg",
-                Mime = "image/jpeg",
-                Category = shoesCategory,
-                CategoryId = shoesCategory?.Id ?? 0
-            },
-            new Clothes()
-            {
-                Id = 7,
-                Name = "Туфли",
-                Description = "Бархатные",
-                Price=1000000,
-                ImagePath="images/VelvetShoes.jpg",
-                Mime = "image/jpeg",
-                Category = shoesCategory,
-                CategoryId = shoesCategory?.Id ?? 0
-            },
-        };
+			new Clothes()
+			{
+				Id = 3,
+				Name = "Туфли",
+				Description = "Бархатные",
+				Price=1000000,
+				ImagePath="images/VelvetShoes.jpg",
+				Mime = "image/jpeg",
+				Category = shoesCategory,
+				CategoryId = shoesCategory?.Id ?? 0
+			},
+			new Clothes()
+			{
+				Id = 4,
+				Name = "Туфли",
+				Description = "Бархатные",
+				Price=1000000,
+				ImagePath="images/VelvetShoes.jpg",
+				Mime = "image/jpeg",
+				Category = shoesCategory,
+				CategoryId = shoesCategory?.Id ?? 0
+			},
+			new Clothes()
+			{
+				Id = 5,
+				Name = "Туфли",
+				Description = "Бархатные",
+				Price=1000000,
+				ImagePath="images/VelvetShoes.jpg",
+				Mime = "image/jpeg",
+				Category = shoesCategory,
+				CategoryId = shoesCategory?.Id ?? 0
+			},
+			new Clothes()
+			{
+				Id = 6,
+				Name = "Туфли",
+				Description = "Бархатные",
+				Price=1000000,
+				ImagePath="images/VelvetShoes.jpg",
+				Mime = "image/jpeg",
+				Category = shoesCategory,
+				CategoryId = shoesCategory?.Id ?? 0
+			},
+			new Clothes()
+			{
+				Id = 7,
+				Name = "Туфли",
+				Description = "Бархатные",
+				Price=1000000,
+				ImagePath="images/VelvetShoes.jpg",
+				Mime = "image/jpeg",
+				Category = shoesCategory,
+				CategoryId = shoesCategory?.Id ?? 0
+			},
+		};
 	}
 
-	public MemoryClothesService(IClothesCategoryService clothesCategoryService)
+	public MemoryClothesService(IClothesCategoryService clothesCategoryService,
+		[FromServices] IConfiguration configuration)
 	{
 		_categories = clothesCategoryService.GetClothesCategoryListAsync()?.Result?.Data;
 		SetupData();
+		_configuration = configuration;
 	}
 
 	public Task<ResponseData<ListModel<Clothes>>> GetClothesListAsync(string? categoryNormalizedName, int pageNo = 1)
 	{
+		var itemsPerPage = _configuration.GetValue<int>("ItemsPerPage");
 		var items = _clothes
 			.Where(c => categoryNormalizedName == null || c.Category?.NormalizedName == categoryNormalizedName)
+			.Skip((pageNo - 1) * itemsPerPage)
+			.Take(itemsPerPage)
 			.ToList();
 		return Task.FromResult(new ResponseData<ListModel<Clothes>>()
 		{
@@ -114,7 +121,7 @@ public class MemoryClothesService : IClothesService
 				Items = items,
 				CurrentPage = pageNo,
 			},
-			ErrorMessage = !(items.Count() == 0) ? "" : "Нет одежды такой категории"
+			ErrorMessage = !(items.Count() == 0) ? "" : "Ошибка :("
 		});
 	}
 	public Task<ResponseData<Clothes>> GetClothesByIdAsync(int id) => throw new NotImplementedException();

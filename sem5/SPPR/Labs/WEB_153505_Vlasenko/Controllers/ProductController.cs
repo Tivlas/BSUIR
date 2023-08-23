@@ -15,10 +15,10 @@ public class ProductController : Controller
 		_clothesCategoryService = clothesCategoryService;
 	}
 
-	public async Task<IActionResult> Index(string? categoryNormalizedName, string? currentCategory)
+	public async Task<IActionResult> Index(string? categoryNormalizedName, string? currentCategory, int pageNo = 1)
 	{
 		ViewData["currentcategory"] = currentCategory;
-		var productResponse = await _clothesService.GetClothesListAsync(categoryNormalizedName);
+		var productResponse = await _clothesService.GetClothesListAsync(categoryNormalizedName, pageNo);
 		if (!productResponse.Success)
 		{
 			return NotFound(productResponse.ErrorMessage);
