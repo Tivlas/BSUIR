@@ -1,34 +1,26 @@
 ﻿@model List<Clothes>
 
 @{
-	ViewData["Title"] = "Одежда";
+	ViewData["Title"] = "Список позиций";
+	var request = ViewContext.HttpContext.Request;
+	var returnUrl = request.Path + request.QueryString.ToUriComponent();
 }
 
 <div class="container">
-	<table class="table">
-		<thead>
-			<tr>
-				<th>Id</th>
-				<th>Название</th>
-				<th>Описание</th>
-				<th>Цена</th>
-				<th>Фото</th>
-				<th>CategoryId</th>
-			</tr>
-		</thead>
-		<tbody>
-			@foreach (var item in Model)
-			{
-				<tr>
-					<td>@item.Id</td>
-					<td>@item.Name</td>
-					<td>@item.Description</td>
-					<td>@item.Price</td>
-					<td><img src=@item.ImagePath /></td>
-					<td>@item.CategoryId</td>
-				</tr>
-			}
-		</tbody>
-	</table>
+	<div class="row">
+		@foreach (var item in Model)
+		{
+			<div class="col-md-4">
+				<div class="card">
+					<img src="@item.ImagePath" class="card-img-top" style="width: 100%; max-height: 200px; object-fit: contain;">
+					<div class="card-body" style="min-height: 150px;">
+						<h5 class="card-title">@item.Name</h5>
+						<p class="card-text">@item.Description</p>
+						<p class="card-text">$@item.Price</p>
+						<a asp-controller="Cart" asp-action="Add" asp-route-id="@item.Id" asp-route-returnUrl=@returnUrl class="btn btn-primary">Добавить в корзину</a>
+					</div>
+				</div>
+			</div>
+		}
+	</div>
 </div>
-

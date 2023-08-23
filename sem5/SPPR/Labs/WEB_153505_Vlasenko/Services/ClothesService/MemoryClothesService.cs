@@ -37,7 +37,62 @@ public class MemoryClothesService : IClothesService
 				Category = shoesCategory,
 				CategoryId = shoesCategory?.Id ?? 0
 			},
-		};
+            new Clothes()
+            {
+                Id = 3,
+                Name = "Туфли",
+                Description = "Бархатные",
+                Price=1000000,
+                ImagePath="images/VelvetShoes.jpg",
+                Mime = "image/jpeg",
+                Category = shoesCategory,
+                CategoryId = shoesCategory?.Id ?? 0
+            },
+            new Clothes()
+            {
+                Id = 4,
+                Name = "Туфли",
+                Description = "Бархатные",
+                Price=1000000,
+                ImagePath="images/VelvetShoes.jpg",
+                Mime = "image/jpeg",
+                Category = shoesCategory,
+                CategoryId = shoesCategory?.Id ?? 0
+            },
+            new Clothes()
+            {
+                Id = 5,
+                Name = "Туфли",
+                Description = "Бархатные",
+                Price=1000000,
+                ImagePath="images/VelvetShoes.jpg",
+                Mime = "image/jpeg",
+                Category = shoesCategory,
+                CategoryId = shoesCategory?.Id ?? 0
+            },
+            new Clothes()
+            {
+                Id = 6,
+                Name = "Туфли",
+                Description = "Бархатные",
+                Price=1000000,
+                ImagePath="images/VelvetShoes.jpg",
+                Mime = "image/jpeg",
+                Category = shoesCategory,
+                CategoryId = shoesCategory?.Id ?? 0
+            },
+            new Clothes()
+            {
+                Id = 7,
+                Name = "Туфли",
+                Description = "Бархатные",
+                Price=1000000,
+                ImagePath="images/VelvetShoes.jpg",
+                Mime = "image/jpeg",
+                Category = shoesCategory,
+                CategoryId = shoesCategory?.Id ?? 0
+            },
+        };
 	}
 
 	public MemoryClothesService(IClothesCategoryService clothesCategoryService)
