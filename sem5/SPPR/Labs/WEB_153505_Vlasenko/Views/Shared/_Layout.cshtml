@@ -1,61 +1,20 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - WEB_153505_Vlasenko</title>
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css" />
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>@ViewData["Title"] - WEB_153505_Vlasenko</title>
+	<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+	<link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css" />
 </head>
 <body>
 	<header>
 		<div class="container">
-			<!-- Панель навигации -->
 			<nav class="navbar navbar-expand-md navbar-dark bg-dark">
-				<!-- меню сайта -->
-				<a class="navbar-brand" href="#">15350022</a>
-				<div class="navbar-nav">
-					<a class="nav-item nav-link active" asp-controller="Home" asp-action="Index">Лб 1</a>
-					<a class="nav-item nav-link" asp-controller="Product" asp-action="Index">Каталог</a>
-					<a class="nav-item nav-link" asp-area="Admin" asp-page="/Index">Администрирование</a>
-				</div>
-				<!-- меню сайта - конец -->
-				<!-- Информация пользователя -->
-				<a class="navbar-text ms-auto" asp-controller="Cart" asp-action="Index">
-					00,0 руб <i class="fa-solid fa-cart-shopping"></i> (0)
-				</a>
-				<div class="dropdown ms-4 nav-color">
-					<button class="btn btn-secondary dropdown-toggle"
-							type="button" id="dropdownMenuButton"
-							data-bs-toggle="dropdown"
-							aria-expanded="false">
-						User@gmail.com
-						<img src="images/user-secret-solid.svg" width="30"
-							 alt="User" class="rounded nav-color" />
-					</button>
-					<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-						<li>
-							<span class="dropdown-item-text">
-								<img src="images/user-secret-solid.svg"
-									 width="50" alt="User" class="rounded" />
-								user@gmail.com
-							</span>
-						</li>
-
-						<li><hr class="dropdown-divider"></li>
-
-						<li>
-							<form id="logoutForm" class="form-inline">
-								<button id="logout" type="submit" class="nav-link
-btn btn-link text-dark" asp-controller="Identity" asp-action="LogOut">
-									Logout
-								</button>
-							</form>
-						</li>
-					</ul>
-				</div>
-				<!-- Информация пользователя - конец -->
+				<!-- Панель навигации -->
+				<partial name="_MenuPartial" />
+				<partial name="_UserInfoPartial" />
 			</nav> <!-- Панель навигации - конец -->
 		</div><!-- container - конец -->
 	</header><!-- header - конец -->
@@ -63,7 +22,8 @@ btn btn-link text-dark" asp-controller="Identity" asp-action="LogOut">
 		<!-- main -->
 		@RenderBody()
 	</main> <!-- /main -->
-	<footer class="fixed-bottom"> <!-- footer -->
+	<footer class="fixed-bottom">
+		<!-- footer -->
 		<div class="container">
 			<nav class="navbar navbar-dark navbar-expand-md bg-dark">
 				<div class="navbar-nav ms-auto">
@@ -87,6 +47,6 @@ btn btn-link text-dark" asp-controller="Identity" asp-action="LogOut">
 	<script src="~/lib/font-awesome/js/all.js"></script>
 	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 	<script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+	@await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
