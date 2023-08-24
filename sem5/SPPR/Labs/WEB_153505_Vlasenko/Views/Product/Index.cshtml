@@ -8,11 +8,11 @@
 <div class="container">
 	<div class="dropdown col-sm-1 mt-4">
 		<!-- categories dropdown -->
-		<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+		<button class="btn btn-secondary dropdown-toggle" style="min-width: 200px" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
 			@(ViewData["currentCategory"] ?? "Все")
 		</button>
-		<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1" aria-haspopup="true" aria-expanded="false">
-			<li>
+		<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+			<li style="min-width: 200px">
 				<a class="dropdown-item"
 				   asp-controller="Product"
 				   asp-action="Index"
@@ -20,12 +20,12 @@
 			</li>
 			@foreach (var item in Model.ClothesCategoryList)
 			{
-				<li><a class="dropdown-item" asp-controller="Product" asp-action="Index" asp-route-categoryNormalizedName=@item.NormalizedName asp-route-currentCategory=@item.Name>@item.Name</a></li>
+				<li style="min-width: 200px"><a class="dropdown-item" asp-controller="Product" asp-action="Index" asp-route-category=@item.NormalizedName asp-route-currentCategory=@item.Name>@item.Name</a></li>
 			}
 		</ul>
 	</div> <!-- /categories dropdown -->
 
-	<div class="row offset-sm-2">
+	<div class="row offset-2">
 		@foreach (var item in Model.ClothesList)
 		{
 			<div class="col-md-4 mb-4">
@@ -41,4 +41,6 @@
 			</div>
 		}
 	</div>
+
+	
 </div>
