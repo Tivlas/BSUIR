@@ -20,7 +20,7 @@ public class MemoryClothesService : IClothesService
 			new Clothes()
 			{
 				Id = 1,
-				Name = "Куртка",
+				Name = "Куртка черная",
 				Description = "Балдежная черная куртка",
 				Price=100.99M,
 				ImagePath="images/BlackJacket.jpg",
@@ -31,24 +31,24 @@ public class MemoryClothesService : IClothesService
 			new Clothes()
 			{
 				Id = 2,
-				Name = "Туфли",
-				Description = "Бархатные",
+				Name = "Клоунская куртка",
+				Description = "Если вы клоун, то это для вас",
 				Price=1000000,
-				ImagePath="images/VelvetShoes.jpg",
+				ImagePath="images/ClownJacket.jpg",
 				Mime = "image/jpeg",
-				Category = shoesCategory,
-				CategoryId = shoesCategory?.Id ?? 0
+				Category = jacketsCategory,
+				CategoryId = jacketsCategory?.Id ?? 0
 			},
 			new Clothes()
 			{
 				Id = 3,
-				Name = "Туфли",
-				Description = "Чудесные",
+				Name = "Кожанка",
+				Description = "Чудесная",
 				Price=1000000,
-				ImagePath="images/VelvetShoes.jpg",
+				ImagePath="images/LeatherJacket.jpg",
 				Mime = "image/jpeg",
-				Category = shoesCategory,
-				CategoryId = shoesCategory?.Id ?? 0
+				Category = jacketsCategory,
+				CategoryId = jacketsCategory?.Id ?? 0
 			},
 			new Clothes()
 			{
@@ -64,10 +64,10 @@ public class MemoryClothesService : IClothesService
 			new Clothes()
 			{
 				Id = 5,
-				Name = "Туфли",
+				Name = "Лапти",
 				Description = "Для настоящих мужчин",
 				Price=10315,
-				ImagePath="images/VelvetShoes.jpg",
+				ImagePath="images/Lapti.jpg",
 				Mime = "image/jpeg",
 				Category = shoesCategory,
 				CategoryId = shoesCategory?.Id ?? 0
@@ -75,10 +75,10 @@ public class MemoryClothesService : IClothesService
 			new Clothes()
 			{
 				Id = 6,
-				Name = "Туфли",
-				Description = "Дорогие",
+				Name = "Вроде сапоги",
+				Description = "Крайне опасные сапоги",
 				Price=1000000,
-				ImagePath="images/VelvetShoes.jpg",
+				ImagePath="images/SalamancaBoots.jpg",
 				Mime = "image/jpeg",
 				Category = shoesCategory,
 				CategoryId = shoesCategory?.Id ?? 0
@@ -86,10 +86,10 @@ public class MemoryClothesService : IClothesService
 			new Clothes()
 			{
 				Id = 7,
-				Name = "Туфли",
+				Name = "Сапоги-змеи",
 				Description = "Огонь!",
 				Price=15090,
-				ImagePath="images/VelvetShoes.jpg",
+				ImagePath="images/SnakeShoes.jpg",
 				Mime = "image/jpeg",
 				Category = shoesCategory,
 				CategoryId = shoesCategory?.Id ?? 0
