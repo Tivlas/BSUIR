@@ -12,7 +12,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 RegisterDbContext(builder);
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -30,6 +29,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+await DbInitializer.SeedData(app);
 app.Run();
 
 static void RegisterDbContext(WebApplicationBuilder builder)
