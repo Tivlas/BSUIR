@@ -24,6 +24,7 @@ public class ProductController : Controller
 			return NotFound(productResponse.ErrorMessage);
 		}
 		var allCategories = await _clothesCategoryService.GetClothesCategoryListAsync();
-		return View((productResponse.Data!.Items, allCategories.Data));
+		return View((productResponse.Data!.Items, allCategories.Data,
+			productResponse.Data.CurrentPage, productResponse.Data.TotalPages));
 	}
 }

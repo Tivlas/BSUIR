@@ -108,8 +108,10 @@ public class MemoryClothesService : IClothesService
 	public Task<ResponseData<ListModel<Clothes>>> GetClothesListAsync(string? categoryNormalizedName, int pageNo = 1)
 	{
 		var itemsPerPage = _configuration.GetValue<int>("ItemsPerPage");
-		var items = _clothes
-			.Where(c => categoryNormalizedName == null || c.Category?.NormalizedName == categoryNormalizedName)
+		var itemsTemp = _clothes.
+			Where(c => categoryNormalizedName == null || c.Category?.NormalizedName == categoryNormalizedName);
+		int totalPages = (int)Math.Ceiling((double)itemsTemp.Count() / itemsPerPage);
+		var items = itemsTemp
 			.Skip((pageNo - 1) * itemsPerPage)
 			.Take(itemsPerPage)
 			.ToList();
@@ -121,6 +123,7 @@ public class MemoryClothesService : IClothesService
 			{
 				Items = items,
 				CurrentPage = pageNo,
+				TotalPages = totalPages
 			},
 			ErrorMessage = !(items.Count() == 0) ? "" : "Ошибка :("
 		});
