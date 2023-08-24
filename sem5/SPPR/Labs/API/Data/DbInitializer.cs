@@ -1,5 +1,6 @@
 ﻿using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace API.Data;
 
@@ -103,8 +104,14 @@ public class DbInitializer
 			await context.SaveChangesAsync();
 		}
 
+		var imageBaseUrl = app.Configuration.GetValue<string>("ImageUrl");
 		if (!context.Clothes.Any())
 		{
+
+			foreach (var cloth in clothes)
+			{
+				cloth.ImagePath = $"{imageBaseUrl}/{cloth.ImagePath}";
+			}
 			await context.Clothes.AddRangeAsync(clothes);
 			await context.SaveChangesAsync();
 		}
