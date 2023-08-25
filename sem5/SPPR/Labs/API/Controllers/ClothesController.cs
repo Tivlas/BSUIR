@@ -25,6 +25,7 @@ namespace API.Controllers
 
 		// GET: api/Clothes
 		[HttpGet]
+		[Route(("{category?}/{pageNo?}/{pageSize?}"))]
 		public async Task<ActionResult<ResponseData<List<Clothes>>>> GetClothes(string? category,
 			int pageNo = 1, int pageSize = 3)
 		{
@@ -32,7 +33,7 @@ namespace API.Controllers
 		}
 
 		// GET: api/Clothes/5
-		[HttpGet("{id}")]
+		[HttpGet("{id:int}")]
 		public async Task<ActionResult<ResponseData<Clothes>>> GetClothes(int id)
 		{
 			return Ok(await _service.GetClothesByIdAsync(id));
