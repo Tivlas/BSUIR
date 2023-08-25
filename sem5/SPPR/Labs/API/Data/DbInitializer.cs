@@ -22,7 +22,7 @@ public class DbInitializer
 				Name = "Куртка черная",
 				Description = "Балдежная черная куртка",
 				Price=100.99M,
-				ImagePath="images/BlackJacket.jpg",
+				ImagePath="BlackJacket.jpg",
 				Mime = "image/jpeg",
 				Category = jacketsCategory,
 				//CategoryId = jacketsCategory?.Id ?? 0
@@ -32,7 +32,7 @@ public class DbInitializer
 				Name = "Клоунская куртка",
 				Description = "Если вы клоун, то это для вас",
 				Price=1000000,
-				ImagePath="images/ClownJacket.jpg",
+				ImagePath="ClownJacket.jpg",
 				Mime = "image/jpeg",
 				Category = jacketsCategory,
 				//CategoryId = jacketsCategory?.Id ?? 0
@@ -42,7 +42,7 @@ public class DbInitializer
 				Name = "Кожанка",
 				Description = "Чудесная",
 				Price=1000000,
-				ImagePath="images/LeatherJacket.jpg",
+				ImagePath="LeatherJacket.jpg",
 				Mime = "image/jpeg",
 				Category = jacketsCategory,
 				//CategoryId = jacketsCategory?.Id ?? 0
@@ -52,7 +52,7 @@ public class DbInitializer
 				Name = "Туфли",
 				Description = "Не очень",
 				Price=1000000,
-				ImagePath="images/VelvetShoes.jpg",
+				ImagePath="VelvetShoes.jpg",
 				Mime = "image/jpeg",
 				Category = shoesCategory,
 				//CategoryId = shoesCategory?.Id ?? 0
@@ -62,7 +62,7 @@ public class DbInitializer
 				Name = "Лапти",
 				Description = "Для настоящих мужчин",
 				Price=10315,
-				ImagePath="images/Lapti.jpg",
+				ImagePath="Lapti.jpg",
 				Mime = "image/jpeg",
 				Category = shoesCategory,
 				//CategoryId = shoesCategory?.Id ?? 0
@@ -72,7 +72,7 @@ public class DbInitializer
 				Name = "Вроде сапоги",
 				Description = "Крайне опасные сапоги",
 				Price=1000000,
-				ImagePath="images/SalamancaBoots.jpg",
+				ImagePath="SalamancaBoots.jpg",
 				Mime = "image/jpeg",
 				Category = shoesCategory,
 				//CategoryId = shoesCategory?.Id ?? 0
@@ -82,7 +82,7 @@ public class DbInitializer
 				Name = "Сапоги-змеи",
 				Description = "Огонь!",
 				Price=15090,
-				ImagePath="images/SnakeShoes.jpg",
+				ImagePath="SnakeShoes.jpg",
 				Mime = "image/jpeg",
 				Category = shoesCategory,
 				//CategoryId = shoesCategory?.Id ?? 0
