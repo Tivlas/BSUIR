@@ -24,8 +24,7 @@ namespace API.Controllers
 		}
 
 		// GET: api/Clothes
-		[HttpGet]
-		[Route(("{category?}/{pageNo?}/{pageSize?}"))]
+		[HttpGet("{category?}/{pageNo?}")]
 		public async Task<ActionResult<ResponseData<List<Clothes>>>> GetClothes(string? category,
 			int pageNo = 1, int pageSize = 3)
 		{
