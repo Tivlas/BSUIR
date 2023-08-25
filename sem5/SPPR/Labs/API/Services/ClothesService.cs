@@ -1,0 +1,180 @@
+﻿using API.Data;
+using Domain.Entities;
+using Domain.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace API.Services;
+
+public class ClothesService : IClothesService
+{
+	private readonly AppDbContext _dbContext;
+	private readonly IConfiguration _configuration;
+	private readonly int _maxPageSize = 20;
+
+	public ClothesService(AppDbContext dbContext, [FromServices] IConfiguration configuration)
+	{
+		_dbContext = dbContext;
+		_configuration = configuration;
+	}
+
+	public async Task<ResponseData<ListModel<Clothes>>> GetClothesListAsync(string? categoryNormalizedName, int pageNo = 1, int pageSize = 3)
+	{
+		if (pageSize > _maxPageSize)
+		{
+			pageSize = _maxPageSize;
+		}
+
+		var query = _dbContext.Clothes.AsQueryable();
+		var dataList = new ListModel<Clothes>();
+		query = query.Where(d => categoryNormalizedName == null
+		|| d.Category.NormalizedName.Equals(categoryNormalizedName));
+		var count = query.Count();
+		if (count == 0)
+		{
+			return new ResponseData<ListModel<Clothes>>
+			{
+				Data = dataList
+			};
+		}
+		int totalPages = (int)Math.Ceiling(count / (double)pageSize);
+		if (pageNo > totalPages)
+		{
+			return new ResponseData<ListModel<Clothes>>
+			{
+				Data = null,
+				Success = false,
+				ErrorMessage = "Нет такой страницы"
+
+			};
+		}
+
+		dataList.Items = await query
+		.Skip((pageNo - 1) * pageSize)
+		.Take(pageSize)
+		.ToListAsync();
+
+		dataList.CurrentPage = pageNo;
+		dataList.TotalPages = totalPages;
+		var response = new ResponseData<ListModel<Clothes>>
+		{
+			Data = dataList
+		};
+		return response;
+	}
+	
+	public async Task<ResponseData<Clothes>> GetClothesByIdAsync(int id)
+	{
+		var clothes = await _dbContext.Clothes.FindAsync(id);
+		if (clothes is null)
+		{
+			return new ResponseData<Clothes>()
+			{
+				Data = null,
+				Success = false,
+				ErrorMessage = "Нет одежды с таким id"
+			};
+		}
+
+		return new ResponseData<Clothes>()
+		{
+			Data = clothes
+		};
+	}
+	
+	public async Task UpdateClothesAsync(int id, Clothes product)
+	{
+		var clothes = await _dbContext.Clothes.FindAsync(id);
+		if (clothes is null)
+		{
+			throw new ArgumentException("Нет одежды с таким id");
+		}
+
+		clothes.Name = product.Name;
+		clothes.Description = product.Description;
+		clothes.Price = product.Price;
+		clothes.CategoryId = product.CategoryId;
+		clothes.ImagePath = product.ImagePath;
+		clothes.Category = product.Category;
+		_dbContext.Entry(clothes).State = EntityState.Modified;
+		await _dbContext.SaveChangesAsync();
+	}
+
+	public async Task DeleteClothesAsync(int id)
+	{
+		var clothes = await _dbContext.Clothes.FindAsync(id);
+		if (clothes is null)
+		{
+			throw new ArgumentException("Нет одежды с таким id");
+		}
+
+		_dbContext.Clothes.Remove(clothes);
+		await _dbContext.SaveChangesAsync();
+	}
+
+	public async Task<ResponseData<Clothes>> CreateClothesAsync(Clothes product)
+	{
+		_dbContext.Clothes.Add(product);
+		try
+		{
+			await _dbContext.SaveChangesAsync();
+		}
+		catch (DbUpdateConcurrencyException ex)
+		{
+			return new ResponseData<Clothes>()
+			{
+				Data = null,
+				Success = false,
+				ErrorMessage = ex.Message
+			};
+		}
+		return new ResponseData<Clothes>()
+		{
+			Data = product
+		};
+	}
+
+
+	public async Task<ResponseData<string>> SaveImageAsync(int id, IFormFile formFile)
+	{
+		var clothes = await _dbContext.Clothes.FindAsync(id);
+		if (clothes is null)
+		{
+			return new ResponseData<string>()
+			{
+				Data = null,
+				Success = false,
+				ErrorMessage = "Нет одежды с таким id"
+			};
+		}
+
+		var mime = formFile.ContentType;
+		var fileName = formFile.FileName;
+		var filePath = Path.Combine(_configuration["ImagesUrl"]!, fileName);
+		using (var stream = new FileStream(filePath, FileMode.Create))
+		{
+			await formFile.CopyToAsync(stream);
+		}
+
+		clothes.ImagePath = fileName;
+		clothes.Mime = mime;
+		_dbContext.Entry(clothes).State = EntityState.Modified;
+		try
+		{
+			await _dbContext.SaveChangesAsync();
+		}
+		catch (DbUpdateConcurrencyException e)
+		{
+			return new ResponseData<string>()
+			{
+				Data = null,
+				Success = false,
+				ErrorMessage = e.Message
+			};
+		}
+		return new ResponseData<string>()
+		{
+			Data = fileName
+		};
+	}
+}

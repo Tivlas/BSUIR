@@ -1,12 +1,14 @@
 using System.Reflection;
 using API.Data;
+using API.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
+builder.Services.AddSingleton<IClothesCategoryService, ClothesCategoryService>();
+builder.Services.AddSingleton<IClothesService, ClothesService>();
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
 	options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
