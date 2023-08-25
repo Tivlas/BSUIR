@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using API.Data;
 using Domain.Entities;
+using Domain.Models;
+using API.Services;
 
 namespace API.Controllers
 {
@@ -14,113 +16,104 @@ namespace API.Controllers
 	[ApiController]
 	public class ClothesController : ControllerBase
 	{
-		private readonly AppDbContext _context;
+		private readonly IClothesService _service;
 
-		public ClothesController(AppDbContext context)
+		public ClothesController(IClothesService service)
 		{
-			_context = context;
+			_service = service;
 		}
 
 		// GET: api/Clothes
 		[HttpGet]
-		public async Task<ActionResult<IEnumerable<Clothes>>> GetClothes()
+		public async Task<ActionResult<ResponseData<List<Clothes>>>> GetClothes(string? category,
+			int pageNo = 1, int pageSize = 3)
 		{
-			if (_context.Clothes == null)
-			{
-				return NotFound();
-			}
-
-			//return await _context.Clothes.Include(c => c.Category).ToListAsync();
-			return await _context.Clothes.ToListAsync();
+			return Ok(await _service.GetClothesListAsync(category, pageNo, pageSize));
 		}
 
 		// GET: api/Clothes/5
 		[HttpGet("{id}")]
-		public async Task<ActionResult<Clothes>> GetClothes(int id)
+		public async Task<ActionResult<ResponseData<Clothes>>> GetClothes(int id)
 		{
-			if (_context.Clothes == null)
-			{
-				return NotFound();
-			}
-			var clothes = await _context.Clothes.FindAsync(id);
-
-			if (clothes == null)
-			{
-				return NotFound();
-			}
-
-			return clothes;
+			return Ok(await _service.GetClothesByIdAsync(id));
 		}
 
 		// PUT: api/Clothes/5
 		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
 		[HttpPut("{id}")]
-		public async Task<IActionResult> PutClothes(int id, Clothes clothes)
+		public async Task<ActionResult<ResponseData<Clothes>>> PutClothes(int id, Clothes clothes)
 		{
-			if (id != clothes.Id)
-			{
-				return BadRequest();
-			}
-
-			_context.Entry(clothes).State = EntityState.Modified;
-
 			try
 			{
-				await _context.SaveChangesAsync();
+				await _service.UpdateClothesAsync(id, clothes);
 			}
-			catch (DbUpdateConcurrencyException)
+			catch (Exception e)
 			{
-				if (!ClothesExists(id))
+				return NotFound(new ResponseData<Clothes>()
 				{
-					return NotFound();
-				}
-				else
-				{
-					throw;
-				}
+					Data = null,
+					Success = false,
+					ErrorMessage = e.Message
+				});
 			}
 
-			return NoContent();
+			return Ok(new ResponseData<Clothes>()
+			{
+				Data = clothes,
+			});
 		}
 
 		// POST: api/Clothes
 		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
 		[HttpPost]
-		public async Task<ActionResult<Clothes>> PostClothes(Clothes clothes)
+		public async Task<ActionResult<ResponseData<Clothes>>> PostClothes(Clothes clothes)
 		{
-			if (_context.Clothes == null)
+			if (clothes is null)
 			{
-				return Problem("Entity set 'AppDbContext.Clothes'  is null.");
+				return BadRequest(new ResponseData<Clothes>()
+				{
+					Data = null,
+					Success = false,
+					ErrorMessage = "Clothes is null"
+				});
 			}
-			_context.Clothes.Add(clothes);
-			await _context.SaveChangesAsync();
+			var response = await _service.CreateClothesAsync(clothes);
 
-			return CreatedAtAction("GetClothes", new { id = clothes.Id }, clothes);
+			if (!response.Success)
+			{
+				return BadRequest(response.ErrorMessage);
+			}
+
+			return CreatedAtAction("GetClothes", new { id = clothes.Id }, new ResponseData<Clothes>()
+			{
+				Data = clothes
+			});
 		}
 
 		// DELETE: api/Clothes/5
 		[HttpDelete("{id}")]
 		public async Task<IActionResult> DeleteClothes(int id)
 		{
-			if (_context.Clothes == null)
+			try
 			{
-				return NotFound();
+				await _service.DeleteClothesAsync(id);
 			}
-			var clothes = await _context.Clothes.FindAsync(id);
-			if (clothes == null)
+			catch (Exception e)
 			{
-				return NotFound();
+				return NotFound(new ResponseData<Clothes>()
+				{
+					Data = null,
+					Success = false,
+					ErrorMessage = e.Message
+				});
 			}
-
-			_context.Clothes.Remove(clothes);
-			await _context.SaveChangesAsync();
 
 			return NoContent();
 		}
 
-		private bool ClothesExists(int id)
+		/*private bool ClothesExists(int id)
 		{
 			return (_context.Clothes?.Any(e => e.Id == id)).GetValueOrDefault();
-		}
+		}*/
 	}
 }
