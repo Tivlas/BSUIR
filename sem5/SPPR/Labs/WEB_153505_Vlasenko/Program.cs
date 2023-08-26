@@ -6,8 +6,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddScoped<IClothesCategoryService, MemoryClothesCategoryService>();
-builder.Services.AddScoped<IClothesService, MemoryClothesService>();
+//builder.Services.AddScoped<IClothesCategoryService, MemoryClothesCategoryService>();
+//builder.Services.AddScoped<IClothesService, MemoryClothesService>();
 
 UriData uriData = builder.Configuration.GetSection("UriData").Get<UriData>()!;
 builder.Services.AddHttpClient<IClothesService, ApiClothesService>(client =>
