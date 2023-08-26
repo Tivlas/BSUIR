@@ -33,7 +33,7 @@ public class ApiClothesService : IClothesService
 		};
 		if (pageNo > 1)
 		{
-			urlString.Append($"{pageNo}");
+			urlString.Append($"page{pageNo}");
 		};
 		if (!_pageSize.Equals("3"))
 		{

@@ -23,12 +23,28 @@ namespace API.Controllers
 			_service = service;
 		}
 
+		// ЗДЕСЬ Я РАЗБИЛ МЕТОД НА ТРИ МЕТОДА, ЧТОБЫ МАРШРУТЫ БЫЛИ КАК В МЕТОДЕ, ЧЕРЕЗ ОДИН МЕТОД Я НЕ ВЫВЕЗ
 		// GET: api/Clothes
-		[HttpGet("{category?}/{pageNo?}")]
+		[HttpGet("{category}/page{pageNo}")]
 		public async Task<ActionResult<ResponseData<List<Clothes>>>> GetClothes(string? category,
 			int pageNo = 1, int pageSize = 3)
 		{
 			return Ok(await _service.GetClothesListAsync(category, pageNo, pageSize));
+		}
+
+		// GET: api/Clothes
+		[HttpGet("{category?}")]
+		public async Task<ActionResult<ResponseData<List<Clothes>>>> GetClothes(string? category)
+		{
+			return Ok(await _service.GetClothesListAsync(category, 1, 3));
+		}
+
+		// GET: api/Clothes/page3
+		[HttpGet("page{pageNo:int}")]
+		public async Task<ActionResult<ResponseData<List<Clothes>>>> GetClothes(
+			int pageNo = 1, int pageSize = 3)
+		{
+			return Ok(await _service.GetClothesListAsync(null, pageNo, pageSize));
 		}
 
 		// GET: api/Clothes/5
