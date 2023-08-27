@@ -106,6 +106,18 @@ namespace API.Controllers
 			});
 		}
 
+		// POST: api/Dishes/5
+		[HttpPost("{id}")]
+		public async Task<ActionResult<ResponseData<string>>> PostImage(int id, IFormFile formFile)
+		{
+			var response = await _service.SaveImageAsync(id, formFile);
+			if (response.Success)
+			{
+				return Ok(response);
+			}
+			return NotFound(response);
+		}
+
 		// DELETE: api/Clothes/5
 		[HttpDelete("{id}")]
 		public async Task<IActionResult> DeleteClothes(int id)
