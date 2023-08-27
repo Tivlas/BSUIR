@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using WEB_153505_Vlasenko.Models;
 using WEB_153505_Vlasenko.Services.ClothesCategoryService;
 using WEB_153505_Vlasenko.Services.ClothesService;
-using WEB_153505_Vlasenko.TempDbContext;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,13 +22,6 @@ builder.Services.AddHttpClient<IClothesCategoryService, ApiClothesCategoryServic
 {
 	client.BaseAddress = new Uri(uriData.ApiUri);
 });
-
-//temp
-var connectionString = "Data Source=app.db";
-string dataDirectory = AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar;
-connectionString = string.Format(connectionString!, dataDirectory);
-builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(connectionString).EnableSensitiveDataLogging());
-//temp
 
 var app = builder.Build();
 
