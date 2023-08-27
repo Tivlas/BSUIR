@@ -1,8 +1,6 @@
-using System.Reflection;
 using API.Data;
 using API.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,8 +18,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-	app.UseSwagger();
-	app.UseSwaggerUI();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseStaticFiles();
@@ -37,9 +35,9 @@ app.Run();
 
 static void RegisterDbContext(WebApplicationBuilder builder)
 {
-	var connectionString = builder.Configuration
-		   .GetConnectionString("Default");
-	string dataDirectory = AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar;
+    var connectionString = builder.Configuration
+           .GetConnectionString("Default");
+    string dataDirectory = AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar;
     connectionString = string.Format(connectionString!, dataDirectory);
-	builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(connectionString).EnableSensitiveDataLogging());
+    builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(connectionString).EnableSensitiveDataLogging());
 }

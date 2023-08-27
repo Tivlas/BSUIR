@@ -5,5 +5,5 @@ namespace WEB_153505_Vlasenko.Services.ClothesCategoryService;
 
 public interface IClothesCategoryService
 {
-	public Task<ResponseData<List<ClothesCategory>>> GetClothesCategoryListAsync();
+    public Task<ResponseData<List<ClothesCategory>>> GetClothesCategoryListAsync();
 }
