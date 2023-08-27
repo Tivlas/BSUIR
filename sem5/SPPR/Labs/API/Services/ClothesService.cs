@@ -10,12 +10,17 @@ public class ClothesService : IClothesService
 {
 	private readonly AppDbContext _dbContext;
 	private readonly IConfiguration _configuration;
+	private readonly IWebHostEnvironment _webHostEnvironment;
+	private readonly IHttpContextAccessor _httpContextAccessor;
 	private readonly int _maxPageSize = 20;
 
-	public ClothesService(AppDbContext dbContext, [FromServices] IConfiguration configuration)
+	public ClothesService(AppDbContext dbContext, [FromServices] IConfiguration configuration,
+		IWebHostEnvironment webHostEnvironment, IHttpContextAccessor httpContextAccessor)
 	{
 		_dbContext = dbContext;
 		_configuration = configuration;
+		_webHostEnvironment = webHostEnvironment;
+		_httpContextAccessor = httpContextAccessor;
 	}
 
 	public async Task<ResponseData<ListModel<Clothes>>> GetClothesListAsync(string? categoryNormalizedName, int pageNo = 1, int pageSize = 3)
@@ -62,7 +67,7 @@ public class ClothesService : IClothesService
 		};
 		return response;
 	}
-	
+
 	public async Task<ResponseData<Clothes>> GetClothesByIdAsync(int id)
 	{
 		var clothes = await _dbContext.Clothes.FindAsync(id);
@@ -81,7 +86,7 @@ public class ClothesService : IClothesService
 			Data = clothes
 		};
 	}
-	
+
 	public async Task UpdateClothesAsync(int id, Clothes product)
 	{
 		var clothes = await _dbContext.Clothes.FindAsync(id);
@@ -134,47 +139,43 @@ public class ClothesService : IClothesService
 		};
 	}
 
-
 	public async Task<ResponseData<string>> SaveImageAsync(int id, IFormFile formFile)
 	{
+		var responseData = new ResponseData<string>();
 		var clothes = await _dbContext.Clothes.FindAsync(id);
-		if (clothes is null)
+		if (clothes == null)
 		{
-			return new ResponseData<string>()
+			responseData.Success = false;
+			responseData.ErrorMessage = "No item found";
+			return responseData;
+		}
+		var host = "https://" + _httpContextAccessor.HttpContext?.Request.Host;
+		var imageFolder = Path.Combine(_webHostEnvironment.WebRootPath, "Images");
+
+		if (formFile != null)
+		{
+			if (!string.IsNullOrEmpty(clothes.ImagePath))
 			{
-				Data = null,
-				Success = false,
-				ErrorMessage = "Нет одежды с таким id"
-			};
-		}
-
-		var mime = formFile.ContentType;
-		var fileName = formFile.FileName;
-		var filePath = Path.Combine(_configuration["ImagesUrl"]!, fileName);
-		using (var stream = new FileStream(filePath, FileMode.Create))
-		{
-			await formFile.CopyToAsync(stream);
-		}
-
-		clothes.ImagePath = fileName;
-		clothes.Mime = mime;
-		_dbContext.Entry(clothes).State = EntityState.Modified;
-		try
-		{
+				var prevImage = Path.GetFileName(clothes.ImagePath);
+				var prevImagePath = Path.Combine(imageFolder, prevImage);
+				if (File.Exists(prevImagePath))
+				{
+					File.Delete(prevImagePath);
+				}
+			}
+			var ext = Path.GetExtension(formFile.FileName);
+			var fName = Path.ChangeExtension(Path.GetRandomFileName(), ext);
+			var filePath = Path.Combine(imageFolder, fName);
+			using (var stream = new FileStream(filePath, FileMode.Create))
+			{
+				await formFile.CopyToAsync(stream);
+			}
+			
+			clothes.ImagePath = $"{host}/images/{fName}";
+			_dbContext.Entry(clothes).State = EntityState.Modified;
 			await _dbContext.SaveChangesAsync();
 		}
-		catch (DbUpdateConcurrencyException e)
-		{
-			return new ResponseData<string>()
-			{
-				Data = null,
-				Success = false,
-				ErrorMessage = e.Message
-			};
-		}
-		return new ResponseData<string>()
-		{
-			Data = fileName
-		};
+		responseData.Data = clothes.ImagePath;
+		return responseData;
 	}
 }
