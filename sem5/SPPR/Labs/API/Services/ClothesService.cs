@@ -171,6 +171,7 @@ public class ClothesService : IClothesService
 			}
 			
 			clothes.ImagePath = $"{host}/images/{fName}";
+			clothes.Mime = formFile.ContentType;
 			_dbContext.Entry(clothes).State = EntityState.Modified;
 			await _dbContext.SaveChangesAsync();
 		}
