@@ -99,7 +99,6 @@ public class ClothesService : IClothesService
 		clothes.Description = product.Description;
 		clothes.Price = product.Price;
 		clothes.CategoryId = product.CategoryId;
-		clothes.ImagePath = product.ImagePath;
 		clothes.Category = product.Category;
 		_dbContext.Entry(clothes).State = EntityState.Modified;
 		await _dbContext.SaveChangesAsync();
@@ -150,7 +149,7 @@ public class ClothesService : IClothesService
 			return responseData;
 		}
 		var host = "https://" + _httpContextAccessor.HttpContext?.Request.Host;
-		var imageFolder = Path.Combine(_webHostEnvironment.WebRootPath, "Images");
+		var imageFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images");
 
 		if (formFile != null)
 		{
