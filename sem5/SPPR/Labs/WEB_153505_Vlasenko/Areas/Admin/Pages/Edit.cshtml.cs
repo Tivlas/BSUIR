@@ -9,17 +9,20 @@ using Microsoft.EntityFrameworkCore;
 using Domain.Entities;
 using WEB_153505_Vlasenko.TempDbContext;
 using WEB_153505_Vlasenko.Services.ClothesService;
+using WEB_153505_Vlasenko.Services.ClothesCategoryService;
 
 namespace WEB_153505_Vlasenko.Areas.Admin.Pages
 {
     public class EditModel : PageModel
     {
         private readonly IClothesService _clothesService;
+		private readonly IClothesCategoryService _clothesCategoryService;
 
-        public EditModel(IClothesService clothesService)
+		public EditModel(IClothesService clothesService, IClothesCategoryService clothesCategoryService)
         {
             _clothesService = clothesService;
-        }
+			_clothesCategoryService = clothesCategoryService;
+		}
 
         [BindProperty]
         public Clothes Clothes { get; set; } = default!;
@@ -41,7 +44,14 @@ namespace WEB_153505_Vlasenko.Areas.Admin.Pages
                 return NotFound();
             }
 
-            Clothes = response.Data!;
+			var responseCtg = await _clothesCategoryService.GetClothesCategoryListAsync();
+			if (!response.Success)
+			{
+				return NotFound();
+			}
+			ViewData["CategoryId"] = new SelectList(responseCtg.Data, "Id", "Name");
+
+			Clothes = response.Data!;
 
             return Page();
         }
