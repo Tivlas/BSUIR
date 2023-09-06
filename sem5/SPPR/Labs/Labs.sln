@@ -5,9 +5,11 @@ VisualStudioVersion = 17.7.34009.444
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WEB_153505_Vlasenko", "WEB_153505_Vlasenko\WEB_153505_Vlasenko.csproj", "{C729BE8B-90B9-42A5-A2A3-8FBC8B9A140D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csproj", "{5033C674-3EB0-4635-8C91-EA23582583DA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain", "Domain\Domain.csproj", "{5033C674-3EB0-4635-8C91-EA23582583DA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API", "API\API.csproj", "{AFC1B1BF-10B6-4377-8756-E24D492B8276}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "API", "API\API.csproj", "{AFC1B1BF-10B6-4377-8756-E24D492B8276}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityServer", "IdentityServer\IdentityServer.csproj", "{49F92817-DF21-45C0-88E7-103D18AA4414}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{AFC1B1BF-10B6-4377-8756-E24D492B8276}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AFC1B1BF-10B6-4377-8756-E24D492B8276}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AFC1B1BF-10B6-4377-8756-E24D492B8276}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49F92817-DF21-45C0-88E7-103D18AA4414}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49F92817-DF21-45C0-88E7-103D18AA4414}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49F92817-DF21-45C0-88E7-103D18AA4414}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49F92817-DF21-45C0-88E7-103D18AA4414}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
