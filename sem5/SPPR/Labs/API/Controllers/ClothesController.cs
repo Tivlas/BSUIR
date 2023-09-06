@@ -1,6 +1,7 @@
 ﻿using API.Services;
 using Domain.Entities;
 using Domain.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -50,6 +51,7 @@ namespace API.Controllers
         // PUT: api/Clothes/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<ActionResult<ResponseData<Clothes>>> PutClothes(int id, Clothes clothes)
         {
             try
@@ -74,6 +76,7 @@ namespace API.Controllers
 
         // POST: api/Clothes
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<ResponseData<Clothes>>> PostClothes(Clothes clothes)
         {
@@ -101,6 +104,7 @@ namespace API.Controllers
 
         // POST: api/Dishes/5
         [HttpPost("{id}")]
+        [Authorize]
         public async Task<ActionResult<ResponseData<string>>> PostImage(int id, IFormFile formFile)
         {
             var response = await _service.SaveImageAsync(id, formFile);
@@ -113,6 +117,7 @@ namespace API.Controllers
 
         // DELETE: api/Clothes/5
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> DeleteClothes(int id)
         {
             try
