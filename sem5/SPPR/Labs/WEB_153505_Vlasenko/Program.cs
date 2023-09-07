@@ -21,6 +21,29 @@ builder.Services.AddHttpClient<IClothesCategoryService, ApiClothesCategoryServic
     client.BaseAddress = new Uri(uriData.ApiUri);
 });
 
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddAuthentication(opt =>
+{
+    opt.DefaultScheme = "cookie";
+    opt.DefaultChallengeScheme = "oidc";
+})
+.AddCookie("cookie")
+.AddOpenIdConnect("oidc", options =>
+{
+    options.Authority =
+    builder.Configuration["InteractiveServiceSettings:AuthorityUrl"];
+    options.ClientId =
+    builder.Configuration["InteractiveServiceSettings:ClientId"];
+    options.ClientSecret =
+    builder.Configuration["InteractiveServiceSettings:ClientSecret"];
+    options.GetClaimsFromUserInfoEndpoint = true;
+    options.ResponseType = "code";
+    options.ResponseMode = "query";
+    options.SaveTokens = true;
+});
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -36,11 +59,12 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-app.MapRazorPages();
+app.MapRazorPages().RequireAuthorization();
 
 app.Run();

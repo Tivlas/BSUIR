@@ -1,7 +1,11 @@
-﻿using System.Text;
+﻿using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
 using Domain.Entities;
 using Domain.Models;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 
 namespace WEB_153505_Vlasenko.Services.ClothesService;
 
@@ -9,13 +13,16 @@ public class ApiClothesService : IClothesService
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<ApiClothesService> _logger;
+    private readonly HttpContext _httpContext;
     private readonly JsonSerializerOptions _jsonSerializerOptions;
     private readonly int _pageSize;
 
-    public ApiClothesService(HttpClient httpClient, IConfiguration configuration, ILogger<ApiClothesService> logger)
+    public ApiClothesService(HttpClient httpClient, IConfiguration configuration, ILogger<ApiClothesService> logger,
+        IHttpContextAccessor httpContextAccessor)
     {
         _httpClient = httpClient;
         _logger = logger;
+        _httpContext = httpContextAccessor.HttpContext!;
         _jsonSerializerOptions = new JsonSerializerOptions()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
@@ -26,6 +33,8 @@ public class ApiClothesService : IClothesService
     public async Task<ResponseData<ListModel<Clothes>>> GetClothesListAsync(string? categoryNormalizedName, int pageNo = 1)
     {
         var urlString = new StringBuilder($"{_httpClient.BaseAddress!.AbsoluteUri}clothes/");
+        var token = await _httpContext.GetTokenAsync("access_token");
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
         if (categoryNormalizedName != null)
         {
             urlString.Append($"{categoryNormalizedName}/");
@@ -68,6 +77,8 @@ public class ApiClothesService : IClothesService
     {
 
         var urlString = new StringBuilder($"{_httpClient.BaseAddress!.AbsoluteUri}clothes/{id}");
+        var token = await _httpContext.GetTokenAsync("access_token");
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
         var response = await _httpClient.GetAsync(new Uri(urlString.ToString()));
 
         if (response.IsSuccessStatusCode)
@@ -97,6 +108,8 @@ public class ApiClothesService : IClothesService
     public async Task UpdateClothesAsync(int id, Clothes product, IFormFile? formFile)
     {
         var urlString = new StringBuilder($"{_httpClient.BaseAddress!.AbsoluteUri}clothes/{id}");
+        var token = await _httpContext.GetTokenAsync("access_token");
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
 
         var response = await _httpClient.PutAsync(new Uri(urlString.ToString()),
             new StringContent(JsonSerializer.Serialize(product), Encoding.UTF8, "application/json"));
@@ -118,7 +131,8 @@ public class ApiClothesService : IClothesService
     public async Task DeleteClothesAsync(int id)
     {
         var uriString = new StringBuilder($"{_httpClient.BaseAddress!.AbsoluteUri}clothes/{id}");
-
+        var token = await _httpContext.GetTokenAsync("access_token");
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
         var response = await _httpClient.DeleteAsync(new Uri(uriString.ToString()));
 
         if (!response.IsSuccessStatusCode)
@@ -130,6 +144,8 @@ public class ApiClothesService : IClothesService
     public async Task<ResponseData<Clothes>> CreateClothesAsync(Clothes product, IFormFile? formFile)
     {
         var uri = new Uri(_httpClient.BaseAddress!.AbsoluteUri + "Clothes");
+        var token = await _httpContext.GetTokenAsync("access_token");
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
         var response = await _httpClient.PostAsJsonAsync(uri, product, _jsonSerializerOptions);
 
         if (response.IsSuccessStatusCode)
@@ -160,6 +176,8 @@ public class ApiClothesService : IClothesService
         var streamContent = new StreamContent(image.OpenReadStream());
         content.Add(streamContent, "formFile", image.FileName);
         request.Content = content;
+        var token = await _httpContext.GetTokenAsync("access_token");
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
         await _httpClient.SendAsync(request);
     }
 }
