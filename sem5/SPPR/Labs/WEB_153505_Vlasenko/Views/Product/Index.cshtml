@@ -47,39 +47,8 @@
 		}
 	</div>
 
-	<nav class="col-sm-4 offset-2">
-		<ul class="pagination">
-			<li class="page-item @(previousAvailable ? "" : "disabled")">
-				<a class="page-link" aria-label="Previous"
-				   asp-controller="Product"
-				   asp-action="Index"
-				   asp-route-category=@category
-				   asp-route-currentCategory=@currentCategory
-				   asp-route-pageNo=@(Model.currentPage-1)>
-					<span aria-hidden="true">&laquo;</span>
-				</a>
-			</li>
-			@for (int i = 1; i <= Model.totalPages; ++i)
-			{
-				<li class="page-item @(Model.currentPage == i ? "active" : "")">
-					<a class="page-link"
-					   asp-controller="Product"
-					   asp-action="Index"
-					   asp-route-category=@category
-					   asp-route-currentCategory=@currentCategory
-					   asp-route-pageNo="@i">@i</a>
-				</li>
-			}
-			<li class="page-item @(nextAvailable ? "" : "disabled")">
-				<a class="page-link" aria-label="Next"
-				   asp-controller="Product"
-				   asp-action="Index"
-				   asp-route-category=@category
-				   asp-route-currentCategory=@currentCategory
-				   asp-route-pageNo=@(Model.currentPage+1)>
-					<span aria-hidden="true">&raquo;</span>
-				</a>
-			</li>
-		</ul>
-	</nav>
+	<pager current-page="@Model.currentPage"
+		   total-pages="@Model.totalPages"
+		   category="@category"
+		   current-category="@currentCategory"></pager>
 </div>

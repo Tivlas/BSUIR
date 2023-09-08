@@ -15,14 +15,19 @@ namespace WEB_153505_Vlasenko.Areas.Admin.Pages
 
         public IList<Clothes> Clothes { get; set; } = default!;
 
-        public async Task OnGetAsync()
+        public int CurrentPage { get; set; }
+        public int TotalPages { get; set; }
+
+		public async Task OnGetAsync(int pageNo = 1)
         {
-            var response = await _clothesService.GetClothesListAsync(null);
+            var response = await _clothesService.GetClothesListAsync(null, pageNo);
 
             if (response.Success)
             {
                 Clothes = response.Data?.Items!;
-            }
+                CurrentPage = response.Data.CurrentPage;
+				TotalPages = response.Data.TotalPages;
+			}
         }
     }
 }
