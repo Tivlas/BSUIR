@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}
+News
+{% endblock %}
+{% block content %}
+<section>
+    {% for n in news %}
+    <article>
+        <header>{{ n.name }}</header>
+        <section>
+            <p>{{ n.brief_description }}</p>
+        </section>
+        <a href={{ n.url }}>Read
+            more</a>
+    </article>
+    <br>
+    {% endfor %}
+</section>
+{% endblock %}

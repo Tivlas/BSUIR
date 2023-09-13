@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}
+{{ trip.name }}
+{% endblock %}
+{% block content %}
+<div class="trip-detail">
+    <h1>{{ trip.name }}</h1>
+    <p class="country">{{ trip.country.name }}:</p>
+    <ul class="climate-descriptions">
+        {% for climate_description in trip.country.climate_descriptions.all %}
+        <li>{{ climate_description.season_name }}: {{ climate_description.climate_description }}</li>
+        {% endfor %}
+    </ul>
+    <p class="chosen-hotel">Hotel: {{ trip.chosen_hotel.name }}, per day: {{trip.chosen_hotel.price_per_day}}, stars:
+        {{trip.chosen_hotel.stars}}</p>
+    <p class="duration">Trip duration: {{ trip.duration }} week(s)</p>
+    <p class="departure-date">Departure date: {{ trip.departure_date }}</p>
+    <p class="cost">Cost: {{ trip.cost }}</p>
+    {%if user.is_authenticated%}
+    <form action="{% url 'cart:cart_add' trip.id %}" method="post">
+        <br>
+        {% csrf_token %}
+        <input type="submit" value="Add to cart">
+        {{ add_to_cart_form.as_p }}
+    </form>
+    {%endif%}
+
+    {{ book.summary|linebreaks }}
+    {%if user.is_staff%}
+    <td><a href="edit_trip/{{trip.id}}/">Edit</a> | <a href="delete_trip/{{trip.id}}/">Remove</a></td>
+    {%endif%}
+</div>
+{% endblock %}

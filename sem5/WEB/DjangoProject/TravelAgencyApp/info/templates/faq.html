@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}
+FAQ
+{% endblock %}
+{% block content %}
+
+<br>
+{% for q in faq %}
+<details>
+    <summary>{{ q.question }} (<time datetime={{ q.post_date }}>{{ q.post_date }}</time>)</summary>
+    <p>
+        {{ q.answer }}
+    </p>
+</details>
+<br>
+{% endfor %}
+
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}
+Main
+{% endblock %}
+{% block content %}
+<h1>Welcome!</h1>
+
+<section>
+    <h2>Last news</h2>
+    <article>
+        <h3>{{ latest_news.name }}</h3>
+        <p>{{ latest_news.brief_description }}</p>
+        <a href={{ latest_news.url }}>Read more</a>
+    </article>
+</section>
+
+
+<section>
+    <img>
+    </img>
+</section>
+
+<section>
+    <h2>Partners</h2>
+    <nav itemscope itemtype="https://schema.org/Organization">
+        <a href="https://exploretheplanet.world" itemprop="url"><img width="150" height="70"
+                src="/media/partners/explore-the-planet-logo.png" alt="Explore the Planet logo" itemprop="image"></a>
+        <br>
+        <a href="https://www.vpoxod.ru/" itemprop="url"><img width="210" height="75"
+                src="/media/partners/adventure-club-logo.png" alt="Adventure club logo" itemprop="image"></a>
+    </nav>
+</section>
+
+{% endblock %}

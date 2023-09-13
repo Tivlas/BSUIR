@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Thank you{% endblock %}
+
+{% block content %}
+<h1>Thank you</h1>
+<p>Your have successfully placed an order.</p>
+{% if image_url %}
+Here is your dog picture :&#41;
+<br>
+<img src="{{ image_url }}" alt="Random dog" style="width: 500px; height: 500px;">
+{% endif %}
+{% endblock %}
