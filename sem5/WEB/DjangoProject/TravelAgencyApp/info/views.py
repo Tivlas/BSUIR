@@ -23,6 +23,11 @@ def faq_view(request):
     faq = Faq.objects.all()
     return render(request, "faq.html", {'faq': faq})
 
+
 def staff_view(request):
     staff = MyUser.objects.filter(is_staff=True)
     return render(request, "staff.html", {'staff': staff})
+
+
+def privacy_view(request):
+    return render(request, "privacy.html")
