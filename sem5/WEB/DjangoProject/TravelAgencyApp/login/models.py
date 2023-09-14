@@ -9,9 +9,11 @@ class MyUser(AbstractUser):
     date_of_birth = models.DateField()
     email = models.EmailField()
     phone_number = models.CharField(max_length=50)
-    REQUIRED_FIELDS = ['first_name', 'last_name',
-                       'email', 'date_of_birth', 'phone_number']
     USERNAME_FIELD = 'username'
+    description = models.CharField(max_length=150, default='customer')
+    image = models.ImageField(upload_to='user_images/', default='user_images/default.jpg')
+    REQUIRED_FIELDS = ['first_name', 'last_name',
+                       'email', 'date_of_birth', 'phone_number', 'image']
     objects = MyUserManager()
 
     def __str__(self) -> str:

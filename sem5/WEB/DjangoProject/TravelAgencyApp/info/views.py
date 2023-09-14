@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from .models import News, Faq
+from login.models import MyUser
 
 # Create your views here.
 
@@ -21,3 +22,7 @@ def news_view(request):
 def faq_view(request):
     faq = Faq.objects.all()
     return render(request, "faq.html", {'faq': faq})
+
+def staff_view(request):
+    staff = MyUser.objects.filter(is_staff=True)
+    return render(request, "staff.html", {'staff': staff})

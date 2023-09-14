@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}
+Contacts
+{% endblock %}
+{% block content %}
+
+<hr>
+{% for worker in staff %}
+<section><img src={{ worker.image.url }} alt="Employee Photo">
+    <h3>{{ worker.first_name }} {{ worker.last_name }}</h3>
+    <p>Responsibilities: {{ worker.description }}</p>
+    <p>Phone: {{ worker.phone_number }} </p>
+    <p>Email: <a href="mailto:{{ worker.email }}">{{ worker.email }}</a></p>
+    <hr>
+</section>
+
+{% endfor %}
+
+{% endblock %}
