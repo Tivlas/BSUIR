@@ -3,6 +3,7 @@
 News
 {% endblock %}
 {% block content %}
+<hr>
 <section>
     {% for n in news %}
     <article>
@@ -13,7 +14,7 @@ News
         <a href={{ n.url }}>Read
             more</a>
     </article>
-    <br>
+    <hr>
     {% endfor %}
 </section>
 {% endblock %}
