@@ -3,7 +3,7 @@
 {{ trip.name }}
 {% endblock %}
 {% block content %}
-<div class="trip-detail">
+<section class="trip-detail">
     <h1>{{ trip.name }}</h1>
     <p class="country">{{ trip.country.name }}:</p>
     <ul class="climate-descriptions">
@@ -25,9 +25,8 @@
     </form>
     {%endif%}
 
-    {{ book.summary|linebreaks }}
     {%if user.is_staff%}
     <td><a href="edit_trip/{{trip.id}}/">Edit</a> | <a href="delete_trip/{{trip.id}}/">Remove</a></td>
     {%endif%}
-</div>
+</section>
 {% endblock %}
