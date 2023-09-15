@@ -25,7 +25,7 @@
 </section>
 <section id="main" class="trip-list">
     <h1>{% if country %}{{ country.name }}{% else %}Available trips{% endif %}</h1>
-    <p>
+    <section>
         {% if user.is_staff %}
         <a href="/create_trip/">Add trip</a>
         <br>
@@ -35,43 +35,45 @@
         {%if user.is_superuser%}
         <a href="/my_statistics/">Statistics</a>
         {%endif%}
-    <form action="{{ request.get_full_path }}" method="get">
-        <button type="submit" name="sort" value="ascending">Sort by cost ascending</button>
-        <button type="submit" name="sort" value="descending">Sort by cost descending</button>
+        <form action="{{ request.get_full_path }}" method="get">
+            <button type="submit" name="sort" value="ascending">Sort by cost ascending</button>
+            <button type="submit" name="sort" value="descending">Sort by cost descending</button>
 
-    </form>
-    <form action="{{ request.get_full_path }}" method="get">
-        <label for="min_cost" style="font-size: 20px;">Minimum cost:</label>
-        <input type="number" id="min_cost" name="min_cost" min="0" value="0" step="1">
-        <label for="max_cost" style="font-size: 20px;">Maximum cost:</label>
-        <input type="number" id="max_cost" name="max_cost" min="0" value="1000" step="1">
-        <button type="submit">Filter</button>
-    </form>
-    <form action="{{ request.get_full_path }}" method="get">
-        <label for="min_stars" style="font-size: 20px;">Minimum stars:</label>
-        <input type="number" id="min_stars" name="min_stars" min="1" max="5" value="1" step="1">
-        <label for="max_stars" style="font-size: 20px;">Maximum stars:</label>
-        <input type="number" id="max_stars" name="max_stars" min="1" max="5" value="5" step="1">
-        <button type="submit">Filter</button>
-    </form>
-    </p>
-    {% for tr in trips %}
-    <div class="item">
-        {% if tr.image %}
-        <a href="{{ tr.get_absolute_url }}">
-            <br>
-            <img src="{{ tr.image.url }}" alt="Trip image">
-            <br>
-        </a>
-        {% endif %}
-        Trip name: <a href="{{ tr.get_absolute_url }}">{{ tr.name }}</a>
-        <br>
-        Country name: {{ tr.country.name }}
-        <br>
-        Hotel name: {{ tr.chosen_hotel.name }}
-        <br>
-        <br>
-    </div>
-    {% endfor %}
+        </form>
+        <form action="{{ request.get_full_path }}" method="get">
+            <label for="min_cost" style="font-size: 20px;">Minimum cost:</label>
+            <input type="number" id="min_cost" name="min_cost" min="0" value="0" step="1">
+            <label for="max_cost" style="font-size: 20px;">Maximum cost:</label>
+            <input type="number" id="max_cost" name="max_cost" min="0" value="1000" step="1">
+            <button type="submit">Filter</button>
+        </form>
+        <form action="{{ request.get_full_path }}" method="get">
+            <label for="min_stars" style="font-size: 20px;">Minimum stars:</label>
+            <input type="number" id="min_stars" name="min_stars" min="1" max="5" value="1" step="1">
+            <label for="max_stars" style="font-size: 20px;">Maximum stars:</label>
+            <input type="number" id="max_stars" name="max_stars" min="1" max="5" value="5" step="1">
+            <button type="submit">Filter</button>
+        </form>
+    </section>
+    <hr>
+    <ol>
+        {% for tr in trips %}
+        <li class="item">
+            {% if tr.image %}
+            <a href="{{ tr.get_absolute_url }}">
+                <br>
+                <img src="{{ tr.image.url }}" alt="Trip image">
+                <br>
+            </a>
+            {% endif %}
+            <ul type="disc">
+                <li>Trip name: <a href="{{ tr.get_absolute_url }}">{{ tr.name }}</a></li>
+                <li>Country name: {{ tr.country.name }}</li>
+                <li> Hotel name: {{ tr.chosen_hotel.name }}</li>
+            </ul>
+        </li>
+        {% endfor %}
+    </ol>
+
 </section>
 {% endblock %}

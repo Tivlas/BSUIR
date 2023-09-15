@@ -4,18 +4,18 @@
 {% endblock %}
 {% block content %}
 <section class="trip-detail">
-    <h1>{{ trip.name }}</h1>
-    <p class="country">{{ trip.country.name }}:</p>
+    <h1><strong>{{ trip.name }}</strong></h1>
+    <p class="country"><strong>{{ trip.country.name }}:</strong> climate description</p>
     <ul class="climate-descriptions">
         {% for climate_description in trip.country.climate_descriptions.all %}
         <li>{{ climate_description.season_name }}: {{ climate_description.climate_description }}</li>
         {% endfor %}
     </ul>
-    <p class="chosen-hotel">Hotel: {{ trip.chosen_hotel.name }}, per day: {{trip.chosen_hotel.price_per_day}}, stars:
+    <p class="chosen-hotel"><strong>Hotel:</strong> {{ trip.chosen_hotel.name }}, <strong>per day:</strong> {{trip.chosen_hotel.price_per_day}}, <strong>stars:</strong>
         {{trip.chosen_hotel.stars}}</p>
-    <p class="duration">Trip duration: {{ trip.duration }} week(s)</p>
-    <p class="departure-date">Departure date: {{ trip.departure_date }}</p>
-    <p class="cost">Cost: {{ trip.cost }}</p>
+    <p class="duration"><strong>Trip duration:</strong> {{ trip.duration }} week(s)</p>
+    <p class="departure-date"><strong>Departure date:</strong> {{ trip.departure_date }}</p>
+    <p class="cost"><strong>Cost:</strong> {{ trip.cost }}</p>
     {%if user.is_authenticated%}
     <form action="{% url 'cart:cart_add' trip.id %}" method="post">
         <br>
