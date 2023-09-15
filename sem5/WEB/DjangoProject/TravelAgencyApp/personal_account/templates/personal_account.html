@@ -6,7 +6,7 @@
 <p><a href="#review-form">You may leave a review if you want.</a></p>
 
 <section>
-    <details>
+    <details itemscope itemtype="http://schema.org/Person">
         <summary>
             Your data
         </summary>
@@ -14,8 +14,8 @@
         <p>Email: {{ user.email }}</p>
         <p>First Name: {{ user.first_name }}</p>
         <p>Last Name: {{ user.last_name }}</p>
-        <p>Date of Birth: {{ user.date_of_birth }}</p>
-        <p>Phone Number: {{ user.phone_number }}</p>
+        <p itemprop="birthDate">Date of Birth: {{ user.date_of_birth }}</p>
+        <p itemprop="telephone">Phone Number: {{ user.phone_number }}</p>
     </details>
 
 
@@ -25,10 +25,10 @@
             <summary>Orders:</summary>
             <ul>
                 {% for order in orders %}
-                <li>Order {{ order.id }}, made on {{ order.creation_date }}</li>
+                <li itemscope itemtype="http://schema.org/Order">Order {{ order.id }}, made on {{ order.creation_date }}</li>
                 <ul>
                     {% for item in order.items.all %}
-                    <li>
+                    <li itemscope itemtype="http://schema.org/OrderItem">
                         <a href="{% url 'travel:trip_details' item.trip.id %}">
                             <img src="{{ item.trip.image.url }}" alt="{{ item.trip.image }}" width="100" height="100">
                         </a>
@@ -48,11 +48,11 @@
     <section>
         <hr>
         <p>You can leave a review.</p>
-        <form id="review-form" action="{% url 'personal_account:leave_review_view' %}" method="POST">
+        <form id="review-form" action="{% url 'personal_account:leave_review_view' %}" method="POST" itemscope itemtype="http://schema.org/Review">
             {% csrf_token %}
-            <textarea name="review_content" rows="4" cols="50"></textarea>
+            <textarea name="review_content" rows="4" cols="50" itemprop="reviewBody"></textarea>
 
-            <select name="review_rating">
+            <select name="review_rating" itemprop="reviewRating">
                 <option value="1">1</option>
                 <option value="2">2</option>
                 <option value="3">3</option>

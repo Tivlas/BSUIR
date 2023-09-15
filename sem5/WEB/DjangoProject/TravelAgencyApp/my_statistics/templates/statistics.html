@@ -43,7 +43,7 @@
     </thead>
     <tbody>
       {% for client_entry in client_data %}
-      <tr>
+      <tr itemscope itemtype="http://schema.org/Person">
         <td><strong>{{ client_entry.client.username }}</strong></td>
         <td>{{ client_entry.client.first_name }} {{ client_entry.client.last_name }}</td>
         <td>{{ client_entry.client.email }}</td>
@@ -62,7 +62,7 @@
             </thead>
             <tbody>
               {% for order in client_entry.orders %}
-              <tr>
+              <tr itemscope itemtype="http://schema.org/Order">
                 <td>{{ order.id }}</td>
                 <td>{{ order.creation_date }}</td>
                 <td class="num">{{ order.get_total_cost }}</td>

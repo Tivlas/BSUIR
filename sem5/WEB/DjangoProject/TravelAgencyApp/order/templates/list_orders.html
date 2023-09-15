@@ -8,9 +8,9 @@
     {% if orders %}
     {% for order in orders %}
     <h3>Placed by <em>{{ order.client }}</em></h3>
-    <ul type="disc">
+    <ul type="disc" itemscope itemtype="http://schema.org/Order">
         {% for item in order.items.all %}
-        <li>
+        <li itemscope itemtype="http://schema.org/OrderItem">
             <img src="{{ item.trip.image.url }}" alt="{{ item.trip.image }}" width="100" height="100"><br>
             {{ item.trip }} — <strong>cost:</strong> {{ item.cost }} — <strong>quantity:</strong> {{ item.quantity }}
         </li>

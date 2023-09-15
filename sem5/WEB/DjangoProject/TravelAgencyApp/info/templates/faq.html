@@ -6,8 +6,8 @@ FAQ
 <hr>
 <p><dfn><abbr title="frequently asked questions">FAQ</abbr></dfn> is a page where you can see the <em>most</em> common <strong>questions</strong> and <strong>answers</strong>.</p>
 {% for q in faq %}
-<details>
-    <summary>{{ q.question }} (<time datetime={{ q.post_date }}>{{ q.post_date }}</time>)</summary>
+<details itemscope itemtype="https://schema.org/Question">
+    <summary itemprop="text">{{ q.question }} (<time datetime={{ q.post_date }}>{{ q.post_date }}</time>)</summary>
     <p>
         {{ q.answer }}
     </p>

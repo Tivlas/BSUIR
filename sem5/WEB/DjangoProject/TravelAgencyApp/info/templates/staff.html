@@ -6,12 +6,12 @@ Contacts
 
 <hr>
 {% for worker in staff %}
-<section><img src={{ worker.image.url }} alt="Employee Photo" height="200" width="200">
+<section itemscope itemtype="https://schema.org/Person"><img src={{ worker.image.url }} alt="Employee Photo" height="200" width="200">
     <ul>
-        <li>{{ worker.first_name }} {{ worker.last_name }}</li>
-        <li> <small>Responsibilities: {{ worker.description }}</small></li>
-        <li><small>Phone: {{ worker.phone_number }} </small></li>
-        <li><small>Email: <a href="mailto:{{ worker.email }}">{{ worker.email }}</a></small></li>
+        <li itemprop="name">{{ worker.first_name }} {{ worker.last_name }}</li>
+        <li itemprop="description"><small>Responsibilities: {{ worker.description }}</small></li>
+        <li itemprop="telephone"><small>Phone: {{ worker.phone_number }} </small></li>
+        <li itemprop="email"><small>Email: <a href="mailto:{{ worker.email }}">{{ worker.email }}</a></small></li>
     </ul>
     <hr>
 </section>
@@ -22,7 +22,7 @@ Contacts
 
 <h2>Vacancies</h2>
 <ul>
-    <details>
+    <details itemscope itemtype="https://schema.org/JobPosting">
         <summary>Vacancy1, 1200-1500$
         </summary>
         <em>Responsibilities:</em> Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quo, ipsum est quidem quasi
@@ -38,7 +38,7 @@ Contacts
         <br>
     </details>
 
-    <details>
+    <details itemscope itemtype="https://schema.org/JobPosting">
         <summary>Vacancy2, 800-900$
         </summary>
         <em>Responsibilities:</em> Lorem, ipsum dolor sit amet consectetur adipisicing elit. Eius, excepturi? Assumenda,

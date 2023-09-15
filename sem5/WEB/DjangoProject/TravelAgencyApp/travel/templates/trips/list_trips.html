@@ -58,7 +58,7 @@
     <hr>
     <ol>
         {% for tr in trips %}
-        <li class="item">
+        <li class="item" itemscope itemtype="http://schema.org/TouristTrip">
             {% if tr.image %}
             <a href="{{ tr.get_absolute_url }}">
                 <br>

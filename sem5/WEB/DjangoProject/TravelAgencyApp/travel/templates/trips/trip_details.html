@@ -3,15 +3,15 @@
 {{ trip.name }}
 {% endblock %}
 {% block content %}
-<section class="trip-detail">
+<section class="trip-detail" itemscope itemtype="http://schema.org/TouristTrip">
     <h1><strong>{{ trip.name }}</strong></h1>
-    <p class="country"><strong>{{ trip.country.name }}:</strong> climate description</p>
+    <p class="country" itemscope itemtype="http://schema.org/Country"><strong>{{ trip.country.name }}:</strong> climate description</p>
     <ul class="climate-descriptions">
         {% for climate_description in trip.country.climate_descriptions.all %}
         <li>{{ climate_description.season_name }}: {{ climate_description.climate_description }}</li>
         {% endfor %}
     </ul>
-    <p class="chosen-hotel"><strong>Hotel:</strong> {{ trip.chosen_hotel.name }}, <strong>per day:</strong> {{trip.chosen_hotel.price_per_day}}, <strong>stars:</strong>
+    <p class="chosen-hotel" itemscope itemtype="http://schema.org/Hotel"><strong>Hotel:</strong> {{ trip.chosen_hotel.name }}, <strong>per day:</strong> {{trip.chosen_hotel.price_per_day}}, <span itemprop="starRating"><strong>stars:</strong></span>
         {{trip.chosen_hotel.stars}}</p>
     <p class="duration"><strong>Trip duration:</strong> {{ trip.duration }} week(s)</p>
     <p class="departure-date"><strong>Departure date:</strong> {{ trip.departure_date }}</p>

@@ -18,8 +18,8 @@ Main
 {% block content %}
 <h1>Welcome!</h1>
 <section>
-    <figure><img src="{% static '/images/logo.jpg' %}" alt="logo" height="200" width="200">
-        <figcaption>Remember our logo!</figcaption>
+    <figure itemscope itemtype="https://schema.org/ImageObject"><img src="{% static '/images/logo.jpg' %}" alt="logo" height="200" width="200">
+        <figcaption itemprop="caption">Remember our logo!</figcaption>
     </figure>
 </section>
 
@@ -33,9 +33,9 @@ Main
 
 <section>
     <h2>Last news</h2>
-    <article>
-        <h3>{{ latest_news.name }}</h3>
-        <p>{{ latest_news.brief_description }}</p>
+    <article itemscope itemtype="https://schema.org/NewsArticle">
+        <header itemprop="headline">{{ latest_news.name }}</header>
+        <p itemprop="description">{{ latest_news.brief_description }}</p>
         <a href={{ latest_news.url }}>Read more</a>
     </article>
 </section>

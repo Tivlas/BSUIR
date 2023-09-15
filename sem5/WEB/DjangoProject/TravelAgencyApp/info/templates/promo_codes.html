@@ -11,7 +11,7 @@ Promo codes
 <ul type="disc">
     {% for promo in promo_codes %}
     {% if promo.active %}
-    <li>
+    <li itemscope itemtype="https://schema.org/Offer">
         <p>Description: {{ promo.name }}</p>
         <p>Promo nubmer: {{ promo.promo_code }}</p>
         <p>Discount: {{ promo.discount_size }}%</p>
@@ -28,7 +28,7 @@ Promo codes
 <ul type="disc">
     {% for promo in promo_codes %}
     {% if not promo.active %}
-    <li>
+    <li itemscope itemtype="https://schema.org/Offer">
         <p>Description: {{ promo.name }}</p>
         <p>Promo nubmer: {{ promo.promo_code }}</p>
         <p>Discount: {{ promo.discount_size }}%</p>

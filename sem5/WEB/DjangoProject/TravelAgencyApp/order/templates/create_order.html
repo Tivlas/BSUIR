@@ -4,11 +4,11 @@
 
 {% block content %}
 <h1><strong>Confirmation</strong></h1>
-<section class="order-info">
+<section class="order-info" itemscope itemtype="http://schema.org/Order">
     <h3>Your order</h3>
     <ul type="disc">
         {% for item in cart %}
-        <li>
+        <li itemscope itemtype="http://schema.org/OrderItem">
             {{ item.trip.name }} — {{ item.quantity }}, cost: {{ item.total_cost }}
         </li>
         {% endfor %}
