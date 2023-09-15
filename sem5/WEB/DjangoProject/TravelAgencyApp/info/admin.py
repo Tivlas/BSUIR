@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import News, Faq, Review
+from .models import News, Faq, Review, PromoCode
 
 
 @admin.register(News)
@@ -14,4 +14,9 @@ class FaqAdmin(admin.ModelAdmin):
 
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(PromoCode)
+class CouponAdmin(admin.ModelAdmin):
     pass

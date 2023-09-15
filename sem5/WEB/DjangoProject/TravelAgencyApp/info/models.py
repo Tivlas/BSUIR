@@ -20,10 +20,15 @@ class Review(models.Model):
     customer = models.ForeignKey(MyUser, on_delete=models.CASCADE)
     content = models.TextField()
     rating = models.IntegerField(
-        validators=[
-            MinValueValidator(1),
-            MaxValueValidator(5)
-        ]
-    )
+        validators=[MinValueValidator(1), MaxValueValidator(5)])
     created_date = models.DateField(auto_now_add=True)
     updated_date = models.DateField(auto_now=True)
+
+
+class PromoCode(models.Model):
+    promo_code = models.IntegerField(unique=True,
+                                     validators=[MinValueValidator(1), MaxValueValidator(10000)])
+    name = models.CharField(max_length=100)
+    discount_size = models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(100)])
+    active = models.BooleanField(default=True)

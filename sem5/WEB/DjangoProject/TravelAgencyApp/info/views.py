@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import News, Faq, Review
+from .models import News, Faq, Review, PromoCode
 from login.models import MyUser
 
 # Create your views here.
@@ -36,3 +36,8 @@ def privacy_view(request):
 def review_list_view(request):
     reviews = Review.objects.all()
     return render(request, "review/list.html", {'reviews': reviews})
+
+
+def promo_codes_view(request):
+    promo_codes = PromoCode.objects.all()
+    return render(request, "promo_codes.html", {'promo_codes': promo_codes})
