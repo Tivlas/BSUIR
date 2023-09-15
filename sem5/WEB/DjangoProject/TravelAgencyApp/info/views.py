@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import News, Faq
+from .models import News, Faq, Review
 from login.models import MyUser
 
 # Create your views here.
@@ -31,3 +31,8 @@ def staff_view(request):
 
 def privacy_view(request):
     return render(request, "privacy.html")
+
+
+def review_list_view(request):
+    reviews = Review.objects.all()
+    return render(request, "review/list.html", {'reviews': reviews})

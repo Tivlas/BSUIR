@@ -3,33 +3,63 @@
 {% block title %}Personal Account{% endblock %}
 
 {% block content %}
-    <h2>Personal account</h2>
-    <h3>User data</h3>
-    <p>Username: {{ user.username }}</p>
-    <p>Email: {{ user.email }}</p>
-    <p>First Name: {{ user.first_name }}</p>
-    <p>Last Name: {{ user.last_name }}</p>
-    <p>Date of Birth: {{ user.date_of_birth }}</p>
-    <p>Phone Number: {{ user.phone_number }}</p>
+<section>
+    <details>
+        <summary>
+            Your data
+        </summary>
+        <p>Username: {{ user.username }}</p>
+        <p>Email: {{ user.email }}</p>
+        <p>First Name: {{ user.first_name }}</p>
+        <p>Last Name: {{ user.last_name }}</p>
+        <p>Date of Birth: {{ user.date_of_birth }}</p>
+        <p>Phone Number: {{ user.phone_number }}</p>
+    </details>
 
-    <h3>Orders</h3>
-    {% if orders %}
-        <ul>
-        {% for order in orders %}
-            <li>Order {{ order.id }}, made on {{ order.creation_date }}</li>
+
+    <section>
+        {% if orders %}
+        <details>
+            <summary>Orders:</summary>
             <ul>
-            {% for item in order.items.all %}
-                <li>
-                    <a href="{% url 'travel:trip_details' item.trip.id %}">
-                        <img src="{{ item.trip.image.url }}" alt="{{ item.trip.image }}" width="100" height="100">
-                    </a>
-                    {{ item.trip }} - {{ item.cost }} - quantity: {{ item.quantity }}
-                </li>
-            {% endfor %}
+                {% for order in orders %}
+                <li>Order {{ order.id }}, made on {{ order.creation_date }}</li>
+                <ul>
+                    {% for item in order.items.all %}
+                    <li>
+                        <a href="{% url 'travel:trip_details' item.trip.id %}">
+                            <img src="{{ item.trip.image.url }}" alt="{{ item.trip.image }}" width="100" height="100">
+                        </a>
+                        {{ item.trip }} - {{ item.cost }} - quantity: {{ item.quantity }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endfor %}
             </ul>
-        {% endfor %}
-        </ul>
-    {% else %}
+        </details>
+
+        {% else %}
         <p>No orders.</p>
-    {% endif %}
-{% endblock %}
+        {% endif %}
+    </section>
+
+    <section>
+        <hr>
+        <p>You can leave a review.</p>
+        <form action="{% url 'personal_account:leave_review_view' %}" method="POST">
+            {% csrf_token %}
+            <textarea name="review_content" rows="4" cols="50"></textarea>
+
+            <select name="review_rating">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+
+            <button type="submit">Submit</button>
+        </form>
+    </section>
+
+    {% endblock %}

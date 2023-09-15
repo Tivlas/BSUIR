@@ -10,4 +10,5 @@ urlpatterns = [
     path('faq', views.faq_view, name='faq_view'),
     path('staff', views.staff_view, name='staff_view'),
     path('privacy', views.privacy_view, name='privacy_view'),
+    path('review/list', views.review_list_view, name='review_list_view'),
 ]

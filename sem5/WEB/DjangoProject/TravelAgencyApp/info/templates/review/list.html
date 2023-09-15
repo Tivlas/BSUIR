@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}
+Reviews
+{% endblock %}
+{% block content %}
+
+<hr>
+{% if reviews|length > 0 %}
+{% for review in reviews %}
+<section>
+    <h3>{{ review.customer.first_name }} {{ review.customer.last_name }}, {{ review.rating }}/5, <time datetime={{ review.created_date }}>{{ review.created_date }}</time>, last update on <time datetime={{ review.updated_date }}>{{ review.updated_date }}</time></h3>
+    <p>{{ review.content }}</p>
+</section>
+<hr>
+{% endfor %}
+{% endif %}
+
+{% if user.is_authenticated %}
+<a href="/personal_account/">Leave review</a>
+{% else %}
+<a href="/login/">Leave review</a>
+{% endif %}
+{% endblock %}

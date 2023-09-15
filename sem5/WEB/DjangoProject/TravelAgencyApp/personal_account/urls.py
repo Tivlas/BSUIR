@@ -5,4 +5,5 @@ app_name = 'personal_account'
 
 urlpatterns = [
     path('', views.personal_account, name='personal_account'),
+    path('leave_review_view/', views.leave_review_view, name='leave_review_view'),
 ]
