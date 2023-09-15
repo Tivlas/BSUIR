@@ -3,6 +3,8 @@
 {% block title %}Personal Account{% endblock %}
 
 {% block content %}
+<p><a href="#review-form">You may leave a review if you want.</a></p>
+
 <section>
     <details>
         <summary>
@@ -46,7 +48,7 @@
     <section>
         <hr>
         <p>You can leave a review.</p>
-        <form action="{% url 'personal_account:leave_review_view' %}" method="POST">
+        <form id="review-form" action="{% url 'personal_account:leave_review_view' %}" method="POST">
             {% csrf_token %}
             <textarea name="review_content" rows="4" cols="50"></textarea>
 

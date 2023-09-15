@@ -4,8 +4,16 @@ About us
 {% endblock %}
 {% block content %}
 <h1>Travel Time</h1>
+<p><a href="#requisites">Our requisites.</a></p>
 <section>
     <h2>About us</h2>
+    <p>Amelia Earhart once said: <q>Adventure is worthwhile in itself.</q></p>
+    <pre>
+        The woods are lovely,<wbr> dark, and deep,
+        But I have promises to keep,
+        And miles to go before I sleep,
+        And miles to go before I sleep.
+    </pre>
     <p>Our company gives you the opportunity to buy a ticket to many countries of the world, choose a hotel yourself. In
         addition to the voucher, you can purchase a certificate and please your loved ones.</p>
 </section>
@@ -13,9 +21,6 @@ About us
 
 <section><iframe width="560" height="315" src="https://www.youtube.com/embed/MqJbmAMngTE" frameborder="1"
         allowfullscreen></iframe></section>
-
-
-
 
 <section>
     <h2>History</h2>
@@ -29,12 +34,38 @@ About us
 </section>
 
 <section>
-    <h2>Requisites</h2>
-    <ul>
-        <li>Name: Travel Time</li>
-        <li>Phone: 12345678</li>
-        <li>Email: tt@gmail.com</li>
-    </ul>
+    <table id="requisites" class="table table-bordered border-primary" style="vertical-align:middle;">
+        <summary><strong>Requisites</strong></summary>
+        <thead>
+            <tr>
+                <th scope="col">№</th>
+                <th scope="col">Name</th>
+                <th scope="col">Phone</th>
+                <th scope="col">Email</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <th scope="row">1</th>
+                <td>Person1</td>
+                <td>+375 44 111-11-11</td>
+                <td><a href="mailto:person1@gmail.com">person1@gmail.com</a></td>
+            </tr>
+            <tr>
+                <th scope="row">2</th>
+                <td>Person2</td>
+                <td>+375 44 111-11-11</td>
+                <td><a href="mailto:person2@gmail.com">person2@gmail.com</a></td>
+            </tr>
+            <tr>
+                <th scope="row">3</th>
+                <td>Person3</td>
+                <td>+375 44 111-11-11</td>
+                <td><a href="mailto:person3@gmail.com">person3@gmail.com</a></td>
+            </tr>
+        </tbody>
+    </table>
 </section>
 
 <section>

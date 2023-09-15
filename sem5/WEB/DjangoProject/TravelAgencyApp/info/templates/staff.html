@@ -6,14 +6,51 @@ Contacts
 
 <hr>
 {% for worker in staff %}
-<section><img src={{ worker.image.url }} alt="Employee Photo">
-    <h3>{{ worker.first_name }} {{ worker.last_name }}</h3>
-    <p>Responsibilities: {{ worker.description }}</p>
-    <p>Phone: {{ worker.phone_number }} </p>
-    <p>Email: <a href="mailto:{{ worker.email }}">{{ worker.email }}</a></p>
+<section><img src={{ worker.image.url }} alt="Employee Photo" height="200" width="200">
+    <ul>
+        <li>{{ worker.first_name }} {{ worker.last_name }}</li>
+        <li> <small>Responsibilities: {{ worker.description }}</small></li>
+        <li><small>Phone: {{ worker.phone_number }} </small></li>
+        <li><small>Email: <a href="mailto:{{ worker.email }}">{{ worker.email }}</a></small></li>
+    </ul>
     <hr>
 </section>
 
+
+
 {% endfor %}
+
+<h2>Vacancies</h2>
+<ul>
+    <details>
+        <summary>Vacancy1, 1200-1500$
+        </summary>
+        <em>Responsibilities:</em> Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quo, ipsum est quidem quasi
+        quis
+        iste a? Amet numquam commodi dicta accusamus? Excepturi voluptates harum cupiditate repellat, consequatur qui
+        facere deserunt.
+        <br>
+        <br>
+        <em>Requirements:</em> Lorem ipsum dolor sit, amet consectetur adipisicing elit. Expedita nulla, quae
+        cupiditate,
+        mollitia reprehenderit amet reiciendis quis, repudiandae unde quibusdam iusto ut aspernatur possimus quaerat!
+        Nesciunt illo a consequatur optio!
+        <br>
+    </details>
+
+    <details>
+        <summary>Vacancy2, 800-900$
+        </summary>
+        <em>Responsibilities:</em> Lorem, ipsum dolor sit amet consectetur adipisicing elit. Eius, excepturi? Assumenda,
+        doloribus fuga. Sunt et, deserunt iure vel quibusdam est quia odio earum, veniam ullam recusandae, blanditiis
+        aut autem eaque.
+        <br>
+        <br>
+        <em>Requirements:</em> Lorem ipsum dolor sit, amet consectetur adipisicing elit. Non maxime labore quam laborum
+        dignissimos cumque culpa numquam ipsum. Delectus veniam totam odio debitis sequi veritatis modi nihil inventore
+        ipsam doloremque?
+        <br>
+    </details>
+</ul>
 
 {% endblock %}
