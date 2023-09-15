@@ -6,6 +6,7 @@
     <meta charset="utf-8" />
     <title>{% block title %}Home{% endblock %}</title>
     <link href="{% static 'css/base.css' %}" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="{% static '/images/logo.jpg'%}">
 </head>
 
 <body>
@@ -16,7 +17,6 @@
         <a href="/info/news">News</a>
         <a href="/info/faq">FAQ</a>
         <a href="/info/staff">Contacts</a>
-        <a href="/info/privacy">Privacy policy</a>
         <a href="/info/review/list">Reviews</a>
         <a href="/info/promo_codes">Promo codes</a>
         <a href="/cart/">Cart</a>
@@ -25,6 +25,15 @@
         <p>Current date <span id='date'></span></p>
         <p>Current time <span id='time'></span></p>
         <p>Current time zone <span id='zone'></span></p>
+        <div>
+            {% if user.is_authenticated %}
+            Hello, {{ user.username }}!
+            <a href="{% url 'login:logout' %}">Log out</a>
+            {% else %}
+            <a href="{% url 'login:signup' %}">Sign up</a>
+            <a href="{% url 'login:signin' %}">Sign in</a>
+            {% endif %}
+        </div>
         <script>
             const today = new Date();
             const yyyy = today.getFullYear();
@@ -54,24 +63,17 @@
             document.getElementById('time').innerHTML = time;
             document.getElementById('zone').innerHTML = tz;
         </script>
-
-
     </header>
-    <div>
-        <div>
-            {% if user.is_authenticated %}
-            Hello, {{ user.username }}!
-            <a href="{% url 'login:logout' %}">Log out</a>
-            {% else %}
-            <a href="{% url 'login:signup' %}">Sign up</a>
-            <a href="{% url 'login:signin' %}">Sign in</a>
-            {% endif %}
-        </div>
-    </div>
+
     <main>
         {% block content %}
         {% endblock %}
     </main>
+
+    <footer>
+        <div><a href="/info/privacy">Privacy policy</a></div>
+        <div><span>&copy; 2023 Company, Inc</span></div>
+    </footer>
 </body>
 
 </html>

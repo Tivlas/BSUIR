@@ -1,9 +1,30 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}
 Main
 {% endblock %}
+
+<style>
+    .image-row {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .image-row img {
+        width: 33.33%;
+    }
+</style>
+
 {% block content %}
 <h1>Welcome!</h1>
+
+<section>
+    <div class="image-row">
+        <img src="{% static '/images/banner1.jpg' %}" alt="Banner1">
+        <img src="{% static '/images/banner2.jpg' %}" alt="Banner2">
+        <img src="{% static '/images/banner3.jpg' %}" alt="Banner3">
+    </div>
+</section>
 
 <section>
     <h2>Last news</h2>
