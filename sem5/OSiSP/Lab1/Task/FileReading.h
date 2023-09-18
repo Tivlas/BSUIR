@@ -6,13 +6,28 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <codecvt>
 
-LPWSTR CharToLPWSTR(const char* charString) {
-	int stringLength = strlen(charString) + 1;
-	int wideStringLength = MultiByteToWideChar(CP_UTF8, 0, charString, stringLength, NULL, 0);
-	WCHAR* wideString = new WCHAR[wideStringLength];
-	MultiByteToWideChar(CP_UTF8, 0, charString, stringLength, wideString, wideStringLength);
-	return wideString;
+std::wstring StringToWString(const std::string& str) {
+	std::wstring resw;
+	for(int i = 0; i < str.size(); ++i) {
+		resw += wchar_t(str[i]);
+	}
+	return resw;
+}
+
+std::string WideCharToString(LPWSTR wideCharString) {
+	int narrowCharLength = WideCharToMultiByte(CP_UTF8, 0, wideCharString, -1, nullptr, 0, nullptr, nullptr);
+	if(narrowCharLength == 0) {
+		return "";
+	}
+
+	std::string narrowCharString(narrowCharLength, '\0');
+	if(WideCharToMultiByte(CP_UTF8, 0, wideCharString, -1, &narrowCharString[0], narrowCharLength, nullptr, nullptr) == 0) {
+		return "";
+	}
+
+	return narrowCharString;
 }
 
 std::vector<std::string> splitSentenceIntoWords(const std::string& str) {
@@ -32,7 +47,7 @@ std::vector<std::vector<std::string>> splitText(const std::string& text) {
 	std::istringstream iss(text);
 	std::string sentence;
 
-	while(std::getline(iss, sentence, '.')) {
+	while(std::getline(iss, sentence, '\n')) {
 		sentences.push_back(splitSentenceIntoWords(sentence));
 	}
 
