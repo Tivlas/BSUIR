@@ -6,13 +6,12 @@ News
 <hr>
 <section>
     {% for n in news %}
-    <article itemscope itemtype="https://schema.org/NewsArticle"></article>>
-        <header itemprop="headline">{{ n.name }}</header>
-        <section>
+    <article itemscope itemtype="https://schema.org/NewsArticle"></article>
+        <h3 itemprop="headline">{{ n.name }}</h3>
+        <div>
             <p itemprop="description">{{ n.brief_description }}</p>
-        </section>
-        <a href={{ n.url }}>Read
-            more</a>
+        </div>
+        <a href={{ n.url }}>Read more</a>
     </article>
     <hr>
     {% endfor %}
