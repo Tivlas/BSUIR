@@ -45,7 +45,6 @@ INSTALLED_APPS = [
     'personal_account',
     'my_statistics',
     'info',
-    'bootstrap5'
 ]
 
 MIDDLEWARE = [

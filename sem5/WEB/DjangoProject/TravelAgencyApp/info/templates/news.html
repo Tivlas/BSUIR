@@ -1,19 +1,25 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}
 News
 {% endblock %}
+{% block additional_head %}
+<link href="{% static 'css/news.css' %}" rel="stylesheet">
+{% endblock %}
 {% block content %}
-<hr>
+<h3>News:</h3>
 <section>
     {% for n in news %}
-    <article itemscope itemtype="https://schema.org/NewsArticle"></article>
-        <h3 itemprop="headline">{{ n.name }}</h3>
+    <article class="news" itemscope itemtype="https://schema.org/NewsArticle">
         <div>
+            <h3 itemprop="headline">{{ n.name }}</h3>
+        </div>
+        <h3>Some text.</h3>
+        <div class="news_description">
             <p itemprop="description">{{ n.brief_description }}</p>
         </div>
         <a href={{ n.url }}>Read more</a>
     </article>
-    <hr>
     {% endfor %}
 </section>
 {% endblock %}

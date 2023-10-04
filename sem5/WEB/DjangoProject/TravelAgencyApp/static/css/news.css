@@ -1,0 +1,21 @@
+.news {
+    background-color: #edf08e;
+    padding: 10px;
+    margin-bottom: 5px;
+    border: 2px;
+    border-style: solid;
+}
+
+article > h3 {
+    background-color: rgb(124, 218, 47);
+}
+
+article h3 {
+    font-size: 18px;
+    font-style: italic;
+}
+
+div.news_description {
+    font-size: 14px;
+    color: orchid;
+}

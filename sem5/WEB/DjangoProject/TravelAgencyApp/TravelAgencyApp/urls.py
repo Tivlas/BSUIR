@@ -13,4 +13,7 @@ urlpatterns = [
     path('personal_account/', include('personal_account.urls', namespace='personal_account')),
     path('my_statistics/', include('my_statistics.urls', namespace='my_statistics')),
     path('', include('travel.urls', namespace='travel')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

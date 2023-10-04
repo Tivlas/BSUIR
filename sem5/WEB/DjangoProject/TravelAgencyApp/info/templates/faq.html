@@ -1,14 +1,22 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}
 FAQ
 {% endblock %}
+{% block additional_head %}
+<link href="{% static 'css/faq.css' %}" rel="stylesheet">
+{% endblock %}
 {% block content %}
 <hr>
-<p><dfn><abbr title="frequently asked questions">FAQ</abbr></dfn> is a page where you can see the <em>most</em> common <strong>questions</strong> and <strong>answers</strong>.</p>
+<p class="question start"><dfn><abbr title="frequently asked questions">FAQ</abbr></dfn> is a page where you can see the
+    <em>most</em> common
+    <strong>questions</strong> and <strong>answers</strong>.
+</p>
 {% for q in faq %}
 <details itemscope itemtype="https://schema.org/Question">
-    <summary itemprop="text">{{ q.question }} (<time datetime={{ q.post_date|date:'Y-m-d' }}>{{ q.post_date }}</time>)</summary>
-    <p>
+    <summary itemprop="text">{{ q.question }} (<time datetime={{ q.post_date|date:'Y-m-d' }}>{{ q.post_date }}</time>)
+    </summary>
+    <p class="end answer">
         {{ q.answer }}
     </p>
 </details>
@@ -20,7 +28,11 @@ FAQ
     <option value="orange">orange</option>
 </select>
 
-<blockquote><p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Quam perspiciatis excepturi ducimus quisquam. Esse voluptates sint porro aperiam vel blanditiis officia ipsum ratione in nihil ex quis adipisci, ipsa optio. — Oleg</p></blockquote>
+<blockquote>
+    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Quam perspiciatis excepturi ducimus quisquam. Esse
+        voluptates sint porro aperiam vel blanditiis officia ipsum ratione in nihil ex quis adipisci, ipsa optio. — Oleg
+    </p>
+</blockquote>
 
 <aside>
     <p>aside text</p>
