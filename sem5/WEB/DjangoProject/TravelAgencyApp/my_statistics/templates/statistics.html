@@ -1,38 +1,15 @@
 {% extends 'base.html' %}
-
+{% load static %}
+{% block additional_head %}
+<link href="{% static 'css/statistics.css' %}" rel="stylesheet">
+{% endblock %}
 {% block title %}Client List{% endblock %}
 {% block content %}
-<style>
-  .client-table {
-    width: 60%;
-    border-collapse: collapse;
-    margin-top: 10px;
-  }
 
-  .client-table th,
-  .client-table td {
-    border: 1px solid black;
-    padding: 8px;
-    text-align: center;
-  }
-
-  .order-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-  }
-
-  .order-table th,
-  .order-table td {
-    border: 2px solid black;
-    padding: 8px;
-    text-align: center;
-  }
-</style>
 
 <section>
-  <table class="client-table">
-    <summary>Clients</summary>
+  <table>
+    <caption>Clients</caption>
     <thead>
       <tr>
         <th scope="col">Username</th>
@@ -52,7 +29,7 @@
       <tr>
         <td colspan="4">
           {% if client_entry.orders %}
-          <table class="order-table">
+          <table>
             <thead>
               <tr>
                 <th scope="col">Order ID</th>
@@ -71,7 +48,7 @@
             </tbody>
           </table>
           {% else %}
-          <p style="font-size: 17px;">No orders placed by <strong>{{ client_entry.client.username }}</strong></p>
+          <p>No orders placed by <strong>{{ client_entry.client.username }}</strong></p>
           {% endif %}
         </td>
       </tr>

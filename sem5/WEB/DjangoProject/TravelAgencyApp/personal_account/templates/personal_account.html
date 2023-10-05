@@ -1,5 +1,8 @@
 {% extends "base.html" %}
-
+{% load static %}
+{% block additional_head %}
+<link href="{% static 'css/personal_account.css' %}" rel="stylesheet">
+{% endblock %}
 {% block title %}Personal Account{% endblock %}
 
 {% block content %}
@@ -25,7 +28,8 @@
             <summary>Orders:</summary>
             <ul>
                 {% for order in orders %}
-                <li itemscope itemtype="http://schema.org/Order">Order {{ order.id }}, made on {{ order.creation_date }}</li>
+                <li itemscope itemtype="http://schema.org/Order">Order {{ order.id }}, made on {{ order.creation_date }}
+                </li>
                 <ul>
                     {% for item in order.items.all %}
                     <li itemscope itemtype="http://schema.org/OrderItem">
@@ -48,9 +52,14 @@
     <section>
         <hr>
         <p>You can leave a review.</p>
-        <form id="review-form" action="{% url 'personal_account:leave_review_view' %}" method="POST" itemscope itemtype="http://schema.org/Review">
+        <form id="review-form" action="{% url 'personal_account:leave_review_view' %}" method="POST" itemscope
+            itemtype="http://schema.org/Review">
             {% csrf_token %}
-            <textarea name="review_content" rows="4" cols="50" itemprop="reviewBody"></textarea>
+            <label for="age">Age:</label>
+            <input type="number" id="age" name="age" min="18" max="65">
+            <br>
+            <br>
+            <textarea name="review_content" rows="4" cols="50" itemprop="reviewBody" required></textarea>
 
             <select name="review_rating" itemprop="reviewRating">
                 <option value="1">1</option>
@@ -59,7 +68,17 @@
                 <option value="4">4</option>
                 <option value="5">5</option>
             </select>
-
+            <br>
+            <input type="checkbox" id="checkbox">
+            <label for="checkbox">Checkbox for css</label>
+            <br>
+            <input type="radio" id="radio1" name="radioGroup" checked>
+            <label for="radio1">Radio 1 for css</label>
+            <br>
+            <input type="radio" id="radio2" name="radioGroup">
+            <label for="radio2">Radio 2 for css</label>
+            <br>
+            <button type="submit" disabled>Submit disabled</button>
             <button type="submit">Submit</button>
         </form>
     </section>

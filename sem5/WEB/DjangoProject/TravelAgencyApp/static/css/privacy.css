@@ -1,0 +1,13 @@
+tbody li:first-child {
+    font-weight: bold;
+    color: chocolate;
+}
+
+tbody li:last-child {
+    font-style: italic;
+    color:rgb(92, 47, 218)
+}
+
+tbody li:nth-child(2) {
+    opacity: 0.5;
+}

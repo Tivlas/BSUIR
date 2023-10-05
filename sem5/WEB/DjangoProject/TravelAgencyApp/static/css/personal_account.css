@@ -1,0 +1,38 @@
+form *:enabled {
+    border-radius: 10px;
+}
+
+form *:disabled {
+    background-color: rgba(247, 0, 0, 0.484);
+}
+
+form *:required {
+    border: 2px solid red;
+}
+
+input:out-of-range {
+    color: red;
+}
+
+input[type="checkbox"]:checked+label::after {
+    content: '\2713';
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    line-height: 12px;
+    text-align: center;
+    background-color: #2ecc71;
+    color: #fff;
+    border-radius: 3px;
+    margin-left: 5px;
+}
+
+input[type="radio"]:checked+label::after {
+    content: '';
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    background-color: #45db34;
+    border-radius: 3px;
+    margin-left: 5px;
+}

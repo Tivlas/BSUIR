@@ -2,12 +2,16 @@
 {% block title %}
 About us
 {% endblock %}
+{% load static %}
+{% block additional_head %}
+<link href="{% static 'css/about.css' %}" rel="stylesheet">
+{% endblock %}
 {% block content %}
 <h1>Travel Time</h1>
 <p><a href="#requisites">Our requisites.</a></p>
 <section>
     <h2>About us</h2>
-    <p>Amelia Earhart once said: <q>Adventure is worthwhile in itself.</q></p>
+    <p>Amelia Earhart once said: <q lang="en">Adventure is worthwhile in itself.</q> (<q lang="ru">Приключения само по себе стоящее дело.</q>)</p>
     <pre>
         The woods are lovely,<wbr> dark, and deep,
         But I have promises to keep,

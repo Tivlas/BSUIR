@@ -1,6 +1,10 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}
 Privacy policy
+{% endblock %}
+{% block additional_head %}
+<link href="{% static 'css/privacy.css' %}" rel="stylesheet">
 {% endblock %}
 {% block content %}
 <hr>
