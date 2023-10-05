@@ -3,17 +3,10 @@
 {% block title %}
 Main
 {% endblock %}
-
-<style>
-    .image-row {
-        display: flex;
-        justify-content: space-between;
-    }
-
-    .image-row img {
-        width: 33%;
-    }
-</style>
+{% load static %}
+{% block additional_head %}
+<link href="{% static 'css/main.css' %}" rel="stylesheet">
+{% endblock %}
 
 {% block content %}
 <h1>Welcome!</h1>
@@ -35,7 +28,7 @@ Main
     <h2>Last news</h2>
     <article itemscope itemtype="https://schema.org/NewsArticle">
         <header itemprop="headline">{{ latest_news.name }}</header>
-        <p itemprop="description">{{ latest_news.brief_description }}</p>
+        <p class="last_news" itemprop="description">{{ latest_news.brief_description }}</p>
         <a href={{ latest_news.url }}>Read more</a>
     </article>
 </section>

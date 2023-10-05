@@ -21,18 +21,18 @@ input[type="checkbox"]:checked+label::after {
     height: 12px;
     line-height: 12px;
     text-align: center;
-    background-color: #2ecc71;
+    background-color: #45db34;
     color: #fff;
     border-radius: 3px;
     margin-left: 5px;
 }
 
-input[type="radio"]:checked+label::after {
+input[type="radio"]:checked+label::before {
     content: '';
     display: inline-block;
     width: 12px;
     height: 12px;
     background-color: #45db34;
     border-radius: 3px;
-    margin-left: 5px;
+    margin-right: 5px;
 }

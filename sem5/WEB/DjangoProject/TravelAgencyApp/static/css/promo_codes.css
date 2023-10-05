@@ -1,0 +1,10 @@
+ul.type_unicode {
+    padding-left: 0;
+    list-style-type: none;
+    padding-left: 10px;
+}
+
+ul.type_unicode li::marker {
+    content: "\20aa";
+    font-weight: bold;
+}

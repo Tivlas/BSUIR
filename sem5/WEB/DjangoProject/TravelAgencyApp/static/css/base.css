@@ -1,7 +1,7 @@
 /* @import url(http://fonts.googleapis.com/css?family=Ubuntu); */
 
 a:link {
-    color:rgb(63, 76, 219);
+    color: rgb(63, 76, 219);
 }
 
 a:visited {
@@ -20,6 +20,9 @@ a:active {
     color: rgb(5, 62, 19);
 }
 
+*::selection {
+    color: red;
+}
 
 /* body {
     margin:0;

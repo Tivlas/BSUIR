@@ -1,0 +1,13 @@
+.image-row {
+    display: flex;
+    justify-content: space-between;
+}
+
+.image-row img {
+    width: 33%;
+}
+
+p.last_news::first-letter {
+    color: red;
+    font-style: italic;
+}
