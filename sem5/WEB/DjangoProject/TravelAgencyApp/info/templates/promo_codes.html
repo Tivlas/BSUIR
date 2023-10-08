@@ -29,7 +29,7 @@ Promo codes
 
 {% if promo_codes|length > 0 %}
 <h2>Not available:</h2>
-<ul class="type_unicode">
+<ul class="circle">
     {% for promo in promo_codes %}
     {% if not promo.active %}
     <li itemscope itemtype="https://schema.org/Offer">

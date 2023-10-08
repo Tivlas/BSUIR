@@ -8,3 +8,7 @@ ul.type_unicode li::marker {
     content: "\20aa";
     font-weight: bold;
 }
+
+ul.circle {
+    list-style-type: circle;
+}

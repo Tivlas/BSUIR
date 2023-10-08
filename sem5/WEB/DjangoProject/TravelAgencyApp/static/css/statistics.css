@@ -6,6 +6,13 @@ td {
     border-collapse: collapse;
 }
 
+th,
+td {
+    padding: 8px;
+    text-align: center;
+    vertical-align: middle;
+}
+
 tr:first-child {
     font-weight: bold;
     color: chocolate;
@@ -19,4 +26,15 @@ tr:nth-child(2) {
 tr:last-child {
     font-style: italic;
     color: rgb(9, 117, 31)
+}
+
+td:empty {
+    background-color: gray;
+}
+
+caption {
+    font-weight: bold;
+    font-size: 18px;
+    text-align: center;
+    padding: 10px;
 }
