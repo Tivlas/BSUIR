@@ -5,9 +5,44 @@ li:first-child {
 
 li:last-child {
     font-style: italic;
-    color:rgb(92, 47, 218)
+    color: rgb(92, 47, 218)
 }
 
 li:nth-child(2) {
     opacity: 0.5;
+}
+
+.temp_text {
+    margin: auto;
+    padding-left: 10px;
+    line-height: 1.5;
+    letter-spacing: 2px;
+    border: solid black;
+    word-wrap: break-word;
+    position: relative;
+}
+
+.temp_text h1 {
+    text-transform: uppercase;
+}
+
+.temp_text p {
+    text-transform: capitalize;
+    text-indent: 40px;
+}
+
+.temp_text .font-variant {
+    font-variant: small-caps;
+}
+
+#left {
+    text-align: left;
+}
+
+#right {
+    text-align: right;
+}
+
+#center {
+    text-align: center;
 }

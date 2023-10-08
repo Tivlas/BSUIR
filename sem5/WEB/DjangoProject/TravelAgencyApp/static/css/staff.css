@@ -1,0 +1,7 @@
+section.flex {
+    display: flex;
+}
+
+section.flex section {
+    margin: 10px;
+}

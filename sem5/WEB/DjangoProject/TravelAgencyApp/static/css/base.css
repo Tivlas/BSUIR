@@ -1,5 +1,12 @@
 /* @import url(http://fonts.googleapis.com/css?family=Ubuntu); */
 
+.fixed-navbar {
+    position: fixed;
+    background-color: #d9eaf1;
+    z-index: 9;
+    margin: 0;
+}
+
 a:link {
     color: rgb(63, 76, 219);
 }
@@ -22,6 +29,26 @@ a:active {
 
 *::selection {
     color: red;
+}
+
+a {
+    cursor: pointer;
+}
+
+button {
+    cursor: pointer;
+}
+
+input[type="text"] {
+    cursor: text;
+}
+
+*:disabled {
+    cursor: help;
+}
+
+body {
+    background: linear-gradient(90deg, #ded1d1,#d6dbd2,#a8d6ea) 
 }
 
 /* body {

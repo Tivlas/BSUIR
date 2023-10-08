@@ -3,22 +3,24 @@
 Contacts
 {% endblock %}
 {% block content %}
-
+{% load static %}
+{% block additional_head %}
+<link href="{% static 'css/staff.css' %}" rel="stylesheet">
+{% endblock %}
 <hr>
-{% for worker in staff %}
-<section itemscope itemtype="https://schema.org/Person"><img src={{ worker.image.url }} alt="Employee Photo" height="200" width="200">
-    <ul>
-        <li itemprop="name">{{ worker.first_name }} {{ worker.last_name }}</li>
-        <li itemprop="description"><small>Responsibilities: {{ worker.description }}</small></li>
-        <li itemprop="telephone"><small>Phone: {{ worker.phone_number }} </small></li>
-        <li itemprop="email"><small>Email: <a href="mailto:{{ worker.email }}">{{ worker.email }}</a></small></li>
-    </ul>
-    <hr>
+<section class="flex">{% for worker in staff %}
+    <section itemscope itemtype="https://schema.org/Person"><img src={{ worker.image.url }} alt="Employee Photo"
+            height="200" width="200">
+        <ul>
+            <li itemprop="name">{{ worker.first_name }} {{ worker.last_name }}</li>
+            <li itemprop="description"><small>Responsibilities: {{ worker.description }}</small></li>
+            <li itemprop="telephone"><small>Phone: {{ worker.phone_number }} </small></li>
+            <li itemprop="email"><small>Email: <a href="mailto:{{ worker.email }}">{{ worker.email }}</a></small></li>
+        </ul>
+    </section>
+    {% endfor %}
 </section>
 
-
-
-{% endfor %}
 
 <h2>Vacancies</h2>
 <ul>

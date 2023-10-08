@@ -21,3 +21,8 @@ p[class^="question"]{
     line-height: 2.5;
     color: green;
 }
+
+.time {
+    text-decoration: underline;
+    font-weight: bold;
+}

@@ -14,7 +14,7 @@ FAQ
 </p>
 {% for q in faq %}
 <details itemscope itemtype="https://schema.org/Question">
-    <summary itemprop="text">{{ q.question }} (<time datetime={{ q.post_date|date:'Y-m-d' }}>{{ q.post_date }}</time>)
+    <summary itemprop="text">{{ q.question }} (<time class="time" datetime={{ q.post_date|date:'Y-m-d' }}>{{ q.post_date }}</time>)
     </summary>
     <p class="end answer">
         {{ q.answer }}

@@ -4,6 +4,9 @@
 {% block title %}
 {% if country %}{{ country.name }}{% else %}Countries{% endif %}
 {% endblock %}
+{% block additional_head %}
+<link href="{% static 'css/list_trips.css' %}" rel="stylesheet">
+{% endblock %}
 {% block content %}
 <section id="sidebar">
     {% if user.is_authenticated %}
@@ -56,24 +59,25 @@
         </form>
     </section>
     <hr>
-    <ol>
+    <div class="grid-container">
         {% for tr in trips %}
-        <li class="item" itemscope itemtype="http://schema.org/TouristTrip">
-            {% if tr.image %}
-            <a href="{{ tr.get_absolute_url }}">
-                <br>
-                <img src="{{ tr.image.url }}" alt="Trip image">
-                <br>
-            </a>
-            {% endif %}
-            <ul type="disc">
-                <li>Trip name: <a href="{{ tr.get_absolute_url }}">{{ tr.name }}</a></li>
-                <li>Country name: {{ tr.country.name }}</li>
-                <li> Hotel name: {{ tr.chosen_hotel.name }}</li>
-            </ul>
-        </li>
+        <div itemscope itemtype="http://schema.org/TouristTrip">
+            <figure itemscope itemtype="https://schema.org/ImageObject">{% if tr.image %}
+                <a href="{{ tr.get_absolute_url }}">
+                    <img width="70%" height="70%" src="{{ tr.image.url }}" alt="Trip image">
+                </a>
+                {% endif %}
+                <figcaption itemprop="caption">
+                    <ul type="disc">
+                        <li>Trip name: <a href="{{ tr.get_absolute_url }}">{{ tr.name }}</a></li>
+                        <li>Country name: {{ tr.country.name }}</li>
+                        <li> Hotel name: {{ tr.chosen_hotel.name }}</li>
+                    </ul>
+                </figcaption>
+            </figure>
+        </div>
         {% endfor %}
-    </ol>
+    </div>
 
 </section>
 {% endblock %}

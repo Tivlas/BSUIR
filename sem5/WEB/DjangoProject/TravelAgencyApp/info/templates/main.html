@@ -11,15 +11,19 @@ Main
 {% block content %}
 <h1>Welcome!</h1>
 <section>
-    <figure itemscope itemtype="https://schema.org/ImageObject"><img src="{% static '/images/logo.jpg' %}" alt="logo" height="200" width="200">
+    <figure itemscope itemtype="https://schema.org/ImageObject"><img class="logo" src="{% static '/images/logo.jpg' %}" alt="logo" height="200" width="200">
         <figcaption itemprop="caption"><a href="{% static '/images/logo.jpg' %}" download>Download.</a></figcaption>
     </figure>
 </section>
 
 <section>
-    <div class="image-row">
+    <div class="circular-image">
         <img src="{% static '/images/banner1.jpg' %}" alt="Banner1">
+    </div>
+    <div class="circular-image rotating">
         <img src="{% static '/images/banner2.jpg' %}" alt="Banner2">
+    </div>
+    <div class="circular-image">
         <img src="{% static '/images/banner3.jpg' %}" alt="Banner3">
     </div>
 </section>
@@ -38,10 +42,10 @@ Main
 <section>
     <h2>Partners</h2>
     <nav itemscope itemtype="https://schema.org/Organization">
-        <a href="https://exploretheplanet.world" itemprop="url"><img width="150" height="70"
+        <a href="https://exploretheplanet.world" itemprop="url"><img class="round" width="150" height="70"
                 src="/media/partners/explore-the-planet-logo.png" alt="Explore the Planet logo" itemprop="image"></a>
         <br>
-        <a href="https://www.vpoxod.ru/" itemprop="url"><img width="210" height="75"
+        <a href="https://www.vpoxod.ru/" itemprop="url"><img class="round" width="210" height="75"
                 src="/media/partners/adventure-club-logo.png" alt="Adventure club logo" itemprop="image"></a>
     </nav>
 </section>

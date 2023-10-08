@@ -6,7 +6,7 @@
     border-style: solid;
 }
 
-article > h3 {
+article>h3 {
     background-color: rgb(124, 218, 47);
 }
 
@@ -18,4 +18,27 @@ article h3 {
 div.news_description {
     font-size: 14px;
     color: orchid;
+}
+
+#box {
+    width: 100px;
+    height: 100px;
+    background-color: teal;
+}
+
+@media (max-width: 700px) {
+    #box {
+        background-color: red;
+    }
+}
+
+.container {
+    columns: 150px 3;
+    column-rule-style: groove;
+}
+
+p.clip {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
