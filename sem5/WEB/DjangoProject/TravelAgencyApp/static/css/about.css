@@ -1,2 +1,41 @@
-q:lang(en) { quotes: "\201C" "\201D"; }
-q:lang(ru) { quotes: "\00AB" "\00BB"; }
+@import url(https://fonts.googleapis.com/css?family=Tangerine);
+@import url(https://fonts.googleapis.com/css?family=Ubuntu);
+
+q:lang(en) {
+    quotes: "\201C" "\201D";
+}
+
+q:lang(ru) {
+    quotes: "\00AB" "\00BB";
+}
+
+ul.years-history li::first-letter {
+    color: red;
+}
+
+.company_name {
+    font-kerning: normal;
+    font-family: Arial, sans-serif;
+}
+
+table.requisites td {
+    font-family: 'Tangerine', sans-serif;
+    font-size: 30px;
+}
+
+.certificate {
+    background-image: url('https://i.pinimg.com/originals/0f/18/72/0f1872ae8eef2e9e06c32d0e30277ac2.jpg');
+    -moz-background-image: url('https://i.pinimg.com/originals/0f/18/72/0f1872ae8eef2e9e06c32d0e30277ac2.jpg');
+    -webkit-background-image: url('https://i.pinimg.com/originals/0f/18/72/0f1872ae8eef2e9e06c32d0e30277ac2.jpg');
+    color: white;
+    text-align: center;
+    width: 700px;
+    height: 700px;
+    margin-left: 35%;
+    z-index: 1  ;
+}
+
+.certificate p, h2 {
+    z-index: 2;
+    font-family: 'Ubuntu';
+}

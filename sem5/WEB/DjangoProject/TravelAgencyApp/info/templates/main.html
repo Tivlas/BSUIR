@@ -11,7 +11,8 @@ Main
 {% block content %}
 <h1>Welcome!</h1>
 <section>
-    <figure itemscope itemtype="https://schema.org/ImageObject"><img class="logo" src="{% static '/images/logo.jpg' %}" alt="logo" height="200" width="200">
+    <figure itemscope itemtype="https://schema.org/ImageObject"><img class="logo" src="{% static '/images/logo.jpg' %}"
+            alt="logo" height="200" width="200">
         <figcaption itemprop="caption"><a href="{% static '/images/logo.jpg' %}" download>Download.</a></figcaption>
     </figure>
 </section>
@@ -50,4 +51,10 @@ Main
     </nav>
 </section>
 
+<div>
+    <video controls src="{% static 'video/sample.mp4' %}"></video>
+</div>
+<div>
+    <audio controls src="{% static 'audio/sample.mp3' %}"></audio>
+</div>
 {% endblock %}

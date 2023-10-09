@@ -1,3 +1,7 @@
+@import url(http://fonts.googleapis.com/css?family=Ubuntu);
+@import url(https://fonts.googleapis.com/css?family=Comfortaa);
+@import url(https://fonts.googleapis.com/css?family=Tangerine);
+
 li:first-child {
     font-weight: bold;
     color: chocolate;
@@ -19,7 +23,12 @@ li:nth-child(2) {
     letter-spacing: 2px;
     border: solid black;
     word-wrap: break-word;
+    word-break: normal;
     position: relative;
+    text-align: justify;
+    position: relative;
+    font-family: 'Tangerine', 'Comfortaa', sans-serif;
+
 }
 
 .temp_text h1 {

@@ -7,7 +7,7 @@ About us
 <link href="{% static 'css/about.css' %}" rel="stylesheet">
 {% endblock %}
 {% block content %}
-<h1>Travel Time</h1>
+<h1 class="company_name">Travel Time</h1>
 <p><a href="#requisites">Our requisites.</a></p>
 <section>
     <h2>About us</h2>
@@ -28,7 +28,7 @@ About us
 
 <section>
     <h2>History</h2>
-    <ul>
+    <ul class="years-history">
         <li>2021: We founded a company and called it "Travel Time"</li>
         <li>2022: Two travel companies have become our partners at once. We started holding various promotions and
             events.
@@ -38,7 +38,7 @@ About us
 </section>
 
 <div>
-    <table id="requisites" class="table table-bordered border-primary" style="vertical-align:middle;">
+    <table id="requisites" class="requisites" style="vertical-align:middle;">
         <caption><strong>Requisites</strong></caption>
         <thead>
             <tr>
@@ -72,8 +72,8 @@ About us
     </table>
 </div>
 
-<section>
-    <h2>Gift certificates</h2>
+<section class="certificate">
+    <h2>Gift certificate</h2>
     <div>
         <p>Certificate for a trip to Ethiopia!</p>
         <p>Congratulations, you have received a certificate for a trip to Ethiopia.

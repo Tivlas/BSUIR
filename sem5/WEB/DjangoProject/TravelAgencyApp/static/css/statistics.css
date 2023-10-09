@@ -13,23 +13,23 @@ td {
     vertical-align: middle;
 }
 
-tr:first-child {
+tr:first-child:not(:empty) {
     font-weight: bold;
     color: chocolate;
 }
 
-tr:nth-child(2) {
+tr:nth-child(2):not(:empty) {
     font-weight: 800;
     color: brown;
 }
 
-tr:last-child {
+tr:last-child:not(:empty) {
     font-style: italic;
     color: rgb(9, 117, 31)
 }
 
 td:empty {
-    background-color: gray;
+    background-color: black;
 }
 
 caption {
@@ -37,4 +37,8 @@ caption {
     font-size: 18px;
     text-align: center;
     padding: 10px;
+}
+
+td:hover {
+    background-color: aquamarine;
 }

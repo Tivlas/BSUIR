@@ -16,6 +16,7 @@
         <th scope="col">First/last name</th>
         <th scope="col">Email</th>
         <th scope="col">Total Sales</th>
+        <th>Empty</th>
       </tr>
     </thead>
     <tbody>
@@ -25,6 +26,7 @@
         <td>{{ client_entry.client.first_name }} {{ client_entry.client.last_name }}</td>
         <td>{{ client_entry.client.email }}</td>
         <td>{{ client_entry.total_sales|default:0 }}</td>
+        <td></td>
       </tr>
       <tr>
         <td colspan="4">

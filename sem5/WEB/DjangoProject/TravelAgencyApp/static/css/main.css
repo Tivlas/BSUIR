@@ -3,6 +3,10 @@ p.last_news::first-letter {
     font-style: italic;
 }
 
+p.last_news {
+    position: relative;
+}
+
 .round {
     border-radius: 100px;
     border: 3px solid rgb(62, 135, 218);
@@ -41,4 +45,15 @@ p.last_news::first-letter {
 
 .logo:hover {
     transform: scale(1.1);
+}
+
+video {
+    width: 400px;
+    height: 300px;
+    border-radius: 30px;
+}
+
+audio {
+    background-color: #8abaf2;
+    border-radius: 5px;
 }
