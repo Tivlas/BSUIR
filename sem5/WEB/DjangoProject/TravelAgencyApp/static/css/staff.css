@@ -1,5 +1,6 @@
 section.flex {
     display: flex;
+    flex-wrap: wrap;
 }
 
 section.flex section {

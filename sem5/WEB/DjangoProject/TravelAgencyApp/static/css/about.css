@@ -30,12 +30,13 @@ table.requisites td {
     color: white;
     text-align: center;
     width: 700px;
-    height: 700px;
-    margin-left: 35%;
+    height: auto;
+    margin-left: 25%;
     z-index: 1  ;
 }
 
-.certificate p, h2 {
+.certificate p, h2, li {
     z-index: 2;
     font-family: 'Ubuntu';
+    font-size: 24px;
 }

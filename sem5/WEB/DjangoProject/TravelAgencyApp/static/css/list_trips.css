@@ -1,5 +1,6 @@
 .grid-container {
     display: grid;
+    
     grid-template-columns: auto auto auto;
     padding: 10px;
     max-width: 1920px;
