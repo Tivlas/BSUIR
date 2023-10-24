@@ -13,7 +13,7 @@
 <div class="container">
 	<div class="dropdown col-sm-1 mt-4">
 		<!-- categories dropdown -->
-		<button class="btn btn-secondary dropdown-toggle" style="min-width: 200px" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+		<button id="curCtg" class="btn btn-secondary dropdown-toggle" style="min-width: 200px" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
 			@currentCategory
 		</button>
 		<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
@@ -25,7 +25,7 @@
 			</li>
 			@foreach (var item in Model.ClothesCategoryList)
 			{
-				<li style="min-width: 200px"><a class="dropdown-item" asp-controller="Product" asp-action="Index" asp-route-category=@item.NormalizedName asp-route-currentCategory=@item.Name>@item.Name</a></li>
+				<li style="min-width: 200px"><a data-current-category=@item.Name class="dropdown-item page-link" asp-controller="Product" asp-action="Index" asp-route-category=@item.NormalizedName asp-route-currentCategory=@item.Name>@item.Name</a></li>
 			}
 		</ul>
 	</div> <!-- /categories dropdown -->

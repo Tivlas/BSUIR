@@ -15,9 +15,11 @@ public class ProductController : Controller
 		_clothesCategoryService = clothesCategoryService;
 	}
 
+	[Route("Clothes")]
+	[Route("Clothes/{category?}")]
 	public async Task<IActionResult> Index(string? category, string? currentCategory, int pageNo = 1)
 	{
-		ViewData["currentcategory"] = currentCategory;
+		ViewData["currentCategory"] = currentCategory;
 		var productResponse = await _clothesService.GetClothesListAsync(category, pageNo);
 		if (!productResponse.Success)
 		{
