@@ -11,15 +11,14 @@
 <p>
 	<a asp-page="Create">Create New</a>
 </p>
-@{
-	await Html.RenderPartialAsync("_ProductCardsAndPagerPartial", new
-	{
-		CurrentPage = Model.CurrentPage,
-		TotalPages = Model.TotalPages,
-		Clothes = Model.Clothes,
-		InAdminArea = true,
-	});
-}
-<br />
-<br />
-<br />
+<div id="products-and-pager">
+	@{
+		await Html.RenderPartialAsync("_ProductCardsAndPagerPartial", new
+		{
+			CurrentPage = Model.CurrentPage,
+			TotalPages = Model.TotalPages,
+			Clothes = Model.Clothes,
+			InAdminArea = true,
+		});
+	}
+</div>

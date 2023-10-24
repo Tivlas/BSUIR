@@ -1,11 +1,13 @@
 ﻿using Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using WEB_153505_Vlasenko.Services.ClothesService;
 
 namespace WEB_153505_Vlasenko.Areas.Admin.Pages
 {
-    public class DeleteModel : PageModel
+	//[Authorize(Roles = "admin")]
+	public class DeleteModel : PageModel
     {
         private readonly IClothesService _clothesService;
 

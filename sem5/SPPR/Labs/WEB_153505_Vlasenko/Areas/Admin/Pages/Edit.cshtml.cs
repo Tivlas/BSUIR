@@ -1,4 +1,5 @@
 ﻿using Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -7,7 +8,8 @@ using WEB_153505_Vlasenko.Services.ClothesService;
 
 namespace WEB_153505_Vlasenko.Areas.Admin.Pages
 {
-    public class EditModel : PageModel
+	//[Authorize(Roles = "admin")]
+	public class EditModel : PageModel
     {
         private readonly IClothesService _clothesService;
         private readonly IClothesCategoryService _clothesCategoryService;

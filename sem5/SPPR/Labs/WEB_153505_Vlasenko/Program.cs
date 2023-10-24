@@ -1,4 +1,6 @@
+using System.Security.Claims;
 using Domain.Models;
+using Microsoft.AspNetCore.Authentication;
 using WEB_153505_Vlasenko.Models;
 using WEB_153505_Vlasenko.Services.CartService;
 using WEB_153505_Vlasenko.Services.ClothesCategoryService;
