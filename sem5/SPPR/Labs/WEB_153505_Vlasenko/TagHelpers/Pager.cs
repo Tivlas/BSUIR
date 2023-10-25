@@ -24,10 +24,6 @@ public class PagerTagHelper : TagHelper
 	[HtmlAttributeName("category")]
 	public string? Category { get; set; }
 
-	[HtmlAttributeName("current-category")]
-	public string? CurrentCategory { get; set; }
-
-
 	[HtmlAttributeName("admin")]
 	public bool Admin { get; set; }
 
@@ -47,7 +43,6 @@ public class PagerTagHelper : TagHelper
 			values = new RouteValueDictionary
 				{
 					{ "category", Category },
-					{ "currentCategory", CurrentCategory },
 					{ "pageNo", pageNo }
 				};
 		}

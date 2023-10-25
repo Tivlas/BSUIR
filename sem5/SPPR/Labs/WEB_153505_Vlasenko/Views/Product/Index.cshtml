@@ -1,13 +1,15 @@
-﻿@model (List<Clothes> ClothesList, List<ClothesCategory> ClothesCategoryList, int currentPage, int totalPages)
+﻿@model List<Clothes>
 @{
 	ViewData["Title"] = "Список позиций";
 	var request = ViewContext.HttpContext.Request;
 	var returnUrl = request.Path + request.QueryString.ToUriComponent();
 	string? category = request.Query["category"];
 	string currentCategory = ViewData["currentCategory"] as string ?? "Все";
-
-	bool previousAvailable = Model.currentPage != 1;
-	bool nextAvailable = Model.currentPage != Model.totalPages;
+	var ClothesCategoryList = ViewData["allCategories"] as List<ClothesCategory> ?? new List<ClothesCategory>();
+	int currentPage = ViewData["currentPage"] as int? ?? 1;
+	int totalPages = ViewData["totalPages"] as int? ?? 1;
+	bool previousAvailable = currentPage != 1;
+	bool nextAvailable = currentPage != totalPages;
 }
 
 <div class="container">
@@ -23,21 +25,20 @@
 				   asp-action="Index"
 				   asp-route-category=@null>Все</a>
 			</li>
-			@foreach (var item in Model.ClothesCategoryList)
+			@foreach (var item in ClothesCategoryList)
 			{
-				<li style="min-width: 200px"><a data-current-category=@item.Name class="dropdown-item page-link" asp-controller="Product" asp-action="Index" asp-route-category=@item.NormalizedName asp-route-currentCategory=@item.Name>@item.Name</a></li>
+				<li style="min-width: 200px"><a data-current-category=@item.Name class="dropdown-item page-link" asp-controller="Product" asp-action="Index" asp-route-category=@item.NormalizedName>@item.Name</a></li>
 			}
 		</ul>
 	</div> <!-- /categories dropdown -->
 	@{
 		await Html.RenderPartialAsync("_ProductCardsAndPagerPartial", new
 		{
-			CurrentCategory = currentCategory,
 			Category = category,
 			ReturnUrl = returnUrl,
-			CurrentPage = Model.currentPage,
-			TotalPages = Model.totalPages,
-			Clothes = Model.ClothesList,
+			CurrentPage = currentPage,
+			TotalPages = totalPages,
+			Clothes = Model,
 			InAdminArea = false,
 		});
 	}

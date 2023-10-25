@@ -17,21 +17,29 @@ public class ProductController : Controller
 
 	[Route("Clothes")]
 	[Route("Clothes/{category?}")]
-	public async Task<IActionResult> Index(string? category, string? currentCategory, int pageNo = 1)
+	public async Task<IActionResult> Index(string? category, int pageNo = 1)
 	{
-		ViewData["currentCategory"] = currentCategory;
 		var productResponse = await _clothesService.GetClothesListAsync(category, pageNo);
 		if (!productResponse.Success)
 		{
 			return NotFound(productResponse.ErrorMessage);
 		}
 		var allCategories = await _clothesCategoryService.GetClothesCategoryListAsync();
+		if (!allCategories.Success)
+		{
+			return NotFound(allCategories.ErrorMessage);
+		}
+
+		ViewData["allCategories"] = allCategories.Data;
+		var currentCategory = category == null ? "Все" : allCategories.Data!.FirstOrDefault(c => c.NormalizedName == category)?.Name;
+		ViewData["currentCategory"] = currentCategory;
+		ViewData["currentPage"] = productResponse.Data!.CurrentPage;
+		ViewData["totalPages"] = productResponse.Data.TotalPages;
 
 		if (Request.IsAjaxRequest())
 		{
 			return PartialView("_ProductCardsAndPagerPartial", new
 			{
-				CurrentCategory = currentCategory,
 				Category = category,
 				ReturnUrl = "",
 				productResponse.Data!.CurrentPage,
@@ -41,7 +49,6 @@ public class ProductController : Controller
 			});
 		}
 
-		return View((productResponse.Data!.Items, allCategories.Data,
-			productResponse.Data.CurrentPage, productResponse.Data.TotalPages));
+		return View(productResponse.Data!.Items);
 	}
 }
