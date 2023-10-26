@@ -54,7 +54,7 @@ public class ProductControllerTest
 		return new List<Clothes>()
 				{
 					new Clothes() { Id = 1, Price=10.2M, Name="Jacket1", CategoryId=2},
-					new Clothes() { Id = 1, Price=10.2M, Name="Shoes1", CategoryId=1},
+					new Clothes() { Id = 2, Price=10.2M, Name="Shoes1", CategoryId=1},
 				};
 	}
 
