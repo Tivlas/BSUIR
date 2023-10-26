@@ -11,7 +11,7 @@ public class ClothesService : IClothesService
 	private readonly AppDbContext _dbContext;
 	private readonly IWebHostEnvironment _webHostEnvironment;
 	private readonly IHttpContextAccessor _httpContextAccessor;
-	private readonly int _maxPageSize = 20;
+	public int MaxPageSize { get; private set; } = 5;
 
 	public ClothesService(AppDbContext dbContext,
 		IWebHostEnvironment webHostEnvironment, IHttpContextAccessor httpContextAccessor)
@@ -23,9 +23,9 @@ public class ClothesService : IClothesService
 
 	public async Task<ResponseData<ListModel<Clothes>>> GetClothesListAsync(string? categoryNormalizedName, int pageNo = 1, int pageSize = 3)
 	{
-		if (pageSize > _maxPageSize)
+		if (pageSize > MaxPageSize)
 		{
-			pageSize = _maxPageSize;
+			pageSize = MaxPageSize;
 		}
 
 		var query = _dbContext.Clothes.AsQueryable();
