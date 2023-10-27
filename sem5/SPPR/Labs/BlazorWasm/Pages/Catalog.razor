@@ -1,6 +1,8 @@
 ﻿@page "/catalog"
 @page "/catalog/{category}"
+@attribute [Authorize]
 @using BlazorWasm.Components
+@using Microsoft.AspNetCore.Authorization;
 
 <PageTitle>Clothes</PageTitle>
 <CategorySelector SelectedCategory="@SelectedName" />

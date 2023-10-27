@@ -1,41 +1,37 @@
 ﻿@inject IDataService DataService
 @implements IDisposable
 
-<AuthorizeView>
-	<Authorized>
-		<h1>Одежда</h1>
 
-		@if (DataService.ClothesList is null || !DataService.Success)
-		{
-			<p><em>Loading...</em></p>
-		}
-		else
-		{
-			<table class="table">
-				<thead>
-					<tr>
-						<th>Name</th>
-						<th>Description</th>
-						<th>Price</th>
-					</tr>
-				</thead>
-				<tbody>
-					@foreach (var cl in DataService.ClothesList!)
-					{
-						<tr>
-							<td>@cl.Name</td>
-							<td>@cl.Description</td>
-							<td>@cl.Price</td>
-						</tr>
-					}
-				</tbody>
-			</table>
-		}
-	</Authorized>
-	<NotAuthorized>
-		<a href="authentication/login">Log in</a>
-	</NotAuthorized>
-</AuthorizeView>
+<h1>Одежда</h1>
+
+@if (DataService.ClothesList is null || !DataService.Success)
+{
+	<p><em>Loading...</em></p>
+}
+else
+{
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Name</th>
+				<th>Description</th>
+				<th>Price</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var cl in DataService.ClothesList!)
+			{
+				<tr>
+					<td>@cl.Name</td>
+					<td>@cl.Description</td>
+					<td>@cl.Price</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+
+
 
 @code {
 	protected override void OnInitialized()
