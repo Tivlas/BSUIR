@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "API", "API\API.csproj", "{A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer", "IdentityServer\IdentityServer.csproj", "{49F92817-DF21-45C0-88E7-103D18AA4414}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{78E65FFE-9FEA-40DC-ACD3-56D7BD2CB839}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj", "{78E65FFE-9FEA-40DC-ACD3-56D7BD2CB839}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorWasm", "BlazorWasm\BlazorWasm.csproj", "{71FDE5B4-F5D2-4A3B-9455-1FD0F451EF1D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{78E65FFE-9FEA-40DC-ACD3-56D7BD2CB839}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{78E65FFE-9FEA-40DC-ACD3-56D7BD2CB839}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{78E65FFE-9FEA-40DC-ACD3-56D7BD2CB839}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71FDE5B4-F5D2-4A3B-9455-1FD0F451EF1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71FDE5B4-F5D2-4A3B-9455-1FD0F451EF1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71FDE5B4-F5D2-4A3B-9455-1FD0F451EF1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71FDE5B4-F5D2-4A3B-9455-1FD0F451EF1D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
