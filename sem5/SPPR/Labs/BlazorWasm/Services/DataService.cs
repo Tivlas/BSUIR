@@ -12,6 +12,7 @@ namespace BlazorWasm.Services;
 
 public class DataService : IDataService
 {
+	public event Action DataChanged;
 	private readonly HttpClient _httpClient;
 	private readonly IAccessTokenProvider _accessTokenProvider;
 	private readonly int _pageSize = 3;
@@ -64,6 +65,7 @@ public class DataService : IDataService
 					ClothesList = responseData?.Data?.Items;
 					TotalPages = responseData?.Data?.TotalPages ?? 0;
 					CurrentPage = responseData?.Data?.CurrentPage ?? 0;
+					DataChanged?.Invoke();
 				}
 				catch (JsonException ex)
 				{

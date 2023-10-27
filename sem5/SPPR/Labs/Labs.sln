@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer", "IdentityS
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj", "{78E65FFE-9FEA-40DC-ACD3-56D7BD2CB839}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorWasm", "BlazorWasm\BlazorWasm.csproj", "{71FDE5B4-F5D2-4A3B-9455-1FD0F451EF1D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWasm", "BlazorWasm\BlazorWasm.csproj", "{71FDE5B4-F5D2-4A3B-9455-1FD0F451EF1D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

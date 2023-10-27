@@ -1,60 +1,15 @@
 ﻿@page "/fetchdata"
-@using Domain.Entities;
-@using Domain.Models;
-@using System.Text.Json;
-@inject HttpClient Http
-@inject IDataService dataService
+@using BlazorWasm.Components
 
 <PageTitle>Clothes</PageTitle>
 
-
-<AuthorizeView>
-	<Authorized>
-		<h1>Clothes list</h1>
-
-		@if (clothes == null)
-		{
-			<p><em>Loading...</em></p>
-		}
-		else
-		{
-			<table class="table">
-				<thead>
-					<tr>
-						<th>Name</th>
-						<th>Description</th>
-						<th>Price</th>
-					</tr>
-				</thead>
-				<tbody>
-					@foreach (var cl in clothes!)
-					{
-						<tr>
-							<td>@cl.Name</td>
-							<td>@cl.Description</td>
-							<td>@cl.Price</td>
-						</tr>
-					}
-				</tbody>
-			</table>
-		}
-	</Authorized>
-	<NotAuthorized>
-		<a href="authentication/login">Log in</a>
-	</NotAuthorized>
-</AuthorizeView>
-
-
+<ClothesList />
 
 @code {
-	private List<Clothes>? clothes;
-
+	[Inject]
+	public IDataService DataService { get; set; }
 	protected override async Task OnInitializedAsync()
 	{
-		await dataService.GetClothesListAsync(null);
-		if (dataService.Success)
-		{
-			clothes = dataService.ClothesList;
-		}
+		await DataService.GetClothesListAsync(null);
 	}
 }
