@@ -1,4 +1,5 @@
 using BlazorWasm;
+using BlazorWasm.Services;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -7,6 +8,8 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.Configuration.GetSection("ApiUri").Value!) });
+
+builder.Services.AddScoped<IDataService, DataService>();
 
 builder.Services.AddOidcAuthentication(options =>
 {

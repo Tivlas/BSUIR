@@ -3,6 +3,7 @@
 @using Domain.Models;
 @using System.Text.Json;
 @inject HttpClient Http
+@inject IDataService dataService
 
 <PageTitle>Clothes</PageTitle>
 
@@ -23,7 +24,7 @@ else
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var cl in clothes!.Data!.Items)
+			@foreach (var cl in clothes!)
 			{
 				<tr>
 					<td>@cl.Name</td>
@@ -36,15 +37,14 @@ else
 }
 
 @code {
-	private ResponseData<ListModel<Clothes>>? clothes;
+	private List<Clothes>? clothes;
 
 	protected override async Task OnInitializedAsync()
 	{
-		var response = await Http.GetAsync($"{Http.BaseAddress}/Clothes/");
-		var jsonSerializerOptions = new JsonSerializerOptions()
-			{
-				PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-			};
-		clothes = await response.Content.ReadFromJsonAsync<ResponseData<ListModel<Clothes>>>(jsonSerializerOptions);
+		await dataService.GetClothesListAsync(null);
+		if (dataService.Success)
+		{
+			clothes = dataService.ClothesList;
+		}
 	}
 }
