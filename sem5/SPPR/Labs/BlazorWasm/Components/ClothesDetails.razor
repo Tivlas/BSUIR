@@ -1,0 +1,40 @@
+﻿@using Domain.Entities;
+
+<style>
+	.clothes-details-container {
+		display: flex;
+		align-items: center;
+	}
+
+	.clothes-image {
+		flex: 0 0 auto;
+		margin-right: 20px;
+	}
+
+	.clothes-info {
+		flex: 1 1 auto;
+	}
+</style>
+
+
+@if (SelectedClothes is not null)
+{
+	<div class="clothes-details-container">
+		<div class="clothes-image">
+			@if (!string.IsNullOrEmpty(SelectedClothes.ImagePath))
+			{
+				<img src="@SelectedClothes.ImagePath" alt="Clothes Image" width="400" height="300"/>
+			}
+		</div>
+		<div class="clothes-info">
+			<h2>@SelectedClothes.Name</h2>
+			<p>@SelectedClothes.Description</p>
+			<p>Price: @SelectedClothes.Price</p>
+		</div>
+	</div>
+}
+
+@code {
+	[Parameter]
+	public Clothes? SelectedClothes { get; set; }
+}

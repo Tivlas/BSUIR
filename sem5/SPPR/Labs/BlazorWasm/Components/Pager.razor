@@ -1,13 +1,4 @@
-﻿@* <button class="btn btn-primary" disabled="@IsFirstPage" @onclick="GoToPreviousPage">&laquo;</button>
-
-@foreach (var pageNum in Enumerable.Range(1, TotalPages))
-{
-	<button class="btn btn-primary @(pageNum == CurrentPage ? "active" : "")" @onclick="() => GoToPage(pageNum)">@pageNum</button>
-}
-
-<button class="btn btn-primary" disabled="@IsLastPage" @onclick="GoToNextPage">&raquo;</button> *@
-
-<nav aria-label="Page navigation example">
+﻿<nav aria-label="Page navigation example">
 	<ul class="pagination">
 		<li class="page-item">
 			<button class="btn btn-primary page-link" disabled="@IsFirstPage" @onclick="async () => await GoToPageAsync(CurrentPage - 1)">

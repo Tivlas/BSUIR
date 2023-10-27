@@ -15,13 +15,15 @@ public class DataService : IDataService
 	public event Action DataChanged;
 	private readonly HttpClient _httpClient;
 	private readonly IAccessTokenProvider _accessTokenProvider;
+	private readonly ILogger<DataService> _logger;
 	private readonly int _pageSize = 3;
 	private readonly JsonSerializerOptions _jsonSerializerOptions;
 
-	public DataService(HttpClient httpClient, IConfiguration configuration, IAccessTokenProvider accessTokenProvider)
+	public DataService(HttpClient httpClient, IConfiguration configuration, IAccessTokenProvider accessTokenProvider, ILogger<DataService> logger)
 	{
 		_httpClient = httpClient;
 		_accessTokenProvider = accessTokenProvider;
+		_logger = logger;
 		_pageSize = configuration.GetSection("PageSize").Get<int>();
 		_jsonSerializerOptions = new JsonSerializerOptions()
 		{
@@ -66,6 +68,7 @@ public class DataService : IDataService
 					TotalPages = responseData?.Data?.TotalPages ?? 0;
 					CurrentPage = responseData?.Data?.CurrentPage ?? 0;
 					DataChanged?.Invoke();
+					_logger.LogInformation("<------ Clothes list received successfully ------>");
 				}
 				catch (JsonException ex)
 				{
