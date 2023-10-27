@@ -27,6 +27,16 @@ builder.Services
     new[] { "at+jwt" };
 });
 
+builder.Services.AddCors(options =>
+{
+	options.AddPolicy("BlazorWasmPolicy", builder =>
+	{
+		builder.WithOrigins("https://localhost:7288")
+			   .AllowAnyMethod()
+			   .AllowAnyHeader();
+	});
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -36,6 +46,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("BlazorWasmPolicy");
 app.UseStaticFiles();
 
 app.UseHttpsRedirection();
