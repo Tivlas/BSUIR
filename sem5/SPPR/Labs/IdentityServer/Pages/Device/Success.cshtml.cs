@@ -6,7 +6,7 @@ namespace IdentityServer.Pages.Device;
 [Authorize]
 public class SuccessModel : PageModel
 {
-    public void OnGet()
-    {
-    }
+	public void OnGet()
+	{
+	}
 }

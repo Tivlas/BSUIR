@@ -1,7 +1,6 @@
 ﻿using API.Data;
 using Domain.Entities;
 using Domain.Models;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Services;

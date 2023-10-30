@@ -19,12 +19,12 @@ builder.Services
 .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(opt =>
 {
-    opt.Authority = builder
-    .Configuration
-    .GetSection("isUri").Value;
-    opt.TokenValidationParameters.ValidateAudience = false;
-    opt.TokenValidationParameters.ValidTypes =
-    new[] { "at+jwt" };
+	opt.Authority = builder
+	.Configuration
+	.GetSection("isUri").Value;
+	opt.TokenValidationParameters.ValidateAudience = false;
+	opt.TokenValidationParameters.ValidTypes =
+	new[] { "at+jwt" };
 });
 
 builder.Services.AddCors(options =>
@@ -42,8 +42,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+	app.UseSwagger();
+	app.UseSwaggerUI();
 }
 
 app.UseCors("BlazorWasmPolicy");
@@ -61,9 +61,9 @@ app.Run();
 
 static void RegisterDbContext(WebApplicationBuilder builder)
 {
-    var connectionString = builder.Configuration
-           .GetConnectionString("Default");
-    string dataDirectory = AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar;
-    connectionString = string.Format(connectionString!, dataDirectory);
-    builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(connectionString).EnableSensitiveDataLogging());
+	var connectionString = builder.Configuration
+		   .GetConnectionString("Default");
+	string dataDirectory = AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar;
+	connectionString = string.Format(connectionString!, dataDirectory);
+	builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(connectionString).EnableSensitiveDataLogging());
 }

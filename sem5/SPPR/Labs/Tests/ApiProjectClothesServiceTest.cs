@@ -1,18 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Text;
-using System.Threading.Tasks;
-using API.Controllers;
+﻿using System.Data.Common;
 using API.Data;
 using API.Services;
 using Domain.Entities;
 using Domain.Models;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Moq;
 
 namespace Tests;
 public class ApiProjectClothesServiceTest : IDisposable
@@ -47,7 +39,7 @@ public class ApiProjectClothesServiceTest : IDisposable
 		context.SaveChanges();
 	}
 
-	private AppDbContext CreateContext() => new AppDbContext(_contextOptions);
+	private AppDbContext CreateContext() => new(_contextOptions);
 
 	[Fact]
 	public void GetClothesListAsync_ReturnsFirstPageWithThreeItems_WhenDefaultParametersPassed()

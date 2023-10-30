@@ -13,22 +13,22 @@ namespace IdentityServer.Pages.Ciba;
 [Authorize]
 public class AllModel : PageModel
 {
-    public IEnumerable<BackchannelUserLoginRequest> Logins { get; set; }
+	public IEnumerable<BackchannelUserLoginRequest> Logins { get; set; }
 
-    [BindProperty, Required]
-    public string Id { get; set; }
-    [BindProperty, Required]
-    public string Button { get; set; }
+	[BindProperty, Required]
+	public string Id { get; set; }
+	[BindProperty, Required]
+	public string Button { get; set; }
 
-    private readonly IBackchannelAuthenticationInteractionService _backchannelAuthenticationInteraction;
+	private readonly IBackchannelAuthenticationInteractionService _backchannelAuthenticationInteraction;
 
-    public AllModel(IBackchannelAuthenticationInteractionService backchannelAuthenticationInteractionService)
-    {
-        _backchannelAuthenticationInteraction = backchannelAuthenticationInteractionService;
-    }
+	public AllModel(IBackchannelAuthenticationInteractionService backchannelAuthenticationInteractionService)
+	{
+		_backchannelAuthenticationInteraction = backchannelAuthenticationInteractionService;
+	}
 
-    public async Task OnGet()
-    {
-        Logins = await _backchannelAuthenticationInteraction.GetPendingLoginRequestsForCurrentUserAsync();
-    }
+	public async Task OnGet()
+	{
+		Logins = await _backchannelAuthenticationInteraction.GetPendingLoginRequestsForCurrentUserAsync();
+	}
 }

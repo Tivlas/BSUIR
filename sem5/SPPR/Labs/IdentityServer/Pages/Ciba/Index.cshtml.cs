@@ -12,26 +12,26 @@ namespace IdentityServer.Pages.Ciba;
 [SecurityHeaders]
 public class IndexModel : PageModel
 {
-    public BackchannelUserLoginRequest LoginRequest { get; set; }
+	public BackchannelUserLoginRequest LoginRequest { get; set; }
 
-    private readonly IBackchannelAuthenticationInteractionService _backchannelAuthenticationInteraction;
-    private readonly ILogger<IndexModel> _logger;
+	private readonly IBackchannelAuthenticationInteractionService _backchannelAuthenticationInteraction;
+	private readonly ILogger<IndexModel> _logger;
 
-    public IndexModel(IBackchannelAuthenticationInteractionService backchannelAuthenticationInteractionService, ILogger<IndexModel> logger)
-    {
-        _backchannelAuthenticationInteraction = backchannelAuthenticationInteractionService;
-        _logger = logger;
-    }
+	public IndexModel(IBackchannelAuthenticationInteractionService backchannelAuthenticationInteractionService, ILogger<IndexModel> logger)
+	{
+		_backchannelAuthenticationInteraction = backchannelAuthenticationInteractionService;
+		_logger = logger;
+	}
 
-    public async Task<IActionResult> OnGet(string id)
-    {
-        LoginRequest = await _backchannelAuthenticationInteraction.GetLoginRequestByInternalIdAsync(id);
-        if (LoginRequest == null)
-        {
-            _logger.LogWarning("Invalid backchannel login id {id}", id);
-            return RedirectToPage("/Home/Error/Index");
-        }
+	public async Task<IActionResult> OnGet(string id)
+	{
+		LoginRequest = await _backchannelAuthenticationInteraction.GetLoginRequestByInternalIdAsync(id);
+		if (LoginRequest == null)
+		{
+			_logger.LogWarning("Invalid backchannel login id {id}", id);
+			return RedirectToPage("/Home/Error/Index");
+		}
 
-        return Page();
-    }
+		return Page();
+	}
 }

@@ -5,30 +5,30 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ClothesCategoriesController : ControllerBase
-    {
-        private readonly IClothesCategoryService _service;
+	[Route("api/[controller]")]
+	[ApiController]
+	public class ClothesCategoriesController : ControllerBase
+	{
+		private readonly IClothesCategoryService _service;
 
-        public ClothesCategoriesController(IClothesCategoryService service)
-        {
-            _service = service;
-        }
+		public ClothesCategoriesController(IClothesCategoryService service)
+		{
+			_service = service;
+		}
 
-        // GET: api/ClothesCategories
-        [HttpGet]
-        public async Task<ActionResult<ResponseData<List<ClothesCategory>>>> GetClothesCategory()
-        {
-            var response = await _service.GetClothesCategoryListAsync();
-            if (!response.Success)
-            {
-                return NotFound(response.ErrorMessage);
-            }
-            return Ok(response);
-        }
+		// GET: api/ClothesCategories
+		[HttpGet]
+		public async Task<ActionResult<ResponseData<List<ClothesCategory>>>> GetClothesCategory()
+		{
+			var response = await _service.GetClothesCategoryListAsync();
+			if (!response.Success)
+			{
+				return NotFound(response.ErrorMessage);
+			}
+			return Ok(response);
+		}
 
-        /*        // GET: api/ClothesCategories/5
+		/*        // GET: api/ClothesCategories/5
 				[HttpGet("{id}")]
 				public async Task<ActionResult<ClothesCategory>> GetClothesCategory(int id)
 				{
@@ -116,5 +116,5 @@ namespace API.Controllers
 				{
 					return (_context.ClothesCategory?.Any(e => e.Id == id)).GetValueOrDefault();
 				}*/
-    }
+	}
 }

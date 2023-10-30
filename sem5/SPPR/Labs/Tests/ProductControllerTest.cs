@@ -1,18 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Domain.Entities;
+﻿using Domain.Entities;
 using Domain.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
 using Moq;
 using WEB_153505_Vlasenko.Controllers;
-using WEB_153505_Vlasenko.Services.ClothesService;
 using WEB_153505_Vlasenko.Services.ClothesCategoryService;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
+using WEB_153505_Vlasenko.Services.ClothesService;
 
 namespace Tests;
 

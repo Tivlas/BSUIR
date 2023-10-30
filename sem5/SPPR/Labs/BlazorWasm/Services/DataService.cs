@@ -1,12 +1,11 @@
 ﻿using System.Net.Http.Headers;
-using System.Net.Http;
-using System.Text.Json;
+using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json;
 using Domain.Entities;
 using Domain.Models;
-using System.Net.Http.Json;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+using Microsoft.AspNetCore.Http;
 
 namespace BlazorWasm.Services;
 

@@ -1,6 +1,4 @@
-﻿using System.Drawing;
-using System.Text;
-using Serilog.Core;
+﻿using Serilog.Core;
 
 namespace WEB_153505_Vlasenko.Middleware;
 

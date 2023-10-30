@@ -5,5 +5,5 @@ namespace API.Services;
 
 public interface IClothesCategoryService
 {
-    public Task<ResponseData<List<ClothesCategory>>> GetClothesCategoryListAsync();
+	public Task<ResponseData<List<ClothesCategory>>> GetClothesCategoryListAsync();
 }

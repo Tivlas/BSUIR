@@ -1,5 +1,4 @@
 ﻿using Domain.Entities;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using WEB_153505_Vlasenko.Extensions;

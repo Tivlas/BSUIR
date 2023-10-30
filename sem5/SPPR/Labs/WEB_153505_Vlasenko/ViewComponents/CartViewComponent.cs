@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WEB_153505_Vlasenko.Extensions;
 
 namespace WEB_153505_Vlasenko.ViewComponents;
 

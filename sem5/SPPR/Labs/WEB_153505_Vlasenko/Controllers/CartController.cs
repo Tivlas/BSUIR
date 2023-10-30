@@ -1,7 +1,6 @@
 ﻿using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using WEB_153505_Vlasenko.Extensions;
 using WEB_153505_Vlasenko.Services.ClothesService;
 
 namespace WEB_153505_Vlasenko.Controllers;

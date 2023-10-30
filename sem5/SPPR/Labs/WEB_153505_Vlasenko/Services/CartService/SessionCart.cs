@@ -1,7 +1,7 @@
-﻿using Domain.Models;
-using WEB_153505_Vlasenko.Extensions;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using Domain.Entities;
+using Domain.Models;
+using WEB_153505_Vlasenko.Extensions;
 
 namespace WEB_153505_Vlasenko.Services.CartService;
 
