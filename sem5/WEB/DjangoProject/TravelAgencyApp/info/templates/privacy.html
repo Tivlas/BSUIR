@@ -8,6 +8,47 @@ Privacy policy
 {% endblock %}
 {% block content %}
 <hr>
+<section>
+    <form method="POST" id="form">
+        {% csrf_token %}
+
+        <label>
+            <input type="checkbox" name="font-size-checkbox" id="font-size-checkbox" onchange="toggleFontSize()"> Change
+            font size:
+        </label>
+        <br>
+
+        <div id="font-size-field" style="display: none;">
+            <input type="range" id="fontSize" name="fontSize" min="12" max="24" step="1">
+        </div>
+        <br>
+
+        <label>
+            <input type="checkbox" name="text-color-checkbox" id="text-color-checkbox" onchange="toggleTextColor()">
+            Change text colour:
+        </label>
+        <br>
+
+        <div id="text-color-field" style="display: none;">
+            <input type="color" id="textColor" name="textColor">
+        </div>
+        <br>
+
+        <label>
+            <input type="checkbox" name="background-color-checkbox" id="background-color-checkbox"
+                onchange="toggleBackgroundColor()"> Change background colour:
+        </label>
+        <br>
+
+        <div id="background-color-field" style="display: none;">
+            <input type="color" id="backgroundColor" name="backgroundColor">
+        </div>
+        <br>
+
+        <input type="submit">
+    </form>
+
+</section>
 <ol>
     <li>
         <p>Purpose:
@@ -116,7 +157,8 @@ Privacy policy
 <br>
 <section class="temp_text">
     <h1>Temporary text.</h1>
-    <p id="left">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sequi alias eum optio vel voluptates similique
+    <p id="left">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sequi alias eum optio vel voluptates
+        similique
         doloribus,
         ipsa deserunt error rerum odio possimus earum commodi necessitatibus magnam, suscipit eius mollitia doloremque!
         Lorem ipsum dolor sit amet, consectetur adipisicing elit. Beatae, suscipit tempore et sed ducimus accusamus
@@ -134,7 +176,10 @@ Privacy policy
         repellendus.</p>
     <p id="right" class="font-variant">
         Lorem ipsum dolor sit amet consectetur, adipisicing elit. Rerum, laborum, enim officia molestias accusantium
-        asperiores minima modi neque similique aspernatur unde tenetur, nisi at ducimus laudantium ex. Sequi, quam illo! <strong>long word </strong>fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff</p>
+        asperiores minima modi neque similique aspernatur unde tenetur, nisi at ducimus laudantium ex. Sequi, quam illo!
+        <strong>long word
+        </strong>fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+    </p>
 </section>
-
+<script src="{% static 'js/privacy.js' %}" defer></script>
 {% endblock %}
