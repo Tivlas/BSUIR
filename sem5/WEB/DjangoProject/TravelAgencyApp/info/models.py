@@ -32,3 +32,8 @@ class PromoCode(models.Model):
     discount_size = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(100)])
     active = models.BooleanField(default=True)
+
+
+class BannerChangeTimer(models.Model):
+    milliseconds = models.IntegerField(
+        validators=[MinValueValidator(1000), MaxValueValidator(30000)])

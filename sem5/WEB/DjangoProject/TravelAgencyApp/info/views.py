@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import News, Faq, Review, PromoCode
+from .models import News, Faq, Review, PromoCode, BannerChangeTimer
 from login.models import MyUser
 
 # Create your views here.
@@ -7,7 +7,14 @@ from login.models import MyUser
 
 def main_view(request):
     latest_news = News.objects.latest('id')
-    return render(request, "main.html", {'latest_news': latest_news})
+
+    if (request.method == "POST" and request.user.is_superuser):
+            time = BannerChangeTimer.objects.get(id=1)
+            time.milliseconds = request.POST.get('milliseconds')
+            time.save()
+
+    time = BannerChangeTimer.objects.get(id=1)
+    return render(request, "main.html", {'latest_news': latest_news, "milliseconds": time.milliseconds})
 
 
 def about_view(request):

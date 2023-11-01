@@ -18,15 +18,24 @@ Main
 </section>
 
 <section>
-    <div class="circular-image" >
-        <img src="{% static '/images/banner1.jpg' %}" alt="Banner1">
+    <div class="circular-image">
+        <a href="https://www.euronews.com/travel/travel-news"><img src="{% static '/images/banner1.jpg' %}"
+                alt="Banner1"></a>
     </div>
-    <div class="circular-image rotating" >
-        <img src="{% static '/images/banner2.jpg' %}" alt="Banner2">
+    <div class="circular-image rotating">
+        <a href="https://www.travel.ru/"><img src="{% static '/images/banner2.jpg' %}" alt="Banner2"></a>
     </div>
     <div class="circular-image">
-        <img src="{% static '/images/banner3.jpg' %}" alt="Banner3">
+        <a href="https://minsk-travel.by/"><img src="{% static '/images/banner3.jpg' %}" alt="Banner3"></a>
     </div>
+    {% if user.is_superuser %}
+    <form method="POST">
+        {% csrf_token %}
+        <label for="interval">Interval in milliseconds:</label>
+        <input type="number" id="interval" value="5000" name="milliseconds">
+        <input type="submit">
+    </form>
+    {% endif %}
 </section>
 
 <section>
@@ -57,5 +66,8 @@ Main
 <div>
     <audio controls src="{% static 'audio/sample.mp3' %}"></audio>
 </div>
+<script>
+    window.milliseconds = '{{ milliseconds }}';
+</script>
 <script src="{% static 'js/main.js' %}" defer></script>
 {% endblock %}
