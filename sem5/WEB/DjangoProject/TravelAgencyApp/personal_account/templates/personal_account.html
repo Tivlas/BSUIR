@@ -7,7 +7,13 @@
 
 {% block content %}
 <p><a href="#review-form">You may leave a review if you want.</a></p>
-
+<form id="searchForm">
+    {% csrf_token %}
+    <label for="authorInput">Author last name:</label>
+    <input type="text" id="authorInput">
+    <button type="submit">Search</button>
+  </form>
+  <div id="results"></div>
 <section>
     <details itemscope itemtype="http://schema.org/Person">
         <summary>
