@@ -8,6 +8,7 @@
 <link href="{% static 'css/list_trips.css' %}" rel="stylesheet">
 {% endblock %}
 {% block content %}
+<div id="countdown"></div>
 <section id="sidebar">
     {% if user.is_authenticated %}
     {%if fact_about_cat %}
