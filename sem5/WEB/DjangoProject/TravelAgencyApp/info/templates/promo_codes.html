@@ -15,10 +15,10 @@ Promo codes
 <ul class="type_unicode">
     {% for promo in promo_codes %}
     {% if promo.active %}
-    <li itemscope itemtype="https://schema.org/Offer">
+    <li class="active-discount" itemscope itemtype="https://schema.org/Offer">
         <p>Description: {{ promo.name }}</p>
         <p>Promo nubmer: {{ promo.promo_code }}</p>
-        <p>Discount: {{ promo.discount_size }}%</p>
+        <p>Discount: <span class="discount">{{ promo.discount_size }}%</span></p>
     </li>
     {% endif %}
     {% endfor %}
@@ -32,10 +32,10 @@ Promo codes
 <ul class="circle">
     {% for promo in promo_codes %}
     {% if not promo.active %}
-    <li itemscope itemtype="https://schema.org/Offer">
+    <li class="inactive-discount" itemscope itemtype="https://schema.org/Offer">
         <p>Description: {{ promo.name }}</p>
         <p>Promo nubmer: {{ promo.promo_code }}</p>
-        <p>Discount: {{ promo.discount_size }}%</p>
+        <p>Discount: <span class="discount">{{ promo.discount_size }}%</span></p>
     </li>
     {% endif %}
     {% endfor %}
@@ -54,5 +54,7 @@ Promo codes
     </code>
 </pre>
 </section>
-
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/color/jquery.color-2.2.0.min.js"></script>
+<script src="{% static 'js/promo_codes.js' %}" defer></script>
 {% endblock %}
