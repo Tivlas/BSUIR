@@ -82,4 +82,7 @@
 
 </section>
 <script src="{% static 'js/list_trips.js' %}" defer></script>
+<script>
+    window.is_authenticated = '{{ user.is_authenticated }}';
+</script>
 {% endblock %}
