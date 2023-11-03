@@ -41,7 +41,7 @@ public class ProductController : Controller
 			return PartialView("_ProductCardsAndPagerPartial", new
 			{
 				Category = category,
-				ReturnUrl = "",
+				ReturnUrl = Request.Path + Request.QueryString.ToUriComponent(),
 				productResponse.Data!.CurrentPage,
 				productResponse.Data!.TotalPages,
 				Clothes = productResponse.Data!.Items,

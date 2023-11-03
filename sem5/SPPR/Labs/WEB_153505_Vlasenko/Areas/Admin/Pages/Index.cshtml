@@ -19,6 +19,7 @@
 			TotalPages = Model.TotalPages,
 			Clothes = Model.Clothes,
 			InAdminArea = true,
+			ReturnUrl = Request.Path + Request.QueryString.ToUriComponent(),
 		});
 	}
 </div>

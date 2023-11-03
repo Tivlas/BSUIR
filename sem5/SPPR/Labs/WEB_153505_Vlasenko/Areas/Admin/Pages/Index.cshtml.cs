@@ -40,6 +40,7 @@ namespace WEB_153505_Vlasenko.Areas.Admin.Pages
 					TotalPages,
 					Clothes,
 					InAdminArea = true,
+					ReturnUrl = Request.Path + Request.QueryString.ToUriComponent()
 				});
 			}
 
