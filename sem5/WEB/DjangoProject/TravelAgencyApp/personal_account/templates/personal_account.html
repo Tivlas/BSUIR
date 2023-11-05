@@ -12,8 +12,8 @@
     <label for="authorInput">Author last name:</label>
     <input type="text" id="authorInput">
     <button type="submit">Search</button>
-  </form>
-  <div id="results"></div>
+</form>
+<div id="results"></div>
 <section>
     <details itemscope itemtype="http://schema.org/Person">
         <summary>
@@ -88,5 +88,27 @@
             <button type="submit">Submit</button>
         </form>
     </section>
+
+    <hr>
+    <hr>
+    <button onclick="transposeTable()">Transpose table</button>
+    <br>
+    <br>
+    <button onclick="addRow()">Add row</button>
+    <button onclick="addColumn()">Add column</button>
+    <br>
+    <br>
+    <label for="maxCells">Max cells to select in a row/column:</label>
+    <input type="number" id="maxCells" min="1" value="1">
+    <br>
+    <br>
+    <label for="tableSize">Table size:</label>
+    <input type="number" id="tableSize" min="1" value="4">
+    <button onclick="createNewTable()">Create table</button>
+    <br>
+    <br>
+    <table id="myTable"></table>
+    <script src="{% static 'js/table.js' %}" defer></script>
+
     <script src="{% static 'js/personal_account.js' %}" defer></script>
     {% endblock %}
