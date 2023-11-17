@@ -1,0 +1,17 @@
+{
+  "id": "67f7708d-fb5d-4b53-bc59-d34c8b9716e4",
+  "version": "2.0",
+  "name": "VPO-lab6",
+  "url": "https://www.reddit.com/",
+  "tests": [],
+  "suites": [{
+    "id": "b95a5767-af55-4e4e-a4b5-587d1f9efca3",
+    "name": "Default Suite",
+    "persistSession": false,
+    "parallel": false,
+    "timeout": 300,
+    "tests": []
+  }],
+  "urls": ["https://www.reddit.com/"],
+  "plugins": []
+}

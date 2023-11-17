@@ -1,0 +1,1873 @@
+{
+  "id": "42b729d5-eca8-4307-abdf-af4fcec4855d",
+  "version": "2.0",
+  "name": "vpo",
+  "url": "https://www.reddit.com",
+  "tests": [{
+    "id": "418e3774-9571-4d02-85f3-16094736425d",
+    "name": "1",
+    "commands": [{
+      "id": "81c1a358-d99f-4d7f-87c6-579e96470fad",
+      "comment": "",
+      "command": "open",
+      "target": "/?rdt=62097",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "ab6e202b-31fc-4bdf-8b1c-fdd8ad03b9d4",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "1550x838",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "115e32b7-6b1d-4244-9a88-8b8d6d395ca2",
+      "comment": "",
+      "command": "click",
+      "target": "css=#home-posts .text-14",
+      "targets": [
+        ["css=#home-posts .text-14", "css:finder"],
+        ["xpath=//li[@id='home-posts']/a/span/span[2]/span", "xpath:idRelative"],
+        ["xpath=//nav/faceplate-tracker/li/a/span/span[2]/span", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "153ac5b2-6b25-41cd-9f30-79e955ed27d7",
+      "comment": "",
+      "command": "mouseOver",
+      "target": "css=#home-posts .text-14",
+      "targets": [
+        ["css=#home-posts .text-14", "css:finder"],
+        ["xpath=//li[@id='home-posts']/a/span/span[2]/span", "xpath:idRelative"],
+        ["xpath=//nav/faceplate-tracker/li/a/span/span[2]/span", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "21f90701-69bb-4887-9505-a6ef4232293c",
+      "comment": "",
+      "command": "mouseOut",
+      "target": "css=#home-posts .text-14",
+      "targets": [
+        ["css=#home-posts .text-14", "css:finder"],
+        ["xpath=//li[@id='home-posts']/a/span/span[2]/span", "xpath:idRelative"],
+        ["xpath=//nav/faceplate-tracker/li/a/span/span[2]/span", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "5a7ebb88-698e-4aeb-9413-964a5b16d2c7",
+      "comment": "",
+      "command": "assertElementPresent",
+      "target": "css=.active\\3Ano-underline > .flex > .flex",
+      "targets": [
+        ["css=.active\\3Ano-underline > .flex > .flex", "css:finder"],
+        ["xpath=//div/faceplate-tracker/button/span/span", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "6762d9d3-727d-459b-acf9-b13aaa0d7560",
+      "comment": "",
+      "command": "click",
+      "target": "css=#RESOURCES > faceplate-tracker:nth-child(1) .text-14",
+      "targets": [
+        ["css=#RESOURCES > faceplate-tracker:nth-child(1) .text-14", "css:finder"],
+        ["xpath=//div[@id='RESOURCES']/faceplate-tracker/li/a/span/span[2]/span", "xpath:idRelative"],
+        ["xpath=//div/faceplate-tracker/li/a/span/span[2]/span", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "6df07d9b-138f-41f5-b169-44be617bcf4c",
+      "comment": "",
+      "command": "assertElementPresent",
+      "target": "css=.active > a",
+      "targets": [
+        ["css=.active > a", "css:finder"],
+        ["xpath=//a[contains(text(),'About')]", "xpath:link"],
+        ["xpath=//nav[@id='nav']/ul/li/a", "xpath:idRelative"],
+        ["xpath=(//a[contains(@href, 'https://www.redditinc.com/')])[2]", "xpath:href"],
+        ["xpath=//li/a", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "e415a33a-3701-42ab-b12a-285f8056643b",
+      "comment": "",
+      "command": "close",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }]
+  }, {
+    "id": "bbefe9a4-171b-479d-8914-21556e78f912",
+    "name": "3",
+    "commands": [{
+      "id": "d9d6ad1b-e77d-4f17-b5fd-43e392502908",
+      "comment": "",
+      "command": "open",
+      "target": "/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "0173ed9a-6a76-4341-bf1c-a69cf821fd63",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "1550x838",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "1a364ee4-4a39-4a8f-bb2c-40c9b970408d",
+      "comment": "",
+      "command": "click",
+      "target": "css=#login-button > .flex > .flex",
+      "targets": [
+        ["css=#login-button > .flex > .flex", "css:finder"],
+        ["xpath=//a[@id='login-button']/span/span", "xpath:idRelative"],
+        ["xpath=//a/span/span", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "59834c29-84e6-4eac-981a-d217ab880c5f",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "fafe2fc0-4220-4f1b-90a6-0dde37f605dc",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "9233c94e-f2e4-4354-917b-4d995f53fd6e",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "4cea776f-4a5b-472f-971a-d76946ca20c1",
+      "comment": "",
+      "command": "click",
+      "target": "name=password",
+      "targets": [
+        ["id=register-password", "id"],
+        ["name=password", "name"],
+        ["css=#register-password", "css:finder"],
+        ["xpath=//input[@id='register-password']", "xpath:attributes"],
+        ["xpath=//span[@id='register-password-container']/input", "xpath:idRelative"],
+        ["xpath=//span[2]/input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "75e7e962-b928-436f-b17a-eb417b1d6217",
+      "comment": "",
+      "command": "mouseDown",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "cf077dd2-1e46-4e98-a9ee-e890959bbca0",
+      "comment": "",
+      "command": "mouseUp",
+      "target": "name=password",
+      "targets": [
+        ["id=register-password", "id"],
+        ["name=password", "name"],
+        ["css=#register-password", "css:finder"],
+        ["xpath=//input[@id='register-password']", "xpath:attributes"],
+        ["xpath=//span[@id='register-password-container']/input", "xpath:idRelative"],
+        ["xpath=//span[2]/input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "22d6d6ca-0037-49c0-b0c9-c9f397acfa43",
+      "comment": "",
+      "command": "verifyElementPresent",
+      "target": "name=password",
+      "targets": [
+        ["id=register-password", "id"],
+        ["name=password", "name"],
+        ["css=#register-password", "css:finder"],
+        ["xpath=//input[@id='register-password']", "xpath:attributes"],
+        ["xpath=//span[@id='register-password-container']/input", "xpath:idRelative"],
+        ["xpath=//span[2]/input", "xpath:position"]
+      ],
+      "value": "3000"
+    }, {
+      "id": "defac021-3f92-4336-b46e-0c6d9ac445d9",
+      "comment": "",
+      "command": "close",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }]
+  }, {
+    "id": "e3dee44b-12da-440d-b548-7fbe51943b02",
+    "name": "2",
+    "commands": [{
+      "id": "8a241afa-4ff7-46af-a9d3-cee5cf4dfdd6",
+      "comment": "",
+      "command": "open",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "eaf39e8b-21a6-49fa-9e64-0fef979e2b88",
+      "comment": "",
+      "command": "close",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }]
+  }, {
+    "id": "a10beffa-a54a-497f-9425-def84d651739",
+    "name": "4",
+    "commands": [{
+      "id": "3d49ef5e-213c-4bf4-8c79-ee102fcae347",
+      "comment": "",
+      "command": "open",
+      "target": "/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "835605e4-a3f3-467f-9563-1d17f7aa169c",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "1550x838",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "7782c827-0344-4b3a-8326-e7e56dc33bbf",
+      "comment": "",
+      "command": "click",
+      "target": "css=#login-button > .flex > .flex",
+      "targets": [
+        ["css=#login-button > .flex > .flex", "css:finder"],
+        ["xpath=//a[@id='login-button']/span/span", "xpath:idRelative"],
+        ["xpath=//a/span/span", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "025232d4-e4cc-4042-8b09-f98311fa5159",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "e77440f5-3608-4b9d-b2fd-bc646da63d14",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "518306a2-5178-4bdf-bcfd-564886dc1f95",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "43d19140-cd91-4b56-b716-240e5a5e4199",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "1b1888f0-8240-400d-9327-c61fa388b7ef",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "8b9706b6-e222-4e62-ad87-6e7179f89a0b",
+      "comment": "",
+      "command": "verifyElementPresent",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "bd97bd3f-794f-436f-805b-e458036d2d50",
+      "comment": "",
+      "command": "close",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }]
+  }, {
+    "id": "8ea832ab-7280-4769-8eb2-5b584c25e86a",
+    "name": "5",
+    "commands": [{
+      "id": "f6474647-21d1-4b5a-aa0d-8febccd0d218",
+      "comment": "",
+      "command": "open",
+      "target": "/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "8fb4ab44-e75b-4cb0-a39b-61893f167e56",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "1550x838",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "c51db846-4739-4e0b-bb44-da1d44b62c24",
+      "comment": "",
+      "command": "click",
+      "target": "css=#login-button > .flex > .flex",
+      "targets": [
+        ["css=#login-button > .flex > .flex", "css:finder"],
+        ["xpath=//a[@id='login-button']/span/span", "xpath:idRelative"],
+        ["xpath=//a/span/span", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "05a58f89-c199-42dd-a082-836208de1c22",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "1e4bf7c3-7e8c-4dc0-8a67-310075897788",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "b6eb0f3a-8f33-4c3a-934e-519b83906728",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "40206b05-e116-48c6-b24f-61a2414307e1",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "a5f9d568-a89d-49a3-9c7e-4a44a40277cb",
+      "comment": "",
+      "command": "assertElementPresent",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "e29333d4-bd02-4565-ba56-5a02bf4a6e98",
+      "comment": "",
+      "command": "close",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }]
+  }, {
+    "id": "8390a469-b826-42b5-85ce-9400c17e4686",
+    "name": "6",
+    "commands": [{
+      "id": "d3c70009-ca0e-4344-b865-c1c90c02e4a1",
+      "comment": "",
+      "command": "open",
+      "target": "/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "a77194b4-b922-47c8-9d04-fdaa96b3dad8",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "1550x838",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "608f41f6-2f92-4908-94d6-a5b833258610",
+      "comment": "",
+      "command": "click",
+      "target": "css=#login-button > .flex > .flex",
+      "targets": [
+        ["css=#login-button > .flex > .flex", "css:finder"],
+        ["xpath=//a[@id='login-button']/span/span", "xpath:idRelative"],
+        ["xpath=//a/span/span", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "4ab1ba50-5356-436e-858b-f5ddbe8a2376",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "954c63ca-b0f6-41df-841d-0b2540382e3f",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "35c44c27-3dda-474c-9d24-ef49af08e8b3",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "606fc59a-6bc7-4ca6-b7a3-f8d87b05066c",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "42bca412-6888-44d6-a113-8855f1bbfbea",
+      "comment": "",
+      "command": "click",
+      "target": "name=password",
+      "targets": [
+        ["id=register-password", "id"],
+        ["name=password", "name"],
+        ["css=#register-password", "css:finder"],
+        ["xpath=//input[@id='register-password']", "xpath:attributes"],
+        ["xpath=//span[@id='register-password-container']/input", "xpath:idRelative"],
+        ["xpath=//span[2]/input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "601af600-05ca-4852-86fc-3de6a43f721a",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "4e66f8e2-3aa2-40ba-8f5a-f708ae07e2d0",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "d0967218-14df-4f09-aa0a-abc61574e13b",
+      "comment": "",
+      "command": "click",
+      "target": "name=password",
+      "targets": [
+        ["id=register-password", "id"],
+        ["name=password", "name"],
+        ["css=#register-password", "css:finder"],
+        ["xpath=//input[@id='register-password']", "xpath:attributes"],
+        ["xpath=//span[@id='register-password-container']/input", "xpath:idRelative"],
+        ["xpath=//span[2]/input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "d6eebaab-35e3-4433-a07c-add2ba642608",
+      "comment": "",
+      "command": "assertElementPresent",
+      "target": "name=password",
+      "targets": [
+        ["id=register-password", "id"],
+        ["name=password", "name"],
+        ["css=#register-password", "css:finder"],
+        ["xpath=//input[@id='register-password']", "xpath:attributes"],
+        ["xpath=//span[@id='register-password-container']/input", "xpath:idRelative"],
+        ["xpath=//span[2]/input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "af989c3a-ed7d-4c51-ac9b-a3cfb5353fbd",
+      "comment": "",
+      "command": "close",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }]
+  }, {
+    "id": "7cde27d3-5312-4a78-bbf1-ae899408d8fb",
+    "name": "7",
+    "commands": [{
+      "id": "28817577-28b0-4e16-9fe7-5df281f6482e",
+      "comment": "",
+      "command": "open",
+      "target": "/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "e6754745-1027-4518-b7ca-3f8021dbf66b",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "1550x838",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "772e96bc-81c9-420d-b150-95c96872f58d",
+      "comment": "",
+      "command": "click",
+      "target": "css=#login-button > .flex > .flex",
+      "targets": [
+        ["css=#login-button > .flex > .flex", "css:finder"],
+        ["xpath=//a[@id='login-button']/span/span", "xpath:idRelative"],
+        ["xpath=//a/span/span", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "5c630be4-d82b-4063-bce1-3fc80c4e40a6",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "c383f484-40fe-40a1-bb96-9259c07320b4",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "5dd62532-ce3c-49e0-9fe0-11d61364a466",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "6edcdb1b-1ef3-470c-814a-99d48cb0ab09",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "afe39f3a-0d7b-4f32-b6c9-4a07a0855c49",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "0306bfb6-28c6-41c4-b616-1ffb9709c9c1",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "a7f8e88c-3f39-4d68-9323-bf2ec9818edf",
+      "comment": "",
+      "command": "assertElementPresent",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "61756d61-dbc4-4fec-8a7f-e956942569ef",
+      "comment": "",
+      "command": "close",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }]
+  }, {
+    "id": "e8cade37-7f66-4c66-a671-43af193a2a7e",
+    "name": "8",
+    "commands": [{
+      "id": "6263e955-eef2-4084-983d-cf13e75ffcfa",
+      "comment": "",
+      "command": "open",
+      "target": "/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "0bcd9976-fc43-42c3-9180-b659962e5aaa",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "939x824",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "93a15546-00c3-4075-b065-e5d103cdff53",
+      "comment": "",
+      "command": "click",
+      "target": "css=#login-button > .flex > .flex",
+      "targets": [
+        ["css=#login-button > .flex > .flex", "css:finder"],
+        ["xpath=//a[@id='login-button']/span/span", "xpath:idRelative"],
+        ["xpath=//a/span/span", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "395dcd29-dd15-4c6a-9fff-4091592fb4e0",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "524652a7-4e59-404f-9396-9c0a44e66f8e",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "917680f9-4457-4fda-be01-4a907b815705",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "38866e16-232d-4669-b174-17badcd555ee",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "772b1549-3aa1-4b4c-8b0b-ee12925f5226",
+      "comment": "",
+      "command": "type",
+      "target": "name=password",
+      "targets": [
+        ["id=register-password", "id"],
+        ["name=password", "name"],
+        ["css=#register-password", "css:finder"],
+        ["xpath=//input[@id='register-password']", "xpath:attributes"],
+        ["xpath=//span[@id='register-password-container']/input", "xpath:idRelative"],
+        ["xpath=//span[2]/input", "xpath:position"]
+      ],
+      "value": "            "
+    }, {
+      "id": "e2d43747-34b0-475c-8997-47b0ea441223",
+      "comment": "",
+      "command": "assertElementNotPresent",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "9b828dc5-a8a4-4f72-bbf7-528cdad032c9",
+      "comment": "",
+      "command": "close",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }]
+  }, {
+    "id": "f2407af5-83d0-4520-bbd3-84b1673dffba",
+    "name": "9",
+    "commands": [{
+      "id": "8851987c-5266-4a78-9866-979fbc98ecb5",
+      "comment": "",
+      "command": "open",
+      "target": "/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "e894481a-8fc3-49cc-b41f-e8e141f1f7ca",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "550x693",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "6e4f3f4b-6947-418c-ae76-cf99e0f330fe",
+      "comment": "",
+      "command": "click",
+      "target": "css=#login-button > .flex > .flex",
+      "targets": [
+        ["css=#login-button > .flex > .flex", "css:finder"],
+        ["xpath=//a[@id='login-button']/span/span", "xpath:idRelative"],
+        ["xpath=//a/span/span", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "bdd14c90-4a26-424e-ba74-545fdeaa3122",
+      "comment": "",
+      "command": "click",
+      "target": "id=login-username",
+      "targets": [
+        ["id=login-username", "id"],
+        ["name=username", "name"],
+        ["css=#login-username", "css:finder"],
+        ["xpath=//input[@id='login-username']", "xpath:attributes"],
+        ["xpath=//span[@id='login-username-container']/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "1d285871-3b7f-4ba7-9365-5dce494ec14e",
+      "comment": "",
+      "command": "type",
+      "target": "id=login-username",
+      "targets": [
+        ["id=login-username", "id"],
+        ["name=username", "name"],
+        ["css=#login-username", "css:finder"],
+        ["xpath=//input[@id='login-username']", "xpath:attributes"],
+        ["xpath=//span[@id='login-username-container']/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": "asdfasd"
+    }, {
+      "id": "8848731c-cdea-4cfc-b49b-6a049cfa4446",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "8d23df97-7342-40c8-a9d8-e18178a4b06a",
+      "comment": "",
+      "command": "type",
+      "target": "id=login-password",
+      "targets": [
+        ["id=login-password", "id"],
+        ["name=password", "name"],
+        ["css=#login-password", "css:finder"],
+        ["xpath=//input[@id='login-password']", "xpath:attributes"],
+        ["xpath=//span[@id='login-password-container']/input", "xpath:idRelative"],
+        ["xpath=//span[4]/input", "xpath:position"]
+      ],
+      "value": "221"
+    }, {
+      "id": "901f1962-0bc2-47c1-ac43-0ceaa14b21f7",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "866e02d7-bcd0-480a-a348-bcfabf212825",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "da48bac1-3a1c-48c3-9ef0-01b593cc0350",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "60af8c84-f1bd-48f8-bbd8-fe091f12bd2c",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "10c78073-4c41-4100-9296-bf643ecf4d59",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "b9ca7700-cb26-48ea-be65-7c6127519b39",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "7cfac0a0-16c4-4fb9-82fc-a1be46a5728d",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "9e0c296a-427e-4ab5-a402-15465ebedc1c",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "aa4010d8-dbb3-4311-8086-e8cf917b6908",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "c1a56740-b3fb-4821-ba4f-91a8f7cc2ceb",
+      "comment": "",
+      "command": "doubleClick",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "5af11c86-dc9f-4f2b-a9b4-c88813b007ea",
+      "comment": "",
+      "command": "close",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }]
+  }, {
+    "id": "787f8a8c-1e02-4398-9a27-f80ef6a77820",
+    "name": "10",
+    "commands": [{
+      "id": "5a6f30c2-d86f-4301-935c-9a180706c68e",
+      "comment": "",
+      "command": "open",
+      "target": "/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "49fd4e62-1ebe-4f02-80aa-4441f143e776",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "550x693",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "16298446-4097-4305-8a89-89f8911d212f",
+      "comment": "",
+      "command": "click",
+      "target": "css=#login-button > .flex > .flex",
+      "targets": [
+        ["css=#login-button > .flex > .flex", "css:finder"],
+        ["xpath=//a[@id='login-button']/span/span", "xpath:idRelative"],
+        ["xpath=//a/span/span", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "1de2ec1c-0249-4835-9e66-9510303030b0",
+      "comment": "",
+      "command": "close",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }]
+  }, {
+    "id": "c6ba5bca-c5ab-4072-bcc8-6789a0658659",
+    "name": "11",
+    "commands": [{
+      "id": "3ad52981-04c2-4a8b-93f0-fd4349c7807e",
+      "comment": "",
+      "command": "open",
+      "target": "/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "a35867ed-91ad-44fd-a85b-1a504481c969",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "550x693",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "efc1af21-e4e7-4b97-ae7d-7f2fb1b4f48a",
+      "comment": "",
+      "command": "click",
+      "target": "id=login-button",
+      "targets": [
+        ["id=login-button", "id"],
+        ["linkText=Log In", "linkText"],
+        ["css=#login-button", "css:finder"],
+        ["xpath=//a[@id='login-button']", "xpath:attributes"],
+        ["xpath=//a[contains(@href, 'https://www.reddit.com/login')]", "xpath:href"],
+        ["xpath=//span[3]/faceplate-tracker/faceplate-tooltip/a", "xpath:position"],
+        ["xpath=//a[contains(.,'Log In')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "e850969f-0359-4b50-a2a2-5de552a4393e",
+      "comment": "",
+      "command": "click",
+      "target": "id=login-username",
+      "targets": [
+        ["id=login-username", "id"],
+        ["name=username", "name"],
+        ["css=#login-username", "css:finder"],
+        ["xpath=//input[@id='login-username']", "xpath:attributes"],
+        ["xpath=//span[@id='login-username-container']/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "6d46ca0f-1703-446e-a086-47383d8e5ca6",
+      "comment": "",
+      "command": "type",
+      "target": "id=login-username",
+      "targets": [
+        ["id=login-username", "id"],
+        ["name=username", "name"],
+        ["css=#login-username", "css:finder"],
+        ["xpath=//input[@id='login-username']", "xpath:attributes"],
+        ["xpath=//span[@id='login-username-container']/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": "ghkhlljkj"
+    }, {
+      "id": "d3e65930-7559-47ac-812e-3c7b8df0aa5b",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "5a34179e-53d9-4068-957c-fa179fd0cb30",
+      "comment": "",
+      "command": "type",
+      "target": "id=login-password",
+      "targets": [
+        ["id=login-password", "id"],
+        ["name=password", "name"],
+        ["css=#login-password", "css:finder"],
+        ["xpath=//input[@id='login-password']", "xpath:attributes"],
+        ["xpath=//span[@id='login-password-container']/input", "xpath:idRelative"],
+        ["xpath=//span[4]/input", "xpath:position"]
+      ],
+      "value": "                "
+    }, {
+      "id": "702974e4-378d-476e-99e4-abd1925fe479",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "4f863dd7-b3ac-4059-aaee-b484e69d65b4",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "5b172b46-7f6a-4c06-a55a-73c322c5da52",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "1e61e65e-33d4-45f7-a647-2b0a75af012c",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "543214c5-2edf-4bd0-9f61-6a17ad33d301",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "145a0afa-d929-4260-983a-f45eb13593e7",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "944498a7-728c-4eeb-8d05-9299fd2e24a6",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "00f403e2-cb13-476c-b889-8d8fcf11c5a5",
+      "comment": "",
+      "command": "close",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }]
+  }, {
+    "id": "9d13fbc2-8f5b-4d1f-859b-5748a25eaf05",
+    "name": "12",
+    "commands": [{
+      "id": "c7b7f3d4-f3cf-411e-a70a-4554ec2dcb70",
+      "comment": "",
+      "command": "open",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "d00c892a-ad4f-48e5-9620-e201bc3f5b44",
+      "comment": "",
+      "command": "close",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }]
+  }, {
+    "id": "21fdf55e-033b-40bc-9be7-2e2f982ed6ea",
+    "name": "13",
+    "commands": [{
+      "id": "5eefb9b3-f0f4-46eb-9a6e-6a6d05fbef4c",
+      "comment": "",
+      "command": "open",
+      "target": "/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "0f9d16f7-fba8-4230-8abf-0e05cbdac349",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "1550x838",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "f14e1de9-d3b0-4b8c-bf09-7862247e0c8b",
+      "comment": "",
+      "command": "click",
+      "target": "css=#login-button > .flex > .flex",
+      "targets": [
+        ["css=#login-button > .flex > .flex", "css:finder"],
+        ["xpath=//a[@id='login-button']/span/span", "xpath:idRelative"],
+        ["xpath=//a/span/span", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "2de60f2f-fa51-4a14-bd44-720ad529aaa8",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "7257b311-9bb1-4968-8147-e393cc627c6b",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "6063cbcf-4fde-474b-b8d1-aae266f1dea3",
+      "comment": "",
+      "command": "click",
+      "target": "css=.theme-beta:nth-child(14)",
+      "targets": [
+        ["css=.theme-beta:nth-child(14)", "css:finder"],
+        ["xpath=//shreddit-overlay-display", "xpath:position"],
+        ["xpath=//shreddit-overlay-display[contains(.,' Sign in with Apple')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "d333bda3-533d-46da-99fd-bd9e96d5524b",
+      "comment": "",
+      "command": "close",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }]
+  }, {
+    "id": "c02a1702-21da-4cb7-9834-032eae1da844",
+    "name": "14",
+    "commands": [{
+      "id": "ecee9eb0-a312-40ab-a926-e71887b7b4d1",
+      "comment": "",
+      "command": "open",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "747e6897-b2d4-4b88-ad8d-6310fa4ff768",
+      "comment": "",
+      "command": "close",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }]
+  }, {
+    "id": "cf24c197-946b-44a5-9988-e49351bca8e4",
+    "name": "15",
+    "commands": [{
+      "id": "c7fc45df-54ca-4d18-97b1-e79266042c18",
+      "comment": "",
+      "command": "open",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "20a6ac17-2d0b-4843-af30-a8799f4dc14d",
+      "comment": "",
+      "command": "close",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }]
+  }, {
+    "id": "39db6aeb-7e1e-4022-94da-e7811b40aa3f",
+    "name": "16",
+    "commands": []
+  }, {
+    "id": "c50dd85a-2c08-4598-aca0-0f765fa29ad5",
+    "name": "17",
+    "commands": [{
+      "id": "1c9e74f1-37e0-48ef-85be-bb221ba75a9d",
+      "comment": "",
+      "command": "open",
+      "target": "/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "dd58b03e-cc97-4ad1-b3f3-cc701b34ee09",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "550x693",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "22197cc4-c9f4-4093-83a0-e3aa62776c46",
+      "comment": "",
+      "command": "mouseOver",
+      "target": "css=.-z42jjKOFdAdFhdJ8mmI4",
+      "targets": [
+        ["css=.-z42jjKOFdAdFhdJ8mmI4", "css:finder"]
+      ],
+      "value": ""
+    }, {
+      "id": "01614678-b8e7-4bd0-9204-1f178be10709",
+      "comment": "",
+      "command": "mouseOut",
+      "target": "css=.-z42jjKOFdAdFhdJ8mmI4",
+      "targets": [
+        ["css=.-z42jjKOFdAdFhdJ8mmI4", "css:finder"]
+      ],
+      "value": ""
+    }, {
+      "id": "3b928bc2-15b6-43f1-8e3f-7c822defc700",
+      "comment": "",
+      "command": "close",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }]
+  }, {
+    "id": "5d1280b0-b462-46fd-8f68-e3fa848d0f7d",
+    "name": "18",
+    "commands": [{
+      "id": "09f37b47-8a74-4ab4-94ca-b72804c24d7e",
+      "comment": "",
+      "command": "open",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "3ad12443-0c55-4ac6-9017-1b9c3f03a899",
+      "comment": "",
+      "command": "close",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }]
+  }, {
+    "id": "1fb02b76-4140-4fbf-8de4-b957f580ce41",
+    "name": "19",
+    "commands": [{
+      "id": "daab250b-cce5-4eed-bd0b-45dc197c437c",
+      "comment": "",
+      "command": "open",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "407fe488-c137-4ef8-b94d-77f2d0a3ae44",
+      "comment": "",
+      "command": "close",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }]
+  }, {
+    "id": "9ae3be18-b048-40ac-b247-15b6b54c8235",
+    "name": "20",
+    "commands": [{
+      "id": "54bc5323-fd52-4233-8a41-2664da8608f4",
+      "comment": "",
+      "command": "open",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "30adf8b0-2dab-4263-bf3b-a513ce501006",
+      "comment": "",
+      "command": "close",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }]
+  }, {
+    "id": "2cad5a30-e67e-4bca-9aa9-32ff4002d062",
+    "name": "21",
+    "commands": [{
+      "id": "7ec22a2f-8767-48fa-a167-9c9ef212dd83",
+      "comment": "",
+      "command": "open",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "40c741c0-584d-4262-b726-a096098d03dd",
+      "comment": "",
+      "command": "close",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }]
+  }, {
+    "id": "b3f1966f-68c5-4e1d-81ce-71966ab1e472",
+    "name": "22",
+    "commands": [{
+      "id": "5ddee4f4-004e-4fbf-a3ac-a4af58a117ec",
+      "comment": "",
+      "command": "open",
+      "target": "/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "2fdedf38-8d29-499e-9184-f321876e7a3d",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "550x693",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "ab3584cc-7bcd-4fd1-8cfd-61d0a336fe18",
+      "comment": "",
+      "command": "click",
+      "target": "css=.cNtxQ5c1PdvcDe82u_yz9",
+      "targets": [
+        ["css=.cNtxQ5c1PdvcDe82u_yz9", "css:finder"],
+        ["xpath=//div[@id='SearchDropdown']/div/form/label/div", "xpath:idRelative"],
+        ["xpath=//label/div", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "f4bd54f4-1eb2-4206-aa95-448d6a33c336",
+      "comment": "",
+      "command": "mouseOver",
+      "target": "css=.\\_2zZ-KGHbWWqrwGlHWXR90y:nth-child(1) > .\\_1x6pySZ2CoUnAfsFhGe7J1",
+      "targets": [
+        ["css=.\\_2zZ-KGHbWWqrwGlHWXR90y:nth-child(1) > .\\_1x6pySZ2CoUnAfsFhGe7J1", "css:finder"],
+        ["xpath=//div[@id='change-username-tooltip-id']/span/a", "xpath:idRelative"],
+        ["xpath=//a[contains(@href, 'https://chat.reddit.com')]", "xpath:href"],
+        ["xpath=//span/a", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "0affa875-bca8-401c-a470-cca17b5276a0",
+      "comment": "",
+      "command": "mouseOut",
+      "target": "css=.\\_2zZ-KGHbWWqrwGlHWXR90y:nth-child(1) > .\\_1x6pySZ2CoUnAfsFhGe7J1",
+      "targets": [
+        ["css=.\\_2zZ-KGHbWWqrwGlHWXR90y:nth-child(1) > .\\_1x6pySZ2CoUnAfsFhGe7J1", "css:finder"],
+        ["xpath=//div[@id='change-username-tooltip-id']/span/a", "xpath:idRelative"],
+        ["xpath=//a[contains(@href, 'https://chat.reddit.com')]", "xpath:href"],
+        ["xpath=//span/a", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "65341163-de0d-4f60-bb10-b6eb2e15ddfd",
+      "comment": "",
+      "command": "sendKeys",
+      "target": "id=header-search-bar",
+      "targets": [
+        ["id=header-search-bar", "id"],
+        ["name=q", "name"],
+        ["css=#header-search-bar", "css:finder"],
+        ["xpath=//input[@id='header-search-bar']", "xpath:attributes"],
+        ["xpath=//div[@id='SearchDropdown']/div/form/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": "${KEY_ENTER}"
+    }, {
+      "id": "435c7a13-298d-4323-853d-5a8ee7a92727",
+      "comment": "",
+      "command": "sendKeys",
+      "target": "id=header-search-bar",
+      "targets": [
+        ["id=header-search-bar", "id"],
+        ["name=q", "name"],
+        ["css=#header-search-bar", "css:finder"],
+        ["xpath=//input[@id='header-search-bar']", "xpath:attributes"],
+        ["xpath=//div[@id='SearchDropdown']/div/form/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": "${KEY_ENTER}"
+    }, {
+      "id": "efd08972-b516-408d-8be3-5405ee56390e",
+      "comment": "",
+      "command": "close",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }]
+  }, {
+    "id": "cc9d05e4-e9fd-43a2-8ef5-9694bfb4f1e6",
+    "name": "23",
+    "commands": [{
+      "id": "e4c1ae7c-e085-4cc4-88c4-b3c577a480e1",
+      "comment": "",
+      "command": "open",
+      "target": "/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "343a9807-d87d-4bfc-b015-3a1841d6db27",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "1550x838",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "03949f79-2e5d-40e8-a154-8e783d83491e",
+      "comment": "",
+      "command": "click",
+      "target": "id=header-search-bar",
+      "targets": [
+        ["id=header-search-bar", "id"],
+        ["name=q", "name"],
+        ["css=#header-search-bar", "css:finder"],
+        ["xpath=//input[@id='header-search-bar']", "xpath:attributes"],
+        ["xpath=//div[@id='SearchDropdown']/div/form/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "3b34e633-8521-4275-a8fe-4d73b6dd94e7",
+      "comment": "",
+      "command": "click",
+      "target": "id=header-search-bar",
+      "targets": [
+        ["id=header-search-bar", "id"],
+        ["name=q", "name"],
+        ["css=#header-search-bar", "css:finder"],
+        ["xpath=//input[@id='header-search-bar']", "xpath:attributes"],
+        ["xpath=//div[@id='SearchDropdown']/div/form/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "49b2a45a-f339-43e8-a3d8-78887a2cbf5d",
+      "comment": "",
+      "command": "mouseOver",
+      "target": "css=.q_unSaY23rpdd3lDvGZ-",
+      "targets": [
+        ["css=.q_unSaY23rpdd3lDvGZ-", "css:finder"],
+        ["xpath=//div[@id='AppRouter-main-content']/div/div/div[2]/div[2]/div[2]/div/div/div/div/div/button", "xpath:idRelative"],
+        ["xpath=//div[2]/div[2]/div[2]/div/div/div/div/div/button", "xpath:position"],
+        ["xpath=//button[contains(.,'Try Now')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "f3dea9c9-83cc-4547-92b5-3443f1ffa61b",
+      "comment": "",
+      "command": "type",
+      "target": "id=header-search-bar",
+      "targets": [
+        ["id=header-search-bar", "id"],
+        ["name=q", "name"],
+        ["css=#header-search-bar", "css:finder"],
+        ["xpath=//input[@id='header-search-bar']", "xpath:attributes"],
+        ["xpath=//div[@id='SearchDropdown']/div/form/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": "ad"
+    }, {
+      "id": "178926c4-59c6-46a5-9508-bfa6fcb505c0",
+      "comment": "",
+      "command": "click",
+      "target": "css=.icon-clear",
+      "targets": [
+        ["css=.icon-clear", "css:finder"],
+        ["xpath=//button[@id='search-bar-dismiss-button']/i", "xpath:idRelative"],
+        ["xpath=//div[3]/div/button/i", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "c1cd30f3-8db0-4dbb-9e99-22fc40bee3f5",
+      "comment": "",
+      "command": "close",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }]
+  }, {
+    "id": "0b15f4c9-2715-44df-a11f-77ac4157e201",
+    "name": "24",
+    "commands": [{
+      "id": "141bd67e-5e88-4b91-9931-26d811ee3abb",
+      "comment": "",
+      "command": "open",
+      "target": "/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "e4ea3e47-9146-407d-834b-be0e2ce990c6",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "1550x838",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "100293b6-0cc8-415e-820f-6d6cf5660d70",
+      "comment": "",
+      "command": "click",
+      "target": "id=header-search-bar",
+      "targets": [
+        ["id=header-search-bar", "id"],
+        ["name=q", "name"],
+        ["css=#header-search-bar", "css:finder"],
+        ["xpath=//input[@id='header-search-bar']", "xpath:attributes"],
+        ["xpath=//div[@id='SearchDropdown']/div/form/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "8d0f22e3-3e17-453c-836a-12f723d12df7",
+      "comment": "",
+      "command": "type",
+      "target": "id=header-search-bar",
+      "targets": [
+        ["id=header-search-bar", "id"],
+        ["name=q", "name"],
+        ["css=#header-search-bar", "css:finder"],
+        ["xpath=//input[@id='header-search-bar']", "xpath:attributes"],
+        ["xpath=//div[@id='SearchDropdown']/div/form/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": "                          "
+    }, {
+      "id": "53c8696f-8a14-4a7a-9aee-0b114dc025ce",
+      "comment": "",
+      "command": "sendKeys",
+      "target": "id=header-search-bar",
+      "targets": [
+        ["id=header-search-bar", "id"],
+        ["name=q", "name"],
+        ["css=#header-search-bar", "css:finder"],
+        ["xpath=//input[@id='header-search-bar']", "xpath:attributes"],
+        ["xpath=//div[@id='SearchDropdown']/div/form/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": "${KEY_ENTER}"
+    }, {
+      "id": "b5a2dd3a-20d5-4311-afc8-ec51a75a0888",
+      "comment": "",
+      "command": "type",
+      "target": "id=header-search-bar",
+      "targets": [
+        ["id=header-search-bar", "id"],
+        ["name=q", "name"],
+        ["css=#header-search-bar", "css:finder"],
+        ["xpath=//input[@id='header-search-bar']", "xpath:attributes"],
+        ["xpath=//div[@id='SearchDropdown']/div/form/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": "                          "
+    }, {
+      "id": "fb9e1492-90b8-40e2-bbd2-229b2879374f",
+      "comment": "",
+      "command": "sendKeys",
+      "target": "id=header-search-bar",
+      "targets": [
+        ["id=header-search-bar", "id"],
+        ["name=q", "name"],
+        ["css=#header-search-bar", "css:finder"],
+        ["xpath=//input[@id='header-search-bar']", "xpath:attributes"],
+        ["xpath=//div[@id='SearchDropdown']/div/form/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": "${KEY_ENTER}"
+    }, {
+      "id": "570f4445-7cc3-4de4-8c5b-82ba16591b78",
+      "comment": "",
+      "command": "type",
+      "target": "id=header-search-bar",
+      "targets": [
+        ["id=header-search-bar", "id"],
+        ["name=q", "name"],
+        ["css=#header-search-bar", "css:finder"],
+        ["xpath=//input[@id='header-search-bar']", "xpath:attributes"],
+        ["xpath=//div[@id='SearchDropdown']/div/form/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": "                          "
+    }, {
+      "id": "7d7da503-b5e8-4328-bf22-8922c0f7c734",
+      "comment": "",
+      "command": "sendKeys",
+      "target": "id=header-search-bar",
+      "targets": [
+        ["id=header-search-bar", "id"],
+        ["name=q", "name"],
+        ["css=#header-search-bar", "css:finder"],
+        ["xpath=//input[@id='header-search-bar']", "xpath:attributes"],
+        ["xpath=//div[@id='SearchDropdown']/div/form/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": "${KEY_ENTER}"
+    }, {
+      "id": "ec8e33c6-2805-4803-bb29-e93a2efb627c",
+      "comment": "",
+      "command": "close",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }]
+  }, {
+    "id": "0d0410f7-66be-4d97-bc23-0cdbc29ca3bf",
+    "name": "25",
+    "commands": [{
+      "id": "2c180486-a3e6-4c2b-b71a-3a81f84ece45",
+      "comment": "",
+      "command": "open",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "b9982048-4292-4b3b-af7b-1fed04f45485",
+      "comment": "",
+      "command": "close",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }]
+  }, {
+    "id": "6c144e42-7392-4d3f-9bac-0b3bd9f73345",
+    "name": "26",
+    "commands": [{
+      "id": "b1a5bf20-a030-4f98-8952-036af46bcefe",
+      "comment": "",
+      "command": "open",
+      "target": "/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "4eadf371-8cf3-4246-8aa6-aff8e308634f",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "1550x838",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "291d34a7-69f0-4d9e-87a7-6bc314b74775",
+      "comment": "",
+      "command": "click",
+      "target": "css=.\\_3x3dhQasGAuYcXVQ02QUzy",
+      "targets": [
+        ["css=.\\_3x3dhQasGAuYcXVQ02QUzy", "css:finder"],
+        ["xpath=//button[@id='USER_DROPDOWN_ID']/span/i", "xpath:idRelative"],
+        ["xpath=//button/span/i", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "8eee2137-b93c-42df-9e8b-ed95c4462452",
+      "comment": "",
+      "command": "assertElementPresent",
+      "target": "css=.icon-profile",
+      "targets": [
+        ["css=.icon-profile", "css:finder"],
+        ["xpath=//div/span/span/i", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "db571b8c-cbb0-4c4e-a838-164fc76d4adc",
+      "comment": "",
+      "command": "assertElementPresent",
+      "target": "css=.\\_3SDj_IT6ZaqCbKfC4eTjb2:nth-child(4) .\\_2e2g485kpErHhJQUiyvvC2",
+      "targets": [
+        ["css=.\\_3SDj_IT6ZaqCbKfC4eTjb2:nth-child(4) .\\_2e2g485kpErHhJQUiyvvC2", "css:finder"],
+        ["xpath=(//button[@type='button'])[2]", "xpath:attributes"],
+        ["xpath=//div[4]/button/button", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "58fcbe1d-be29-4b0a-8c16-ed1cbf8fbde4",
+      "comment": "",
+      "command": "close",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }]
+  }, {
+    "id": "9eb7c7ed-41b0-4c52-9ed6-d404fb408471",
+    "name": "27",
+    "commands": [{
+      "id": "dc0c67a3-9313-4509-884f-1fe472aa40f1",
+      "comment": "",
+      "command": "open",
+      "target": "/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "a0bb5797-fc07-43cc-b5f7-9f7f7900f707",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "1550x838",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "4887984d-a01e-4fce-b3e3-dbf7bac1ddb5",
+      "comment": "",
+      "command": "click",
+      "target": "linkText=Create Post",
+      "targets": [
+        ["linkText=Create Post", "linkText"],
+        ["css=.\\_326PJFFRv8chYfOlaEYmGt", "css:finder"],
+        ["xpath=//a[contains(text(),'Create Post')]", "xpath:link"],
+        ["xpath=//div[@id='AppRouter-main-content']/div/div/div[2]/div[2]/div[2]/div/div[2]/div/div/div[4]/a", "xpath:idRelative"],
+        ["xpath=(//a[contains(@href, '/submit')])[3]", "xpath:href"],
+        ["xpath=//div[2]/div/div/div[4]/a", "xpath:position"],
+        ["xpath=//a[contains(.,'Create Post')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "1c1270a9-f0be-4899-a4ed-2d6feffcaaee",
+      "comment": "",
+      "command": "click",
+      "target": "css=g > circle:nth-child(1)",
+      "targets": [
+        ["css=g > circle:nth-child(1)", "css:finder"]
+      ],
+      "value": ""
+    }, {
+      "id": "db4e413b-ec81-4411-9e65-947670ac94c7",
+      "comment": "",
+      "command": "assertElementPresent",
+      "target": "css=.q_unSaY23rpdd3lDvGZ-",
+      "targets": [
+        ["css=.q_unSaY23rpdd3lDvGZ-", "css:finder"],
+        ["xpath=//div[@id='AppRouter-main-content']/div/div/div[2]/div[2]/div[2]/div/div/div/div/div/button", "xpath:idRelative"],
+        ["xpath=//div[2]/div[2]/div[2]/div/div/div/div/div/button", "xpath:position"],
+        ["xpath=//button[contains(.,'Try Now')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "7915156c-a068-46a7-8e1e-3a59df2a2bf5",
+      "comment": "",
+      "command": "close",
+      "target": "",
+      "targets": [],
+      "value": ""
+    }]
+  }],
+  "suites": [{
+    "id": "716a6e81-560e-4728-b773-3d3da7d28b16",
+    "name": "Default Suite",
+    "persistSession": false,
+    "parallel": false,
+    "timeout": 300,
+    "tests": []
+  }],
+  "urls": ["https://www.reddit.com/"],
+  "plugins": []
+}
