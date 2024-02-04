@@ -9,9 +9,9 @@ void vigenereEncrypt(std::string& text, const std::string& key) {
     for (int i = 0; i < textLength; ++i) {
         char& c = text[i];
         if (std::isupper(c)) {
-            c = (c - 'A' + key[i % keyLength] - 'A') % 26 + 'A';
+            c = (c - 'A' + std::toupper(key[i % keyLength]) - 'A') % 26 + 'A';
         } else if (std::islower(c)) {
-            c = (c - 'a' + key[i % keyLength] - 'A') % 26 + 'a';
+            c = (c - 'a' + std::toupper(key[i % keyLength]) - 'A') % 26 + 'a';
         }
     }
 }
@@ -23,9 +23,9 @@ void vigenereDecrypt(std::string& text, const std::string& key) {
     for (int i = 0; i < textLength; ++i) {
         char& c = text[i];
         if (std::isupper(c)) {
-            c = (c - 'A' - (key[i % keyLength] - 'A') + 26) % 26 + 'A';
+            c = (c - 'A' - (std::toupper(key[i % keyLength]) - 'A') + 26) % 26 + 'A';
         } else if (std::islower(c)) {
-            c = (c - 'a' - (key[i % keyLength] - 'A') + 26) % 26 + 'a';
+            c = (c - 'a' - (std::toupper(key[i % keyLength]) - 'A') + 26) % 26 + 'a';
         }
     }
 }
