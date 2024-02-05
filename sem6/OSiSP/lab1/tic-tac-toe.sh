@@ -1,4 +1,17 @@
 #!/bin/bash
+screenshotFilePath=$1
+echo -e "++++++++++++++++++++++++++\n" >> "$screenshotFilePath"
+makeScreenshot() {
+    exec 4>&1
+    exec 1>>"$screenshotFilePath"
+    echo " ${board[0]} | ${board[1]} | ${board[2]} " 
+    echo "---+---+---"
+    echo " ${board[3]} | ${board[4]} | ${board[5]} " 
+    echo "---+---+---"
+    echo " ${board[6]} | ${board[7]} | ${board[8]} " 
+    echo -e "\n" 
+    exec 1>&4
+}
 
 board=("1" "2" "3" "4" "5" "6" "7" "8" "9")
 
@@ -69,27 +82,38 @@ moveTo() {
     fi
 }
 
+
 X="X"
 O="O"
-current_player=$X
-game_over=false
+curMarker=$X
+gameOver=false
 
-while [[ $game_over == false ]]
+while [[ $gameOver == false ]]
 do
     clear
     display
-    echo "Current player: $current_player"
-    read -p "Enter your move (1-9): " field
-    moveTo "$field" "$current_player"
+    echo "Current player: $curMarker"
+    read -p "Enter your move (1-9): " field # user also can make a screenshot
+
+    if [[ $field == "ss" ]]; then
+        makeScreenshot
+        continue
+    elif [[ $field -gt 9 || $field -lt 1 ]]; then
+        echo "Invalid move. Try again." >&2
+        sleep 1
+        continue
+    fi
+
+    moveTo "$field" "$curMarker"
     if [[ $? == 0 ]] 
     then
-        checkIfWin board "$current_player"
+        checkIfWin board "$curMarker"
         if [[ $? == 0 ]]
         then
             clear
             display
-            echo "Player $current_player wins!"
-            game_over=true
+            echo "Player $curMarker wins!"
+            gameOver=true
         else
             checkIfTie board
             if [[ $? == 0 ]] 
@@ -97,13 +121,13 @@ do
                 clear
                 display
                 echo "TIE!"
-                game_over=true
+                gameOver=true
             else
-                if [[ $current_player == $X ]] 
+                if [[ $curMarker == $X ]] 
                 then
-                    current_player=$O
+                    curMarker=$O
                 else
-                    current_player=$X
+                    curMarker=$X
                 fi
             fi
         fi
