@@ -1,0 +1,4 @@
+CREATE OR REPLACE PROCEDURE insert_val(p_val IN NUMBER) IS
+BEGIN
+    INSERT INTO MyTable (val) VALUES (p_val);
+END;
