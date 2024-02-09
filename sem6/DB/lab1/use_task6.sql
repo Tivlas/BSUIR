@@ -4,7 +4,8 @@ DECLARE
     v_remuneration NUMBER;
 BEGIN
     v_remuneration := calculate_total_compensation(v_salary, v_percent);
-    IF v_remuneration IS NOT NULL THEN
-        DBMS_OUTPUT.PUT_LINE('Общее вознаграждение за год: ' || v_remuneration);
-    END IF;
+    DBMS_OUTPUT.PUT_LINE('Общее вознаграждение за год: ' || v_remuneration);
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Ошибка: ' || SQLERRM);
 END;

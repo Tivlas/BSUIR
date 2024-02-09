@@ -1,0 +1,1 @@
+SELECT * from MYTABLE where ID = 10002;

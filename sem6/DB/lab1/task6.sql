@@ -9,8 +9,4 @@ BEGIN
     v_percent := p_percent / 100;
     v_remuneration := (1 + v_percent) * 12 * p_salary;
     RETURN v_remuneration;
-EXCEPTION
-    WHEN OTHERS THEN
-        DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
-        RETURN NULL;
 END;
