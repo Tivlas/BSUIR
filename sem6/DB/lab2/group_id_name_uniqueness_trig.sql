@@ -7,7 +7,7 @@ DECLARE
 BEGIN
     SELECT COUNT(*) INTO duplicate_id_count
     FROM groups
-    WHERE group_id = :new.group_id;
+    WHERE id = :new.id;
 
     IF duplicate_id_count > 0 THEN
         RAISE_APPLICATION_ERROR(-20001, 'group_id must be unique');

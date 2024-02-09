@@ -1,1 +1,1 @@
-CREATE INDEX idx_group_name ON groups (LOWER(group_name));
+drop table students_log;
