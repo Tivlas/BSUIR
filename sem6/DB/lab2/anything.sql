@@ -1,1 +1,1 @@
-drop table students_log;
+SELECT * from GROUPS
