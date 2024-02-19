@@ -2,73 +2,84 @@
 #include <boost/asio/io_context.hpp>
 #include <iostream>
 
-class session : public std::enable_shared_from_this<session> {
+#include "../ports.h"
+
+using namespace boost::asio;
+
+class tcp_connection : public std::enable_shared_from_this<tcp_connection> {
    private:
-    boost::asio::ip::tcp::socket socket_;
-    boost::asio::streambuf buff_;
+    ip::tcp::socket socket_;
+    streambuf buff_;
 
    public:
-    session(boost::asio::ip::tcp::socket socket)
-        : socket_(std::move(socket)) {}
+    using conn_shared_ptr = std::shared_ptr<tcp_connection>;
+    ip::tcp::socket& socket() { return socket_; }
 
-    void run() { wait_for_request(); }
-
-   private:
-    void wait_for_request() {
-        boost::asio::async_read_until(
-            socket_, buff_, "\0",
-            std::bind(&session::handle_read, this, std::placeholders::_1,
-                      std::placeholders::_2));
+    void start() {
+        async_read_until(
+            socket_, buff_, '\0',
+            std::bind(&tcp_connection::handle_read_query, shared_from_this(),
+                      std::placeholders::_1, std::placeholders::_2));
     }
 
-    void handle_read(const boost::system::error_code& ec,
-                     std::size_t /*bytes_transferred*/) {
+    static auto create(io_context& io_context) {
+        return conn_shared_ptr(new tcp_connection(io_context));
+    }
+
+   private:
+    tcp_connection(io_context& io_context) : socket_(io_context) {}
+
+    void handle_read_query(const boost::system::error_code& ec,
+                     std::size_t bytes_transferred) {
         if (!ec) {
             std::string data{std::istreambuf_iterator<char>(&buff_),
                              std::istreambuf_iterator<char>()};
             std::cout << data << std::endl;
 
-            boost::asio::async_write(
-                socket_, boost::asio::buffer("abcdefgh\0"),
-                std::bind(&session::handle_write, this, std::placeholders::_1,
-                          std::placeholders::_2));
+            async_write(
+                socket_, buffer("abcdefgh\0"),
+                std::bind(&tcp_connection::handle_write_response, shared_from_this(),
+                          std::placeholders::_1, std::placeholders::_2));
         } else {
-            std::cout << "error: " << ec << std::endl;
+            std::cout << "error: " << ec.message() << std::endl;
         }
     }
 
-    void handle_write(const boost::system::error_code& ec,
+    void handle_write_response(const boost::system::error_code& ec,
                       std::size_t /*bytes_transferred*/) {
         if (!ec) {
-            wait_for_request();
+            start();
         } else {
-            std::cout << "Error sending response: " << ec << std::endl;
+            std::cout << "Error sending response: " << ec.message()
+                      << std::endl;
         }
     }
 };
 
-class server {
+class TGS {
    private:
-    boost::asio::ip::tcp::acceptor acceptor_;
+    io_context& io_context_;
+    ip::tcp::acceptor acceptor_;
 
    public:
-    server(boost::asio::io_context& io_context, short port)
-        : acceptor_(io_context, boost::asio::ip::tcp::endpoint(
-                                    boost::asio::ip::tcp::v4(), port)) {
+    TGS(io_context& io_context, short port)
+        : io_context_(io_context),
+          acceptor_(io_context, ip::tcp::endpoint(ip::tcp::v4(), port)) {
         accept();
     }
 
    private:
     void accept() {
-        acceptor_.async_accept(std::bind(&server::handle_accept, this,
-                                         std::placeholders::_1,
-                                         std::placeholders::_2));
+        auto tcp_conn = tcp_connection::create(io_context_);
+        acceptor_.async_accept(tcp_conn->socket(),
+                               std::bind(&TGS::handle_accept, this, tcp_conn,
+                                         std::placeholders::_1));
     }
 
-    void handle_accept(const boost::system::error_code& ec,
-                       boost::asio::ip::tcp::socket socket) {
+    void handle_accept(std::shared_ptr<tcp_connection> tcp_conn,
+                       const boost::system::error_code& ec) {
         if (!ec) {
-            std::make_shared<session>(std::move(socket))->run();
+            tcp_conn->start();
         } else {
             std::cout << ec.message() << '\n';
         }
@@ -77,8 +88,8 @@ class server {
 };
 
 int main(int argc, char* argv[]) {
-    boost::asio::io_context io_context;
-    server s(io_context, 1234);
+    io_context io_context;
+    TGS s(io_context, ports::SS_PORT);
     io_context.run();
     return 0;
 }

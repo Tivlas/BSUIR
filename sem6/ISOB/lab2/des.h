@@ -1,6 +1,8 @@
 #include <bitset>
-#include <vector>
 #include <stdexcept>
+#include <vector>
+
+namespace des {
 
 std::bitset<32> S_boxes(const std::bitset<48> &s) {
     constexpr int boxes[8][4][16] = {
@@ -242,26 +244,30 @@ std::bitset<64> decrypt(std::bitset<64> data, std::bitset<64> key) {
     return lr;
 }
 
-std::bitset<64> str_to_bits(const std::string &text) {
+std::bitset<64> str_to_bits(const std::string &s) {
     std::bitset<64> bits;
-    size_t size = text.size();
-    if (size > 8) {
-        throw std::invalid_argument("Text length exceeds 8 characters.");
-    }
-    for (size_t i = 0; i < size; ++i) {
-        char c = text[i];
-        bits <<= 8;
-        bits |= std::bitset<64>(static_cast<unsigned char>(c));
+    std::bitset<8> temp;
+    for (int i = 0; i < s.size(); i++) {
+        temp = std::bitset<8>(s[i]);
+
+        for (int j = 0; j < 8; j++) {
+            bits[j + 8 * i] = temp[j];
+        }
     }
     return bits;
 }
 
 std::string bits_to_str(const std::bitset<64> &bits) {
-    std::string text;
-    std::bitset<64> mask(0xFF);
-    for (size_t i = 0; i < 8; ++i) {
-        char c = static_cast<char>(((bits >> (56 - i * 8)) & mask).to_ulong());
-        text.push_back(c);
+    std::string s;
+    std::bitset<8> temp;
+
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            temp[j] = bits[j + i * 8];
+        }
+        if (temp.to_ulong() == 0) break;
+        s += static_cast<char>(temp.to_ulong());
     }
-    return text;
+    return s;
 }
+}  // namespace des
