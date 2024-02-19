@@ -35,7 +35,9 @@ class tcp_connection : public std::enable_shared_from_this<tcp_connection> {
 
    private:
     tcp_connection(boost::asio::io_context& io_context)
-        : socket_(io_context), known_clients_({"den", "tima", "vadik"}) {}
+        : socket_(io_context), known_clients_({"den", "tima", "vadik"}) {
+        buff_.prepare(1024);
+    }
 
     void handle_read_query(const boost::system::error_code& ec, std::size_t) {
         if (!ec) {
