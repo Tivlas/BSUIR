@@ -11,7 +11,7 @@
 
 using namespace boost::asio;
 
-class tcp_connection : public std::enable_shared_from_this<tcp_connection> {
+class as_connection : public std::enable_shared_from_this<as_connection> {
    private:
     ip::tcp::socket socket_;
     streambuf buff_;
@@ -19,22 +19,22 @@ class tcp_connection : public std::enable_shared_from_this<tcp_connection> {
     std::unordered_map<std::string, std::string> response_;
 
    public:
-    using conn_shared_ptr = std::shared_ptr<tcp_connection>;
+    using conn_shared_ptr = std::shared_ptr<as_connection>;
     ip::tcp::socket& socket() { return socket_; }
 
     void start() {
         async_read_until(
             socket_, buff_, '\0',
-            std::bind(&tcp_connection::handle_read_query, shared_from_this(),
+            std::bind(&as_connection::handle_read_query, shared_from_this(),
                       std::placeholders::_1, std::placeholders::_2));
     }
 
     static auto create(boost::asio::io_context& io_context) {
-        return conn_shared_ptr(new tcp_connection(io_context));
+        return conn_shared_ptr(new as_connection(io_context));
     }
 
    private:
-    tcp_connection(boost::asio::io_context& io_context)
+    as_connection(boost::asio::io_context& io_context)
         : socket_(io_context), known_clients_({"den", "tima", "vadik"}) {
         buff_.prepare(1024);
     }
@@ -48,7 +48,7 @@ class tcp_connection : public std::enable_shared_from_this<tcp_connection> {
                 encrypt_response(login);
                 auto response_json = get_json_response();
                 async_write(socket_, buffer(response_json + '\0'),
-                            std::bind(&tcp_connection::handle_write_response,
+                            std::bind(&as_connection::handle_write_response,
                                       shared_from_this(), std::placeholders::_1,
                                       std::placeholders::_2));
             } else {
@@ -115,13 +115,13 @@ class tcp_connection : public std::enable_shared_from_this<tcp_connection> {
     }
 };
 
-class TGS {
+class AS {
    private:
     io_context& io_context_;
     ip::tcp::acceptor acceptor_;
 
    public:
-    TGS(boost::asio::io_context& io_context, short port)
+    AS(boost::asio::io_context& io_context, short port)
         : io_context_(io_context),
           acceptor_(io_context, ip::tcp::endpoint(ip::tcp::v4(), port)) {
         accept();
@@ -129,13 +129,13 @@ class TGS {
 
    private:
     void accept() {
-        auto tcp_conn = tcp_connection::create(io_context_);
+        auto tcp_conn = as_connection::create(io_context_);
         acceptor_.async_accept(tcp_conn->socket(),
-                               std::bind(&TGS::handle_accept, this, tcp_conn,
+                               std::bind(&AS::handle_accept, this, tcp_conn,
                                          std::placeholders::_1));
     }
 
-    void handle_accept(std::shared_ptr<tcp_connection> tcp_conn,
+    void handle_accept(std::shared_ptr<as_connection> tcp_conn,
                        const boost::system::error_code& ec) {
         if (!ec) {
             tcp_conn->start();
