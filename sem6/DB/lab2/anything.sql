@@ -9,3 +9,5 @@ SELECT *
 FROM students;
 
 CALL restore_students_state('09-FEB-24 11.23.11.505000000 PM');
+
+DELETE from GROUPS WHERE ID = 3;
