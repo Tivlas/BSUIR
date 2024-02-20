@@ -70,18 +70,10 @@ class ss_connection : public std::enable_shared_from_this<ss_connection> {
         }
     }
 
-    void communicate(){};
-
-    void handle_communicate_read(const boost::system::error_code& ec,
-                                 std::size_t) {}
-    void handle_communicate_write(const boost::system::error_code& ec,
-                                  std::size_t) {}
-
     void handle_write_response(const boost::system::error_code& ec,
                                std::size_t) {
         if (!ec) {
             print("response sent successfully.");
-            communicate();
         } else {
             print("error sending response.");
         }

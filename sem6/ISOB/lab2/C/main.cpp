@@ -148,7 +148,19 @@ std::string get_request_json() {
     return json;
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+    if (argc < 2) {
+        std::cout << "You must pass client login." << std::endl;
+        return 0;
+    }
+
+    char* argument = argv[1];
+    if (std::strlen(argument) > 8) {
+        std::cout << "Login length have to be <= 8." << std::endl;
+        return 1;
+    }
+    login = std::string(argument);
+
     io_context io_context;
     ip::tcp::socket sock(io_context);
     ip::tcp::resolver resolver(io_context);
