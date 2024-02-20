@@ -1,4 +1,5 @@
 #pragma once
+#include <bitset>
 #include <boost/asio.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/lexical_cast.hpp>
@@ -14,21 +15,21 @@ using namespace boost::asio;
 
 class tgs_connection : public std::enable_shared_from_this<tgs_connection> {
    private:
+    std::bitset<64> K_C_TGS;
     ip::tcp::socket socket_;
     streambuf buff_;
     std::unordered_map<std::string, std::string> response_;
-    std::unordered_map<std::string, std::string> query_;
-    std::unordered_map<std::string, std::string> decrypted_query_;
+    std::unordered_map<std::string, std::string> request_;
+    std::unordered_map<std::string, std::string> decrypted_request_;
 
    public:
     using conn_shared_ptr = std::shared_ptr<tgs_connection>;
     ip::tcp::socket& socket() { return socket_; }
 
     void start() {
-        print("waiting for client request...");
         async_read_until(
             socket_, buff_, '\0',
-            std::bind(&tgs_connection::handle_read_query, shared_from_this(),
+            std::bind(&tgs_connection::handle_read_request, shared_from_this(),
                       std::placeholders::_1, std::placeholders::_2));
     }
 
@@ -45,13 +46,13 @@ class tgs_connection : public std::enable_shared_from_this<tgs_connection> {
         std::cout << "TGS: " << msg << std::endl;
     }
 
-    void handle_read_query(const boost::system::error_code& ec, std::size_t) {
+    void handle_read_request(const boost::system::error_code& ec, std::size_t) {
         if (!ec) {
             std::string json_data{std::istreambuf_iterator<char>(&buff_),
                                   std::istreambuf_iterator<char>()};
             json_data.pop_back();
-            parse_query(json_data);
-            decrypt_query();
+            parse_request(json_data);
+            decrypt_request();
             if (!ok()) {
                 socket_.close();
                 return;
@@ -77,57 +78,70 @@ class tgs_connection : public std::enable_shared_from_this<tgs_connection> {
         }
     }
 
-    void parse_query(const std::string& json_query) {
-        nlohmann::json json_data = nlohmann::json::parse(json_query);
+    void parse_request(const std::string& json_request) {
+        nlohmann::json json_data = nlohmann::json::parse(json_request);
         for (auto it = json_data.begin(); it != json_data.end(); ++it)
-            query_[it.key()] = it.value();
+            request_[it.key()] = it.value();
     }
 
-    void decrypt_query() {
-        auto tgt_c = std::bitset<64>(query_["tgt_c"]);
-        tgt_c = des::decrypt(tgt_c, keys::K_AS_TGS);
-        decrypted_query_["tgt_c"] = des::bits_to_str(tgt_c);
+    void decrypt_request() {
+        print("STEP 4: encrypted request from C");
+        for (const auto& [key, value] : request_) {
+            print(key + " " + value);
+        }
+        std::cout << std::endl;
 
-        auto aut_c = std::bitset<64>(query_["aut_c"]);
-        aut_c = des::decrypt(aut_c, keys::K_C_TGS);
-        decrypted_query_["aut_c"] = des::bits_to_str(aut_c);
-
-        auto tgt_tgs = std::bitset<64>(query_["tgt_tgs"]);
-        tgt_tgs = des::decrypt(tgt_tgs, keys::K_AS_TGS);
-        decrypted_query_["tgt_tgs"] = des::bits_to_str(tgt_tgs);
-
-        auto tgt_t1 = std::bitset<64>(query_["tgt_t1"]);
-        tgt_t1 = des::decrypt(tgt_t1, keys::K_AS_TGS);
-        decrypted_query_["tgt_t1"] = des::bits_to_str(tgt_t1);
-
-        auto tgt_p1 = std::bitset<64>(query_["tgt_p1"]);
-        tgt_p1 = des::decrypt(tgt_p1, keys::K_AS_TGS);
-        decrypted_query_["tgt_p1"] = des::bits_to_str(tgt_p1);
-
-        auto tgt_k_c_tgs = std::bitset<64>(query_["tgt_k_c_tgs"]);
+        auto tgt_k_c_tgs = std::bitset<64>(request_["tgt_k_c_tgs"]);
         tgt_k_c_tgs = des::decrypt(tgt_k_c_tgs, keys::K_AS_TGS);
-        decrypted_query_["tgt_k_c_tgs"] = tgt_k_c_tgs.to_string();
+        decrypted_request_["tgt_k_c_tgs"] = tgt_k_c_tgs.to_string();
+        K_C_TGS = tgt_k_c_tgs;  // remember key
 
-        auto aut_t2 = std::bitset<64>(query_["aut_t2"]);
-        aut_t2 = des::decrypt(aut_t2, keys::K_C_TGS);
-        decrypted_query_["aut_t2"] = des::bits_to_str(aut_t2);
+        auto aut_c = std::bitset<64>(request_["aut_c"]);
+        aut_c = des::decrypt(aut_c, K_C_TGS);
+        decrypted_request_["aut_c"] = des::bits_to_str(aut_c);
 
-        decrypted_query_["ID"] = query_["ID"];
+        auto aut_t2 = std::bitset<64>(request_["aut_t2"]);
+        aut_t2 = des::decrypt(aut_t2, K_C_TGS);
+        decrypted_request_["aut_t2"] = std::to_string(aut_t2.to_ullong());
+
+        auto tgt_c = std::bitset<64>(request_["tgt_c"]);
+        tgt_c = des::decrypt(tgt_c, keys::K_AS_TGS);
+        decrypted_request_["tgt_c"] = des::bits_to_str(tgt_c);
+
+        auto tgt_tgs = std::bitset<64>(request_["tgt_tgs"]);
+        tgt_tgs = des::decrypt(tgt_tgs, keys::K_AS_TGS);
+        decrypted_request_["tgt_tgs"] = des::bits_to_str(tgt_tgs);
+
+        auto tgt_t1 = std::bitset<64>(request_["tgt_t1"]);
+        tgt_t1 = des::decrypt(tgt_t1, keys::K_AS_TGS);
+        decrypted_request_["tgt_t1"] = std::to_string(tgt_t1.to_ullong());
+
+        auto tgt_p1 = std::bitset<64>(request_["tgt_p1"]);
+        tgt_p1 = des::decrypt(tgt_p1, keys::K_AS_TGS);
+        decrypted_request_["tgt_p1"] = std::to_string(tgt_p1.to_ullong());
+
+        decrypted_request_["ID"] = request_["ID"];
+
+        print("STEP 4: decrypted request from C");
+        for (const auto& [key, value] : decrypted_request_) {
+            print(key + " " + value);
+        }
+        std::cout << std::endl;
     }
 
     bool ok() {
         bool ok;
-        ok = decrypted_query_["tgt_c"] == decrypted_query_["aut_c"];
+        ok = decrypted_request_["tgt_c"] == decrypted_request_["aut_c"];
         if (!ok) return false;
 
-        ok = decrypted_query_["tgt_tgs"] == "tgs";
+        ok = decrypted_request_["tgt_tgs"] == "tgs";
         if (!ok) return false;
 
         int64_t t1, t2, p1;
         try {
-            t1 = boost::lexical_cast<int64_t>(decrypted_query_["tgt_t1"]);
-            t2 = boost::lexical_cast<int64_t>(decrypted_query_["aut_t2"]);
-            p1 = boost::lexical_cast<int64_t>(decrypted_query_["tgt_p1"]);
+            t1 = boost::lexical_cast<int64_t>(decrypted_request_["tgt_t1"]);
+            t2 = boost::lexical_cast<int64_t>(decrypted_request_["aut_t2"]);
+            p1 = boost::lexical_cast<int64_t>(decrypted_request_["tgt_p1"]);
         } catch (const std::exception& e) {
             std::cerr << e.what() << '\n';
         }
@@ -136,36 +150,40 @@ class tgs_connection : public std::enable_shared_from_this<tgs_connection> {
     }
 
     void encrypt_response() {
-        auto tgs_c = des::str_to_bits(decrypted_query_["tgt_c"]);
+        auto tgs_c = des::str_to_bits(decrypted_request_["tgt_c"]);
         tgs_c = des::encrypt(tgs_c, keys::K_TGS_SS);
-        tgs_c = des::encrypt(tgs_c, keys::K_C_TGS);
+        tgs_c = des::encrypt(tgs_c, K_C_TGS);
         response_["tgs_c"] = tgs_c.to_string();
 
         auto ss = des::str_to_bits("ss");
         ss = des::encrypt(ss, keys::K_TGS_SS);
-        ss = des::encrypt(ss, keys::K_C_TGS);
+        ss = des::encrypt(ss, K_C_TGS);
         response_["tgs_ss"] = ss.to_string();
 
         auto t3 = std::chrono::duration_cast<std::chrono::seconds>(
                       std::chrono::system_clock::now().time_since_epoch())
                       .count();
-        auto enc_t3 = des::str_to_bits(std::to_string(t3));
-        enc_t3 = des::encrypt(enc_t3, keys::K_TGS_SS);
-        enc_t3 = des::encrypt(enc_t3, keys::K_C_TGS);
+        auto enc_t3 = des::encrypt(t3, keys::K_TGS_SS);
+        enc_t3 = des::encrypt(enc_t3, K_C_TGS);
         response_["tgs_t3"] = enc_t3.to_string();
 
         int64_t p2 = 10;
-        auto enc_p2 = des::str_to_bits(std::to_string(p2));
-        enc_p2 = des::encrypt(enc_p2, keys::K_TGS_SS);
-        enc_p2 = des::encrypt(enc_p2, keys::K_C_TGS);
+        auto enc_p2 = des::encrypt(p2, keys::K_TGS_SS);
+        enc_p2 = des::encrypt(enc_p2, K_C_TGS);
         response_["tgs_p2"] = enc_p2.to_string();
 
         auto tgs_k_c_ss = des::encrypt(keys::K_C_SS, keys::K_TGS_SS);
-        tgs_k_c_ss = des::encrypt(tgs_k_c_ss, keys::K_C_TGS);
+        tgs_k_c_ss = des::encrypt(tgs_k_c_ss, K_C_TGS);
         response_["tgs_k_c_ss"] = tgs_k_c_ss.to_string();
 
-        auto k_c_ss = des::encrypt(keys::K_C_SS, keys::K_C_TGS);
+        auto k_c_ss = des::encrypt(keys::K_C_SS, K_C_TGS);
         response_["k_c_ss"] = k_c_ss.to_string();
+
+        print("STEP 4: response to C");
+        for (const auto& [key, value] : response_) {
+            print(key + " " + value);
+        }
+        std::cout << std::endl;
     }
 
     std::string get_json_response() {

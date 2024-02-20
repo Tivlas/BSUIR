@@ -24,7 +24,6 @@ class as_connection : public std::enable_shared_from_this<as_connection> {
     ip::tcp::socket& socket() { return socket_; }
 
     void start() {
-        print("reading login...");
         async_read_until(
             socket_, buff_, '\0',
             std::bind(&as_connection::handle_read_query, shared_from_this(),
@@ -50,12 +49,10 @@ class as_connection : public std::enable_shared_from_this<as_connection> {
             std::string login{std::istreambuf_iterator<char>(&buff_),
                               std::istreambuf_iterator<char>()};
             login.pop_back();
-
+            print("Request from C: " + login);
             if (known_clients_.contains(login)) {
-                print("sending response to client " + login + "...");
                 encrypt_response(login);
                 auto response_json = get_json_response();
-                print(response_json);
                 async_write(socket_, buffer(response_json + '\0'),
                             std::bind(&as_connection::handle_write_response,
                                       shared_from_this(), std::placeholders::_1,
@@ -93,14 +90,12 @@ class as_connection : public std::enable_shared_from_this<as_connection> {
         auto t1 = std::chrono::duration_cast<std::chrono::seconds>(
                       std::chrono::system_clock::now().time_since_epoch())
                       .count();
-        auto enc_t1 = des::str_to_bits(std::to_string(t1));
-        enc_t1 = des::encrypt(enc_t1, keys::K_AS_TGS);
+        auto enc_t1 = des::encrypt(t1, keys::K_AS_TGS);
         enc_t1 = des::encrypt(enc_t1, keys::K_C);
         response_["tgt_t1"] = enc_t1.to_string();
 
         int64_t p1 = 10;
-        auto enc_p1 = des::str_to_bits(std::to_string(p1));
-        enc_p1 = des::encrypt(enc_p1, keys::K_AS_TGS);
+        auto enc_p1 = des::encrypt(p1, keys::K_AS_TGS);
         enc_p1 = des::encrypt(enc_p1, keys::K_C);
         response_["tgt_p1"] = enc_p1.to_string();
 
@@ -110,6 +105,12 @@ class as_connection : public std::enable_shared_from_this<as_connection> {
 
         auto k_c_tgs = des::encrypt(keys::K_C_TGS, keys::K_C);
         response_["k_c_tgs"] = k_c_tgs.to_string();
+
+        print("STEP 2: response to C");
+        for (const auto& [key, value] : response_) {
+            print(key + " " + value);
+        }
+        std::cout << std::endl;
     }
 
     std::string get_json_response() {
