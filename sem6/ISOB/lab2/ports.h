@@ -1,3 +1,4 @@
+#pragma once
 namespace ports {
 const short C_PORT = 7000;
 const short SS_PORT = 7001;

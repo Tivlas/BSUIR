@@ -1,3 +1,4 @@
+#pragma once
 #include <boost/asio.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/lexical_cast.hpp>
@@ -6,7 +7,7 @@
 #include <unordered_set>
 
 #include "des.h"
-#include "json.hpp"
+#include "json.h"
 #include "keys.h"
 
 using namespace boost::asio;
@@ -24,6 +25,7 @@ class tgs_connection : public std::enable_shared_from_this<tgs_connection> {
     ip::tcp::socket& socket() { return socket_; }
 
     void start() {
+        print("waiting for client request...");
         async_read_until(
             socket_, buff_, '\0',
             std::bind(&tgs_connection::handle_read_query, shared_from_this(),
@@ -39,11 +41,15 @@ class tgs_connection : public std::enable_shared_from_this<tgs_connection> {
         buff_.prepare(1024);
     }
 
+    void print(const std::string& msg) {
+        std::cout << "TGS: " << msg << std::endl;
+    }
+
     void handle_read_query(const boost::system::error_code& ec, std::size_t) {
         if (!ec) {
             std::string json_data{std::istreambuf_iterator<char>(&buff_),
                                   std::istreambuf_iterator<char>()};
-
+            json_data.pop_back();
             parse_query(json_data);
             decrypt_query();
             if (!ok()) {
@@ -58,16 +64,16 @@ class tgs_connection : public std::enable_shared_from_this<tgs_connection> {
                                   std::placeholders::_2));
 
         } else {
-            std::cout << "Error reading data." << std::endl;
+            print("error reading data.");
         }
     }
 
     void handle_write_response(const boost::system::error_code& ec,
                                std::size_t) {
         if (!ec) {
-            std::cout << "Response sent successfully." << std::endl;
+            print("response sent successfully.");
         } else {
-            std::cout << "Error sending response." << std::endl;
+            print("error sending response.");
         }
     }
 
@@ -194,7 +200,7 @@ class TGS {
         if (!ec) {
             tcp_conn->start();
         } else {
-            std::cout << ec.message() << '\n';
+            std::cout << "TGS: error accepting connection." << std::endl;
         }
         accept();
     }

@@ -1,3 +1,4 @@
+#pragma once
 #include <bitset>
 #include <stdexcept>
 #include <vector>
@@ -50,12 +51,12 @@ std::bitset<32> S_boxes(const std::bitset<48> &s) {
     constexpr std::bitset<48> six_set((2 << 6) - 1);
     constexpr std::bitset<6> four_set((2 << 4) - 1);
 
-    for (int i = 0; i < 8; i++) {
+    for (size_t i = 0; i < 8; i++) {
         std::bitset<6> box_in(((s >> 6 * i) & six_set).to_ulong());
         std::bitset<4> column(((box_in >> 1) & four_set).to_ulong());
         std::bitset<4> box_out(
             boxes[i][box_in[0] * 2 + box_in[5]][column.to_ulong()]);
-        for (int j = i * 4; j < (i + 1) * 4; j++) {
+        for (size_t j = i * 4; j < (i + 1) * 4; j++) {
             result[j] = box_out[j - i * 4];
         }
     }
@@ -68,7 +69,7 @@ void P(std::bitset<32> &s) {
                            26, 5, 18, 31, 10, 2,  8,  24, 14, 32, 27,
                            3,  9, 19, 13, 30, 6,  22, 11, 4,  25};
     std::bitset<32> temp;
-    for (int i = 0; i < 32; i++) {
+    for (size_t i = 0; i < 32; i++) {
         temp[i] = s[p[i] - 1];
     }
     s = temp;
@@ -83,7 +84,7 @@ void initial_permutation(std::bitset<64> &bs) {
 
     std::bitset<64> temp;
 
-    for (int i = 0; i < 64; i++) {
+    for (size_t i = 0; i < 64; i++) {
         temp[i] = bs[p[i] - 1];
     }
 
@@ -99,7 +100,7 @@ void final_permutation(std::bitset<64> &bs) {
 
     std::bitset<64> temp;
 
-    for (int i = 0; i < 64; i++) {
+    for (size_t i = 0; i < 64; i++) {
         temp[i] = bs[p[i] - 1];
     }
 
@@ -119,10 +120,10 @@ template <size_t N>
 std::bitset<2 * N> merge_halves(const std::bitset<N> &left,
                                 const std::bitset<N> &right) {
     std::bitset<2 * N> result;
-    for (int i = 0; i < N; i++) {
+    for (size_t i = 0; i < N; i++) {
         result[i] = right[i];
     }
-    for (int i = 0; i < N; i++) {
+    for (size_t i = 0; i < N; i++) {
         result[N + i] = left[i];
     }
     return result;
@@ -135,7 +136,7 @@ std::bitset<56> PC_1(const std::bitset<64> &s) {
                            62, 54, 46, 38, 30, 22, 14, 6,  61, 53, 45, 37,
                            29, 21, 13, 5,  28, 20, 12, 4};
     std::bitset<56> result;
-    for (int i = 0; i < 56; i++) {
+    for (size_t i = 0; i < 56; i++) {
         result[i] = s[p[i] - 1];
     }
     return result;
@@ -147,7 +148,7 @@ std::bitset<48> PC_2(const std::bitset<56> &s) {
                            41, 52, 31, 37, 47, 55, 30, 40, 51, 45, 33, 48,
                            44, 49, 39, 56, 34, 53, 46, 42, 50, 36, 29, 32};
     std::bitset<48> result;
-    for (int i = 0; i < 48; i++) {
+    for (size_t i = 0; i < 48; i++) {
         result[i] = s[p[i] - 1];
     }
     return result;
@@ -173,10 +174,10 @@ std::bitset<48> expand(const std::bitset<32> &Ri) {
     std::bitset<48> result;
     result[0] = Ri[31];
     result[47] = Ri[0];
-    for (int i = 0; i < 8; i++) {
+    for (size_t i = 0; i < 8; i++) {
         if (i != 0) result[i * 6] = Ri[i * 4 - 1];
         if (i != 7) result[i * 6 + 5] = Ri[(i + 1) * 4];
-        for (int j = 1; j < 5; j++) {
+        for (size_t j = 1; j < 5; j++) {
             result[i * 6 + j] = Ri[i * 4 + j - 1];
         }
     }
@@ -247,10 +248,10 @@ std::bitset<64> decrypt(std::bitset<64> data, std::bitset<64> key) {
 std::bitset<64> str_to_bits(const std::string &s) {
     std::bitset<64> bits;
     std::bitset<8> temp;
-    for (int i = 0; i < s.size(); i++) {
+    for (size_t i = 0; i < s.size(); i++) {
         temp = std::bitset<8>(s[i]);
 
-        for (int j = 0; j < 8; j++) {
+        for (size_t j = 0; j < 8; j++) {
             bits[j + 8 * i] = temp[j];
         }
     }
@@ -261,8 +262,8 @@ std::string bits_to_str(const std::bitset<64> &bits) {
     std::string s;
     std::bitset<8> temp;
 
-    for (int i = 0; i < 8; i++) {
-        for (int j = 0; j < 8; j++) {
+    for (size_t i = 0; i < 8; i++) {
+        for (size_t j = 0; j < 8; j++) {
             temp[j] = bits[j + i * 8];
         }
         if (temp.to_ulong() == 0) break;

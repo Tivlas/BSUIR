@@ -1,3 +1,4 @@
+#pragma once
 #include <boost/asio.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/lexical_cast.hpp>
@@ -6,7 +7,7 @@
 #include <unordered_set>
 
 #include "des.h"
-#include "json.hpp"
+#include "json.h"
 #include "keys.h"
 
 using namespace boost::asio;
@@ -39,14 +40,19 @@ class ss_connection : public std::enable_shared_from_this<ss_connection> {
         buff_.prepare(1024);
     }
 
+    void print(const std::string& msg) {
+        std::cout << "SS: " << msg << std::endl;
+    }
+
     void handle_read_query(const boost::system::error_code& ec, std::size_t) {
         if (!ec) {
             std::string json_data{std::istreambuf_iterator<char>(&buff_),
                                   std::istreambuf_iterator<char>()};
-
+            json_data.pop_back();
             parse_query(json_data);
             decrypt_query();
             if (!ok()) {
+                print("client is not ok.");
                 socket_.close();
                 return;
             }
@@ -58,7 +64,7 @@ class ss_connection : public std::enable_shared_from_this<ss_connection> {
                                   std::placeholders::_2));
 
         } else {
-            std::cout << "Error reading data." << std::endl;
+            print("error reading data.");
         }
     }
 
@@ -72,10 +78,10 @@ class ss_connection : public std::enable_shared_from_this<ss_connection> {
     void handle_write_response(const boost::system::error_code& ec,
                                std::size_t) {
         if (!ec) {
-            std::cout << "Response sent successfully." << std::endl;
+            print("response sent successfully.");
             communicate();
         } else {
-            std::cout << "Error sending response." << std::endl;
+            print("error sending response.");
         }
     }
 
@@ -113,15 +119,23 @@ class ss_connection : public std::enable_shared_from_this<ss_connection> {
         auto aut_t4 = std::bitset<64>(query_["aut_t4"]);
         aut_t4 = des::decrypt(aut_t4, keys::K_C_SS);
         decrypted_query_["aut_t4"] = des::bits_to_str(aut_t4);
+        std::cout << decrypted_query_["aut_t4"] << std::endl;
     }
 
     bool ok() {
         bool ok;
         ok = decrypted_query_["tgs_c"] == decrypted_query_["aut_c"];
-        if (!ok) return false;
+        if (!ok) {
+            print("client identifiers are not equal.");
+            print(decrypted_query_["tgs_c"] + " " + decrypted_query_["aut_c"]);
+            return false;
+        }
 
         ok = decrypted_query_["tgs_ss"] == "ss";
-        if (!ok) return false;
+        if (!ok) {
+            print("ss identifiers are not equal.");
+            return false;
+        }
 
         int64_t t3, t4, p2;
         try {
@@ -133,6 +147,9 @@ class ss_connection : public std::enable_shared_from_this<ss_connection> {
             return false;
         }
         ok = t4 < (t3 + p2);
+        if (!ok) {
+            print("time limit.");
+        }
         return ok;
     }
 
