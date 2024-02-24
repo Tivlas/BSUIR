@@ -130,6 +130,7 @@ CREATE OR REPLACE PROCEDURE compare_schemas (
         END LOOP;
 
         dbms_output.put_line('DDL-script for updating table ' || p_table_name || ' {' || chr(10));
+        ddl_script  := replace(ddl_script, dev_schema_name, prod_schema_name);
         dbms_output.put_line(ddl_script);
         RETURN v_identical;
     END are_tables_identical;
@@ -226,6 +227,7 @@ BEGIN
         END IF;
     END LOOP;
 
+    ddl_script        := replace(ddl_script, dev_schema_name, prod_schema_name);
     dbms_output.put_line(ddl_script);
     SELECT object_name BULK COLLECT INTO dev_procs
     FROM all_objects
@@ -285,6 +287,7 @@ BEGIN
         ddl_script := ddl_script || dbms_metadata.get_ddl('PROCEDURE', dev_only_procs(i), dev_schema_name);
     END LOOP;
 
+    ddl_script        := replace(ddl_script, dev_schema_name, prod_schema_name);
     dbms_output.put_line(ddl_script);
     dbms_output.put_line('Only PROD procedures =========================');
     ddl_script        := '';
@@ -292,6 +295,7 @@ BEGIN
         ddl_script := ddl_script || dbms_metadata.get_ddl('PROCEDURE', prod_only_procs(i), prod_schema_name);
     END LOOP;
 
+    ddl_script        := replace(ddl_script, dev_schema_name, prod_schema_name);
     dbms_output.put_line(ddl_script);
     dbms_output.put_line(chr(10) || 'Procedures that have different parameters =========================');
     ddl_script        := '';
@@ -300,6 +304,7 @@ BEGIN
         ddl_script := ddl_script || dbms_metadata.get_ddl('PROCEDURE', different_procs(i), dev_schema_name);
     END LOOP;
 
+    ddl_script        := replace(ddl_script, dev_schema_name, prod_schema_name);
     dbms_output.put_line(ddl_script);
     SELECT object_name BULK COLLECT INTO dev_funcs
     FROM all_objects
@@ -359,6 +364,7 @@ BEGIN
         ddl_script := ddl_script || dbms_metadata.get_ddl('FUNCTION', different_funcs(i), dev_schema_name);
     END LOOP;
 
+    ddl_script        := replace(ddl_script, dev_schema_name, prod_schema_name);
     dbms_output.put_line(ddl_script);
     dbms_output.put_line(chr(10) || 'Only PROD functions =========================');
     ddl_script        := '';
@@ -366,6 +372,7 @@ BEGIN
         ddl_script := ddl_script || dbms_metadata.get_ddl('FUNCTION', different_funcs(i), prod_schema_name);
     END LOOP;
 
+    ddl_script        := replace(ddl_script, dev_schema_name, prod_schema_name);
     dbms_output.put_line(ddl_script);
     dbms_output.put_line(chr(10) || 'Functions with different parameters or return type =========================');
     ddl_script        := '';
@@ -374,6 +381,7 @@ BEGIN
         ddl_script := ddl_script || dbms_metadata.get_ddl('FUNCTION', different_funcs(i), dev_schema_name);
     END LOOP;
 
+    ddl_script        := replace(ddl_script, dev_schema_name, prod_schema_name);
     dbms_output.put_line(ddl_script);
     SELECT index_name BULK COLLECT INTO dev_indexes
     FROM all_indexes
@@ -391,6 +399,7 @@ BEGIN
         ddl_script := ddl_script || dbms_metadata.get_ddl('INDEX', dev_only_indexes(i), dev_schema_name);
     END LOOP;
 
+    ddl_script        := replace(ddl_script, dev_schema_name, prod_schema_name);
     dbms_output.put_line(ddl_script);
     dbms_output.put_line('Only PROD indexes =========================');
     ddl_script        := '';
@@ -398,5 +407,6 @@ BEGIN
         ddl_script := ddl_script || 'DROP INDEX' || prod_schema_name || '.' || prod_only_indexes(i) || ';';
     END LOOP;
 
+    ddl_script        := replace(ddl_script, dev_schema_name, prod_schema_name);
     dbms_output.put_line(ddl_script);
 END compare_schemas;
