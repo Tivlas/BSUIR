@@ -33,16 +33,41 @@ class lexer {
     void scan_number_bin();
     void scan_number_oct();
     void scan_number_hex();
+    void scan_identifier();
+
+    bool is_alpha_numeric(char) const;
+    bool is_alpha(char) const;
 
    public:
     lexer(const std::string& source);
     ~lexer();
     const Tokens& tokenize();
+    void print_all() const;
 };
 
 lexer::lexer(const std::string& source) : source_(source) {}
 
 lexer::~lexer() {}
+
+bool lexer::is_alpha(char c) const {
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
+}
+
+bool lexer::is_alpha_numeric(char c) const {
+    return is_alpha(c) || std::isdigit(c);
+}
+
+void lexer::print_all() const {
+    std::cout << std::left << std::setw(5) << "ID" << std::setw(15) << "Type"
+              << "Lexeme" << std::endl;
+    std::cout << "--------------------------------" << std::endl;
+
+    for (size_t i = 0; i < tokens_.size(); ++i) {
+        const Token& token = tokens_[i];
+        std::cout << std::setw(5) << i << std::setw(15)
+                  << token_type_map.at(token.type) << token.lexeme << std::endl;
+    }
+}
 
 bool lexer::is_at_end() const { return cur >= source_.size(); }
 
@@ -55,12 +80,12 @@ char lexer::peek_next() const {
 char lexer::advance() { return source_[cur++]; }
 
 void lexer::add_token(token_type type) {
-    auto lexeme = source_.substr(start, cur);
+    auto lexeme = source_.substr(start, cur - start);
     // TODO: line, col
-    tokens_.push_back({token_type::EOF_, lexeme, -1, -1});
+    tokens_.push_back({type, lexeme, -1, -1});
 }
 
-bool lexer::match(char expected, char expected2 = '\0') {
+bool lexer::match(char expected, char expected2) {
     expected = std::toupper(expected);
     expected2 = std::toupper(expected2);
     if (expected2 != '\0' && cur < source_.size() - 1) {
@@ -92,6 +117,7 @@ void lexer::scan_string_literal() {
             advance();
             return;
         }
+        advance();
     }
     if (is_at_end()) {
         // TODO: unterminated string literal error
@@ -220,6 +246,13 @@ void lexer::scan_number() {
             scan_number_starts_with_digit();
         }
     }
+}
+
+void lexer::scan_identifier() {
+    while (is_alpha_numeric(peek()) || peek() == '_') advance();
+    auto lexeme = source_.substr(start, cur - start);
+    auto is_kw = is_keyword(lexeme);
+    add_token(is_kw.first ? is_kw.second : token_type::IDENT);
 }
 
 void lexer::scan_token() {
@@ -378,8 +411,10 @@ void lexer::scan_token() {
         default:
             if (std::isdigit(c)) {
                 scan_number();
+            } else if (is_alpha(c)) {
+                scan_identifier();
             } else {
-                std::cout << "Unexpected character...\n";
+                std::cout << c << ": unexpected character...\n";
             }
     }
 }

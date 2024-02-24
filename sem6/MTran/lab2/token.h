@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -169,7 +170,10 @@ const std::unordered_map<token_type, std::string> token_type_map = {
     {token_type::TYPE, "TYPE"},
     {token_type::VAR, "VAR"}};
 
-bool is_keyword(const std::string& name) {
+std::pair<bool, token_type> is_keyword(const std::string& name) {
+    auto copy = name;
+    std::transform(copy.begin(), copy.end(), copy.begin(),
+                   [](unsigned char c) { return std::toupper(c); });
     constexpr auto init_lambda = []() {
         std::unordered_map<std::string, token_type> ump;
         for (int i = static_cast<int>(token_type::keywords_beg) + 1;
@@ -181,11 +185,13 @@ bool is_keyword(const std::string& name) {
     };
     static const std::unordered_map<std::string, token_type> keywords =
         init_lambda();
-    return keywords.find(name) != keywords.cend();
+    auto is_kw = keywords.find(copy) != keywords.cend();
+    return is_kw ? std::pair{true, keywords.at(copy)}
+                 : std::pair{false, token_type::ILLEGAL};
 }
 
 bool is_identifier(const std::string& name) {
-    if (name == "" || is_keyword(name)) return false;
+    if (name == "" || is_keyword(name).first) return false;
     for (size_t i = 0; i < name.size(); i++) {
         if (!std::isalpha(name[i]) && name[i] != '_' &&
             (i == 0 || !std::isdigit(name[i])))
