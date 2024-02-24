@@ -20,9 +20,19 @@ class lexer {
     bool looks_like_keyword(const std::string&, const std::string&, int) const;
     bool is_at_end() const;
     void scan_token();
+    char peek() const;
+    char peek_next() const;
     char advance();
     void add_token(token_type);
     bool match(char, char = '\0');
+    void scan_string_literal();
+    void scan_multiline_string_literal();
+    void scan_number();
+    void scan_number_starts_with_period();
+    void scan_number_starts_with_digit();
+    void scan_number_bin();
+    void scan_number_oct();
+    void scan_number_hex();
 
    public:
     lexer(const std::string& source);
@@ -36,6 +46,12 @@ lexer::~lexer() {}
 
 bool lexer::is_at_end() const { return cur >= source_.size(); }
 
+char lexer::peek() const { return is_at_end() ? '\0' : source_[cur]; }
+
+char lexer::peek_next() const {
+    return cur + 1 < source_.size() ? source_[cur + 1] : '\0';
+}
+
 char lexer::advance() { return source_[cur++]; }
 
 void lexer::add_token(token_type type) {
@@ -45,15 +61,17 @@ void lexer::add_token(token_type type) {
 }
 
 bool lexer::match(char expected, char expected2 = '\0') {
+    expected = std::toupper(expected);
+    expected2 = std::toupper(expected2);
     if (expected2 != '\0' && cur < source_.size() - 1) {
-        auto matched =
-            source_[cur] == expected && source_[cur + 1] == expected2;
+        auto matched = std::toupper(source_[cur]) == expected &&
+                       std::toupper(source_[cur + 1]) == expected2;
         if (matched) {
             cur += 2;
         }
         return matched;
     }
-    if (is_at_end() || source_[cur] != expected) return false;
+    if (is_at_end() || std::toupper(source_[cur]) != expected) return false;
     cur++;
     return true;
 }
@@ -65,6 +83,143 @@ const lexer::Tokens& lexer::tokenize() {
     }
     tokens_.push_back({token_type::EOF_, "", -1, -1});
     return tokens_;
+}
+
+void lexer::scan_string_literal() {
+    while (peek() != '"' && !is_at_end()) {
+        if (peek() == '\n') {
+            // TODO: unterminated string literal error
+            advance();
+            return;
+        }
+    }
+    if (is_at_end()) {
+        // TODO: unterminated string literal error
+        return;
+    }
+    advance();  // skip closing '"'
+    add_token(token_type::STRING);
+}
+
+void lexer::scan_multiline_string_literal() {
+    while (peek() != '`' && !is_at_end()) {
+        if (peek() == '\n') line++;
+        advance();
+    }
+    if (is_at_end()) {
+        // TODO: unterminated string literal error
+        return;
+    }
+    advance();  // skip closing '`'
+    add_token(token_type::STRING);
+}
+
+void lexer::scan_number_starts_with_period() {
+    while (std::isdigit(peek())) advance();
+    if (peek() == 'e') {
+        if (peek_next() == '+' || peek_next() == '-' ||
+            std::isdigit(peek_next())) {
+            advance();  // skip 'e'
+            if ((peek() == '+' || peek() == '-') &&
+                !std::isdigit(peek_next())) {
+                // TODO error exponenta has not digits
+                return;
+            }
+            advance();  // skip after 'e'
+            while (std::isdigit(peek()) && !is_at_end()) advance();
+        }
+    }
+    if (peek() == 'i' && !is_at_end()) {
+        advance();  // take 'i
+        add_token(token_type::IMAG);
+    } else {
+        add_token(token_type::FLOAT);
+    }
+}
+
+void lexer::scan_number_starts_with_digit() {
+    if (std::tolower(peek()) == 'b') {
+        cur++;
+        scan_number_bin();
+    } else if (std::tolower(peek()) == 'o') {
+        cur++;
+        scan_number_oct();
+    } else if (std::tolower(peek()) == 'x') {
+        cur++;
+        scan_number_hex();
+    } else {
+        while (std::isdigit(peek())) advance();
+        if (peek() == '.') {
+            cur++;
+            scan_number_starts_with_period();
+        } else if (peek() == 'i') {
+            advance();  // take i
+            add_token(token_type::IMAG);
+        } else {
+            add_token(token_type::INT);
+        }
+    }
+}
+
+void lexer::scan_number_bin() {
+    while (peek() == '1' || peek() == '0') advance();
+    if (peek() == 'i') {
+        advance();
+        add_token(token_type::IMAG);
+    } else {
+        add_token(token_type::INT);
+    }
+}
+
+void lexer::scan_number_hex() {
+    while ((peek() >= '0' && peek() <= '9') ||
+           (std::toupper(peek()) >= 'A' && std::toupper(peek()) <= 'F'))
+        advance();
+    if (peek() == 'i') {
+        advance();
+        add_token(token_type::IMAG);
+    } else {
+        add_token(token_type::INT);
+    }
+}
+
+void lexer::scan_number_oct() {
+    while (peek() >= '0' && peek() <= '7') advance();
+    if (peek() == 'i') {
+        advance();
+        add_token(token_type::IMAG);
+    } else {
+        add_token(token_type::INT);
+    }
+}
+
+void lexer::scan_number() {
+    if (source_[cur - 1] == '.') {
+        scan_number_starts_with_period();
+    } else if (source_[cur - 1] == '+') {
+        if (source_[cur] == '.') {
+            cur++;
+            scan_number_starts_with_period();
+        } else {
+            cur++;
+            scan_number_starts_with_digit();
+        }
+    } else if (source_[cur - 1] == '-') {
+        if (source_[cur] == '.') {
+            cur++;
+            scan_number_starts_with_period();
+        } else {
+            cur++;
+            scan_number_starts_with_digit();
+        }
+    } else if (std::isdigit(source_[cur - 1])) {
+        if (source_[cur] == '.') {
+            cur++;
+            scan_number_starts_with_period();
+        } else {
+            scan_number_starts_with_digit();
+        }
+    }
 }
 
 void lexer::scan_token() {
@@ -92,21 +247,28 @@ void lexer::scan_token() {
         case ',':
             add_token(token_type::COMMA);
             break;
-        case '.':  // TODO: ???
-            add_token(token_type::PERIOD);
-            break;
-        case '\"':  // TODO ???
-            add_token(token_type::QUOTE_MARK);
-            break;
         case ';':
             add_token(token_type::SEMICOLON);
             break;
         // 2
+        case '.':  // .[0-9]
+            if (cur - 2 > 0 && std::isspace(source_[cur - 2]) &&
+                isdigit(source_[cur])) {
+                scan_number();
+            } else {
+                add_token(token_type::PERIOD);
+            }
+            break;
         case ':':  // : :=
             add_token(match('=') ? token_type::DEFINE : token_type::COLON);
             break;
-        case '-':  // - -= --
-            if (match('-')) {
+        case '-':  // - -= -- -.
+            if (cur - 2 > 0 && std::isspace(source_[cur - 2]) &&
+                (source_[cur] == '.' && cur < source_.size() - 1 &&
+                     std::isdigit(source_[cur + 1]) ||
+                 std::isdigit(source_[cur]))) {
+                scan_number();
+            } else if (match('-')) {
                 add_token(token_type::DEC);
             } else if (match('=')) {
                 add_token(token_type::SUB_ASSIGN);
@@ -114,8 +276,13 @@ void lexer::scan_token() {
                 add_token(token_type::SUB);
             }
             break;
-        case '+':  // + += ++
-            if (match('+')) {
+        case '+':  // + += ++ +.
+            if (cur - 2 > 0 && std::isspace(source_[cur - 2]) &&
+                (source_[cur] == '.' && cur < source_.size() - 1 &&
+                     std::isdigit(source_[cur + 1]) ||
+                 std::isdigit(source_[cur]))) {
+                scan_number();
+            } else if (match('+')) {
                 add_token(token_type::INC);
             } else if (match('=')) {
                 add_token(token_type::ADD_ASSIGN);
@@ -126,8 +293,17 @@ void lexer::scan_token() {
         case '*':  // * *=
             add_token(match('=') ? token_type::MUL_ASSIGN : token_type::MUL);
             break;
-        case '/':  // / /=
-            add_token(match('=') ? token_type::QUO_ASSIGN : token_type::QUO);
+        case '/':  // / /= '//' '/*'
+            if (match('=')) {
+                add_token(token_type::QUO_ASSIGN);
+            } else if (match('/')) {
+                while (peek() != '\n' && !is_at_end()) advance();
+            } else if (match('*')) {
+                while (peek() != '*' && !is_at_end()) advance();
+                while (peek() != '/' && !is_at_end()) advance();
+            } else {
+                add_token(token_type::QUO);
+            }
             break;
         case '%':  // % %=
             add_token(match('=') ? token_type::REM_ASSIGN : token_type::REM);
@@ -181,8 +357,30 @@ void lexer::scan_token() {
         case '!':  // ! !=
             add_token(match('=') ? token_type::NEQ : token_type::NOT);
             break;
+        case ' ':
+        case '\r':
+        case '\t':
+            // Ignore whitespace chars.
+            break;
+        case '\n':
+            // TODO: insert semicolon (;) by the rules
+            line++;
+            break;
+        case '"':
+            scan_string_literal();
+            break;
+        case '`':
+            scan_multiline_string_literal();
+            break;
+        case '\'':
+            // TODO char literal
+            break;
         default:
-            std::cout << "Unexpected character...\n";
+            if (std::isdigit(c)) {
+                scan_number();
+            } else {
+                std::cout << "Unexpected character...\n";
+            }
     }
 }
 

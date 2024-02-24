@@ -89,7 +89,6 @@ enum class token_type : uint8_t {
     TYPE,
     VAR,
     keywords_end,  // END
-    QUOTE_MARK,
 };
 
 const std::unordered_map<token_type, std::string> token_type_map = {
@@ -168,8 +167,7 @@ const std::unordered_map<token_type, std::string> token_type_map = {
     {token_type::STRUCT, "STRUCT"},
     {token_type::SWITCH, "SWITCH"},
     {token_type::TYPE, "TYPE"},
-    {token_type::VAR, "VAR"},
-    {token_type::QUOTE_MARK, "QUOTE_MARK"}};
+    {token_type::VAR, "VAR"}};
 
 bool is_keyword(const std::string& name) {
     constexpr auto init_lambda = []() {
