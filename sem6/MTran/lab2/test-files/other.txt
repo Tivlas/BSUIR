@@ -1,0 +1,23 @@
+package main
+
+funct max(a int, b int) int {
+    if a > b {
+        return a
+    } 
+    return b
+}
+ 
+func main() {
+    var strings [4]string
+    strings [2] = something.str()
+    strings[3]            = something .            str()
+    for i:=0;i<3;i++{
+        a := 2
+    }
+    + - -- ++ +=             -= *= /= & && |||| &&&& &^ = &^= () {} []
+                          f := 1-2
+            fop
+     ir 2 < 3 {
+        i/=3
+     }
+}
