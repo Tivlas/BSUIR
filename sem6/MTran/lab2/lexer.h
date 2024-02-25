@@ -75,7 +75,8 @@ class lexer {
     lexer(const std::filesystem::path&);
     ~lexer();
     const Tokens& tokenize();
-    void print_all() const;
+    void print_as_table() const;
+    void print_as_token_sequence() const;
 };
 
 lexer::lexer(const std::filesystem::path& path) : file_path_(path) {
@@ -119,14 +120,42 @@ void lexer::insert_semicolon() {
     }
 }
 
-void lexer::print_all() const {
+void lexer::print_as_token_sequence() const {
+    auto out_path =
+        file_path_.parent_path() / (file_path_.stem().string() + "_tokens" +
+                                    file_path_.extension().string());
+    std::ofstream out(out_path);
+    size_t prev_line = 1;
+    int id = 0;
+    bool first = true;
+    for (const auto& t : tokens_) {
+        if (t.pos.line != prev_line) {
+            out << '\n';
+            prev_line = t.pos.line;
+            first = true;
+        }
+        if (first) {
+            out << std::string(t.pos.col - 1, ' ');
+        }
+        if (t.type == token_type::IDENT) {
+            out << '<' << id << "> ";
+        } else {
+            out << t.lexeme << ' ';
+        }
+        first = false;
+        id++;
+    }
+    out << '\n';
+}
+
+void lexer::print_as_table() const {
     std::cout << std::left << std::setw(10) << "ID" << std::setw(15) << "POS"
               << std::setw(15) << "TYPE"
               << "LEXEME" << '\n';
     std::cout << "------------------------------------------------------"
               << '\n';
 
-    for (size_t i = 0; i < tokens_.size() - 1; ++i) {
+    for (size_t i = 0; i < tokens_.size(); ++i) {
         const Token& token = tokens_[i];
         std::cout << std::setw(10) << i << std::setw(15)
                   << std::to_string(token.pos.line) + ":" +
@@ -134,10 +163,7 @@ void lexer::print_all() const {
                   << std::setw(15) << type_string_map.at(token.type)
                   << token.lexeme << '\n';
     }
-    const Token& token = tokens_.back();
-    std::cout << std::setw(10) << tokens_.size() - 1 << std::setw(15) << ""
-              << std::setw(15) << type_string_map.at(token.type) << token.lexeme
-              << '\n';
+
     std::cout << '\n';
     for (const auto& e : errors_) {
         std::cout << color::error << "Error at " << color::reset << e.pos.line
@@ -205,7 +231,6 @@ const lexer::Tokens& lexer::tokenize() {
         start_ = cur_;
         scan_token();
     }
-    tokens_.push_back({token_type::EOF_, "", {"", line_, get_lexem_col()}});
     return tokens_;
 }
 

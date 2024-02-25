@@ -1,7 +1,7 @@
 package main
 
 func main() {
-    a := 0b
-    a = 0B
-    a = 0x
+    a := 3;
+    b := a + 2
+    a = b -2
 }

@@ -17,10 +17,11 @@ int main(int argc, char *argv[]) {
         std::cout << "Specify file path!\n";
         return 0;
     } */
-    //std::filesystem::path path(argv[1]);
-    std::filesystem::path path = "test-files/numbers.txt";
+    // std::filesystem::path path(argv[1]);
+    std::filesystem::path path = "test-files/f1.txt";
     lexer lexer(path);
     lexer.tokenize();
-    lexer.print_all();
+    lexer.print_as_table();
+    lexer.print_as_token_sequence();
     return 0;
 }
