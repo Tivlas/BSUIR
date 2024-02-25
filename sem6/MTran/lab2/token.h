@@ -174,6 +174,15 @@ bool is_alpha(char c) {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
 }
 
+bool only_lowercase_letters(const std::string& lexeme) {
+    for (auto c : lexeme) {
+        if (c < 'a' || c > 'z') {
+            return false;
+        }
+    }
+    return true;
+}
+
 bool is_alpha_numeric(char c) { return is_alpha(c) || std::isdigit(c); }
 
 std::pair<bool, token_type> try_get_keyword(const std::string& name) {
@@ -212,8 +221,8 @@ struct Token {
         size_t line;
         size_t col;
 
-        token_position(): file_path(""), line(0), col(0) {}
- 
+        token_position() : file_path(""), line(0), col(0) {}
+
         token_position(std::filesystem::path file_path, size_t line, size_t col)
             : file_path(file_path), line(line), col(col) {}
     };

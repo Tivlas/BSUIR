@@ -7,6 +7,12 @@
 
 #include "token.h"
 
+namespace color {
+const std::string error = "\033[1;91m";
+const std::string warning = "\033[1;95m";
+const std::string reset = "\033[0m";
+};  // namespace color
+
 /*
 TODO
 
@@ -134,14 +140,15 @@ void lexer::print_all() const {
               << '\n';
     std::cout << '\n';
     for (const auto& e : errors_) {
-        std::cout << "Error at " << e.pos.line << ':' << e.pos.col << " — "
-                  << e.msg << '\n';
+        std::cout << color::error << "Error at " << color::reset << e.pos.line
+                  << ':' << e.pos.col << " --- " << e.msg << '\n';
     }
     std::cout << '\n';
     for (const auto& w : warnings_) {
-        std::cout << "Error at " << w.pos.line << ':' << w.pos.col << " — "
-                  << w.msg << '\n';
+        std::cout << color::warning << "Warning at " << color::reset
+                  << w.pos.line << ':' << w.pos.col << " --- " << w.msg << '\n';
     }
+    std::cout << '\n';
 }
 
 bool lexer::eof() const { return cur_ >= source_.size(); }
@@ -261,7 +268,8 @@ void lexer::scan_char_literal() {
         return;
     }
     auto rune_literal = source_.substr(start_, cur_ - start_);
-    if (rune_literal.size() > 1 && !escape_sequences.contains(rune_literal)) {
+    if (rune_literal.size() > 1 &&
+        escape_sequences.find(rune_literal) != escape_sequences.end()) {
         add_error({file_path_, line_, get_lexem_col()}, "illegal rune literal");
     }
     next();  // skip closing '\''
@@ -325,12 +333,16 @@ void lexer::scan_number_starts_with_digit() {
 
 void lexer::scan_number_bin() {
     while (std::isdigit(get_cur_char())) next();
+    if (get_prev_char() == 'b' || get_prev_char() == 'b') {
+        add_error({file_path_, line_, get_lexem_col()},
+                  "binary literal has no digits");
+    }
     auto bin_num = source_.substr(start_, cur_ - start_);
-    auto invalid_digit_pos = bin_num.find_first_not_of("01");
+    auto invalid_digit_pos = bin_num.find_first_not_of("bB01");
     if (invalid_digit_pos != std::string::npos) {
-        add_error(
-            {file_path_, line_, get_lexem_col()},
-            "invalid digit in binary literal: " + bin_num[invalid_digit_pos]);
+        add_error({file_path_, line_, get_lexem_col()},
+                  "invalid digit in binary literal: " +
+                      std::string(1, bin_num[invalid_digit_pos]));
     }
     if (get_cur_char() == 'i') {
         next();
@@ -343,8 +355,13 @@ void lexer::scan_number_bin() {
 void lexer::scan_number_hex() {
     while ((std::isdigit(get_cur_char())) ||
            (std::toupper(get_cur_char()) >= 'A' &&
-            std::toupper(get_cur_char()) <= 'F'))
+            std::toupper(get_cur_char()) <= 'F')) {
         next();
+    }
+    if (get_prev_char() == 'x' || get_prev_char() == 'X') {
+        add_error({file_path_, line_, get_lexem_col()},
+                  "hexadecimal literal has no digits");
+    }
     if (get_cur_char() == 'i') {
         next();
         add_token(token_type::IMAG);
@@ -355,12 +372,16 @@ void lexer::scan_number_hex() {
 
 void lexer::scan_number_oct() {
     while (std::isdigit(get_cur_char())) next();
+    if (get_prev_char() == 'o' || get_prev_char() == 'O') {
+        add_error({file_path_, line_, get_lexem_col()},
+                  "octal literal has no digits");
+    }
     auto oct_num = source_.substr(start_, cur_ - start_);
-    auto invalid_digit_pos = oct_num.find_first_not_of("01234567");
+    auto invalid_digit_pos = oct_num.find_first_not_of("oO01234567");
     if (invalid_digit_pos != std::string::npos) {
-        add_error(
-            {file_path_, line_, get_lexem_col()},
-            "invalid digit in oct literal: " + oct_num[invalid_digit_pos]);
+        add_error({file_path_, line_, get_lexem_col()},
+                  "invalid digit in oct literal: " +
+                      std::string(1, oct_num[invalid_digit_pos]));
     }
     if (get_cur_char() == 'i') {
         next();
@@ -387,11 +408,17 @@ void lexer::scan_identifier() {
     while (is_alpha_numeric(get_cur_char())) next();
     auto lexeme = source_.substr(start_, cur_ - start_);
     auto is_kw = try_get_keyword(lexeme);
-    if (!is_kw.first) {
+    if (!is_kw.first && only_lowercase_letters(lexeme)) {
         for (const auto& [type, kw] : type_string_map) {
-            if (looks_like_keyword(lexeme, kw, 2)) {
+            if (type > token_type::keywords_beg &&
+                type < token_type::keywords_end &&
+                looks_like_keyword(lexeme, kw,
+                                   lexeme.size() <= 3
+                                       ? 1
+                                       : std::min(lexeme.size() / 4, 3ULL))) {
                 add_warning({file_path_, line_, get_lexem_col()},
                             "did you mean " + kw);
+                break;
             }
         }
     }
@@ -560,6 +587,7 @@ void lexer::scan_token() {
 bool lexer::looks_like_keyword(const std::string& word,
                                const std::string& keyword,
                                int max_changes = 1) const {
+    if (word.size() < keyword.size()) return false;
     auto word_copy = word, keyword_copy = keyword;
     std::transform(word_copy.begin(), word_copy.end(), word_copy.begin(),
                    ::toupper);

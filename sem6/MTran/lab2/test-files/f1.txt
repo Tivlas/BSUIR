@@ -1,1 +1,7 @@
-a := 0xabcgf
+package main
+
+func main() {
+    a := 0b
+    a = 0B
+    a = 0x
+}
