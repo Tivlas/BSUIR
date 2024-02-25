@@ -7,11 +7,26 @@
 
 #include "token.h"
 
+/*
+TODO
+
+semicolon token pos after inser
+
+tests
+
+errors
+*/
 class lexer {
+    struct lexical_error {
+        Token::token_position pos;
+        std::string msg;
+    };
     using Tokens = std::vector<Token>;
-    // TODO ILLEGAL tokens, invalid chars
+    using Errors = std::vector<lexical_error>;
+
    private:
     Tokens tokens_;
+    Errors errors_;
     std::string source_;
     size_t start_ = 0;
     size_t cur_ = 0;
@@ -24,11 +39,13 @@ class lexer {
     char get_cur_char() const;
     char get_next_char() const;
     char get_prev_char() const;
+    size_t get_lexem_col() const;
     char next();
     void add_token(token_type);
+    void add_error(const Token::token_position&, const std::string&);
     bool match(char, char = '\0');
-    void scan_string_literal();            //
-    void scan_multiline_string_literal();  // TODO \" \`
+    void scan_string_literal();
+    void scan_multiline_string_literal();
     void scan_char_literal();
     void scan_number();
     void scan_number_starts_with_period();
@@ -67,6 +84,9 @@ void lexer::insert_semicolon() {
     auto last_token_type = tokens_.back().type;
     if (last_token_type == token_type::IDENT ||
         last_token_type == token_type::INT ||
+        last_token_type == token_type::FLOAT ||
+        last_token_type == token_type::CHAR ||
+        last_token_type == token_type::IMAG ||
         last_token_type == token_type::STRING ||
         last_token_type == token_type::BREAK ||
         last_token_type == token_type::CONTINUE ||
@@ -119,10 +139,18 @@ char lexer::get_prev_char() const {
 
 char lexer::next() { return source_[cur_++]; }
 
+size_t lexer::get_lexem_col() const {
+    return start_ - source_.rfind('\n', cur_ - 1);
+}
+
 void lexer::add_token(token_type type) {
     auto lexeme = source_.substr(start_, cur_ - start_);
-    auto col = start_ - source_.rfind('\n', cur_ - 1);
-    tokens_.push_back({type, lexeme, {file_path_, line_, col}});
+    tokens_.push_back({type, lexeme, {file_path_, line_, get_lexem_col()}});
+}
+
+void lexer::add_error(const Token::token_position& pos,
+                      const std::string& msg) {
+    errors_.push_back({pos, msg});
 }
 
 bool lexer::match(char expected, char expected2) {
@@ -146,8 +174,7 @@ const lexer::Tokens& lexer::tokenize() {
         start_ = cur_;
         scan_token();
     }
-    auto col = start_ - source_.rfind('\n', cur_ - 1);
-    tokens_.push_back({token_type::EOF_, "", {"", line_, col}});
+    tokens_.push_back({token_type::EOF_, "", {"", line_, get_lexem_col()}});
     return tokens_;
 }
 
@@ -155,7 +182,8 @@ void lexer::scan_string_literal() {
     bool escaped = false;
     while (get_cur_char() != '"' || escaped) {
         if (get_cur_char() == '\n') {
-            // TODO: unterminated string literal error
+            add_error({file_path_, line_, get_lexem_col()},
+                      "string literal not terminated");
             add_token(token_type::STRING);
             return;
         }
@@ -163,7 +191,8 @@ void lexer::scan_string_literal() {
         next();
     }
     if (eof()) {
-        // TODO: unterminated string literal error
+        add_error({file_path_, line_, get_lexem_col()},
+                  "string literal not terminated");
         return;
     }
     next();  // skip closing '"'
@@ -176,8 +205,9 @@ void lexer::scan_multiline_string_literal() {
         next();
     }
     if (eof()) {
-        // TODO: unterminated string literal error
         cur_--;
+        add_error({file_path_, line_, get_lexem_col()},
+                  "string literal not terminated");
         add_token(token_type::STRING);
         return;
     }
@@ -186,10 +216,13 @@ void lexer::scan_multiline_string_literal() {
 }
 
 void lexer::scan_char_literal() {
+    static const std::unordered_set<std::string> escape_sequences = {
+        "\n", "\r", "\t", "\b", "\'", "\\", "\'"};
     bool escaped = false;
     while (get_cur_char() != '\'' || escaped) {
         if (get_cur_char() == '\n') {
-            // TODO: unterminated string literal error
+            add_error({file_path_, line_, get_lexem_col()},
+                      "rune literal not terminated");
             add_token(token_type::CHAR);
             return;
         }
@@ -197,8 +230,15 @@ void lexer::scan_char_literal() {
         next();
     }
     if (eof()) {
-        // TODO: unterminated string literal error
+        add_error({file_path_, line_, get_lexem_col()},
+                  "rune literal not terminated");
+        add_token(token_type::CHAR);
+
         return;
+    }
+    auto rune_literal = source_.substr(start_, cur_ - start_);
+    if (rune_literal.size() > 1 && !escape_sequences.contains(rune_literal)) {
+        add_error({file_path_, line_, get_lexem_col()}, "illegal rune literal");
     }
     next();  // skip closing '\''
     add_token(token_type::CHAR);
@@ -212,11 +252,19 @@ void lexer::scan_number_starts_with_period() {
             next();  // skip 'e'
             if ((get_cur_char() == '+' || get_cur_char() == '-') &&
                 !std::isdigit(get_next_char())) {
-                // TODO error exponenta has not digits
+                next();  // take + or -
+                add_token(token_type::FLOAT);
+                add_error({file_path_, line_, get_lexem_col()},
+                          "exponent has no digits");
                 return;
             }
-            next();  // skip after 'e'
+            next();  // skip e
             while (std::isdigit(get_cur_char()) && !eof()) next();
+        } else {
+            next();  // take e
+            add_token(token_type::FLOAT);
+            add_error({file_path_, line_, get_lexem_col()},
+                      "exponent has no digits");
         }
     }
     if (get_cur_char() == 'i' && !eof()) {
@@ -253,6 +301,13 @@ void lexer::scan_number_starts_with_digit() {
 
 void lexer::scan_number_bin() {
     while (std::isdigit(get_cur_char())) next();
+    auto bin_num = source_.substr(start_, cur_ - start_);
+    auto invalid_digit_pos = bin_num.find_first_not_of("01");
+    if (invalid_digit_pos != std::string::npos) {
+        add_error(
+            {file_path_, line_, get_lexem_col()},
+            "invalid digit in binary literal: " + bin_num[invalid_digit_pos]);
+    }
     if (get_cur_char() == 'i') {
         next();
         add_token(token_type::IMAG);
@@ -276,6 +331,13 @@ void lexer::scan_number_hex() {
 
 void lexer::scan_number_oct() {
     while (std::isdigit(get_cur_char())) next();
+    auto oct_num = source_.substr(start_, cur_ - start_);
+    auto invalid_digit_pos = oct_num.find_first_not_of("01234567");
+    if (invalid_digit_pos != std::string::npos) {
+        add_error(
+            {file_path_, line_, get_lexem_col()},
+            "invalid digit in oct literal: " + oct_num[invalid_digit_pos]);
+    }
     if (get_cur_char() == 'i') {
         next();
         add_token(token_type::IMAG);
@@ -305,7 +367,6 @@ void lexer::scan_identifier() {
 }
 
 void lexer::scan_token() {
-    // TODO: char
     char c = next();
     switch (c) {
         // 1
@@ -335,8 +396,7 @@ void lexer::scan_token() {
             break;
         // 2
         case '.':  // .[0-9]
-            if (cur_ - 2 > 0 && std::isspace(source_[cur_ - 2]) &&
-                isdigit(source_[cur_])) {
+            if (isdigit(source_[cur_])) {
                 scan_number();
             } else {
                 add_token(token_type::PERIOD);
@@ -374,6 +434,10 @@ void lexer::scan_token() {
             } else if (match('*')) {
                 while (get_cur_char() != '*' && !eof()) next();
                 while (get_cur_char() != '/' && !eof()) next();
+                if (eof()) {
+                    add_error({file_path_, line_, get_lexem_col()},
+                              "comment not terminated");
+                }
             } else {
                 add_token(token_type::QUO);
             }
@@ -436,7 +500,6 @@ void lexer::scan_token() {
             // Ignore whitespace chars.
             break;
         case '\n':
-            // TODO: insert semicolon (;) by the rules
             insert_semicolon();
             line_++;
             break;
@@ -455,7 +518,9 @@ void lexer::scan_token() {
             } else if (is_alpha(c)) {
                 scan_identifier();
             } else {
-                std::cout << c << ": unexpected character...\n";
+                add_error({file_path_, line_, get_lexem_col()},
+                          "illegal character");
+                add_token(token_type::ILLEGAL);
             }
     }
 }

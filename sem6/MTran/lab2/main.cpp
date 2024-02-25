@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
         return 0;
     } */
     //std::filesystem::path path(argv[1]);
-    std::filesystem::path path = "test-files/f2.txt";
+    std::filesystem::path path = "test-files/f1.txt";
     lexer lexer(path);
     lexer.tokenize();
     lexer.print_all();
