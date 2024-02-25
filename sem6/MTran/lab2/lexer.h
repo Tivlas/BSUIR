@@ -9,26 +9,27 @@
 
 class lexer {
     using Tokens = std::vector<Token>;
-
+    // TODO ILLEGAL tokens, invalid chars
    private:
     Tokens tokens_;
     std::string source_;
-    size_t start = 0;
-    size_t cur = 0;
-    size_t line = 1;
-    size_t pos_in_line = 0;
+    size_t start_ = 0;
+    size_t cur_ = 0;
+    size_t line_ = 1;
+    std::filesystem::path file_path_;
 
     bool looks_like_keyword(const std::string&, const std::string&, int) const;
     bool eof() const;
     void scan_token();
     char get_cur_char() const;
     char get_next_char() const;
+    char get_prev_char() const;
     char next();
-    void prev();
     void add_token(token_type);
     bool match(char, char = '\0');
-    void scan_string_literal();
-    void scan_multiline_string_literal();
+    void scan_string_literal();            //
+    void scan_multiline_string_literal();  // TODO \" \`
+    void scan_char_literal();
     void scan_number();
     void scan_number_starts_with_period();
     void scan_number_starts_with_digit();
@@ -39,20 +40,28 @@ class lexer {
     void insert_semicolon();
 
    public:
-    lexer(const std::string& source);
+    lexer(const std::filesystem::path&);
     ~lexer();
     const Tokens& tokenize();
     void print_all() const;
 };
 
-lexer::lexer(const std::string& source) : source_(source) {}
+lexer::lexer(const std::filesystem::path& path) : file_path_(path) {
+    file_path_ = std::filesystem::absolute(file_path_);
+    std::ifstream file(file_path_);
+    if (!file.is_open()) {
+        throw std::invalid_argument("Invalid file! " + file_path_.string());
+    }
+    std::string code;
+    std::string line;
+    while (std::getline(file, line)) {
+        code += line + '\n';
+    }
+    source_ = std::move(code);
+    file.close();
+}
 
 lexer::~lexer() {}
-
-void lexer::prev() {
-    cur--;
-    pos_in_line--;
-}
 
 void lexer::insert_semicolon() {
     auto last_token_type = tokens_.back().type;
@@ -68,76 +77,89 @@ void lexer::insert_semicolon() {
         last_token_type == token_type::RPAREN ||
         last_token_type == token_type::RBRACE) {
         auto insert_pos = source_.begin();
-        std::advance(insert_pos, cur - 1);
+        std::advance(insert_pos, cur_ - 1);
         source_.insert(insert_pos, ';');
-        prev();
         add_token(token_type::SEMICOLON);
+        next();
     }
 }
 
 void lexer::print_all() const {
-    std::cout << std::left << std::setw(5) << "ID" << std::setw(15) << "Type"
-              << "Lexeme" << std::endl;
-    std::cout << "--------------------------------" << std::endl;
+    std::cout << std::left << std::setw(10) << "ID" << std::setw(15) << "POS"
+              << std::setw(15) << "TYPE"
+              << "LEXEME" << std::endl;
+    std::cout << "------------------------------------------------------"
+              << std::endl;
 
-    for (size_t i = 0; i < tokens_.size(); ++i) {
+    for (size_t i = 0; i < tokens_.size() - 1; ++i) {
         const Token& token = tokens_[i];
-        std::cout << std::setw(5) << i << std::setw(15)
-                  << token_type_map.at(token.type) << token.lexeme << std::endl;
+        std::cout << std::setw(10) << i << std::setw(15)
+                  << std::to_string(token.pos.line) + ":" +
+                         std::to_string(token.pos.col)
+                  << std::setw(15) << token_type_map.at(token.type)
+                  << token.lexeme << std::endl;
     }
+    const Token& token = tokens_.back();
+    std::cout << std::setw(10) << tokens_.size() - 1 << std::setw(15) << ""
+              << std::setw(15) << token_type_map.at(token.type) << token.lexeme
+              << std::endl;
 }
 
-bool lexer::eof() const { return cur >= source_.size(); }
+bool lexer::eof() const { return cur_ >= source_.size(); }
 
-char lexer::get_cur_char() const { return eof() ? '\0' : source_[cur]; }
+char lexer::get_cur_char() const { return eof() ? '\0' : source_[cur_]; }
 
 char lexer::get_next_char() const {
-    return cur + 1 < source_.size() ? source_[cur + 1] : '\0';
+    return cur_ + 1 < source_.size() ? source_[cur_ + 1] : '\0';
 }
 
-char lexer::next() {
-    pos_in_line++;
-    return source_[cur++];
+char lexer::get_prev_char() const {
+    return cur_ - 1 >= 0 ? source_[cur_ - 1] : '\0';
 }
+
+char lexer::next() { return source_[cur_++]; }
 
 void lexer::add_token(token_type type) {
-    auto lexeme = source_.substr(start, cur - start);
-    // TODO: line, col
-    tokens_.push_back({type, lexeme, -1, -1});
+    auto lexeme = source_.substr(start_, cur_ - start_);
+    auto col = start_ - source_.rfind('\n', cur_ - 1);
+    tokens_.push_back({type, lexeme, {file_path_, line_, col}});
 }
 
 bool lexer::match(char expected, char expected2) {
     expected = std::toupper(expected);
     expected2 = std::toupper(expected2);
-    if (expected2 != '\0' && cur < source_.size() - 1) {
-        auto matched = std::toupper(source_[cur]) == expected &&
-                       std::toupper(source_[cur + 1]) == expected2;
+    if (expected2 != '\0' && cur_ < source_.size() - 1) {
+        auto matched = std::toupper(source_[cur_]) == expected &&
+                       std::toupper(source_[cur_ + 1]) == expected2;
         if (matched) {
-            cur += 2;
+            cur_ += 2;
         }
         return matched;
     }
-    if (eof() || std::toupper(source_[cur]) != expected) return false;
-    cur++;
+    if (eof() || std::toupper(source_[cur_]) != expected) return false;
+    cur_++;
     return true;
 }
 
 const lexer::Tokens& lexer::tokenize() {
     while (!eof()) {
-        start = cur;
+        start_ = cur_;
         scan_token();
     }
-    tokens_.push_back({token_type::EOF_, "", -1, -1});
+    auto col = start_ - source_.rfind('\n', cur_ - 1);
+    tokens_.push_back({token_type::EOF_, "", {"", line_, col}});
     return tokens_;
 }
 
 void lexer::scan_string_literal() {
-    while (get_cur_char() != '"' && !eof()) {
+    bool escaped = false;
+    while (get_cur_char() != '"' || escaped) {
         if (get_cur_char() == '\n') {
             // TODO: unterminated string literal error
-            next();
+            add_token(token_type::STRING);
             return;
         }
+        escaped = get_cur_char() == '\\' ? !escaped : false;
         next();
     }
     if (eof()) {
@@ -149,16 +171,37 @@ void lexer::scan_string_literal() {
 }
 
 void lexer::scan_multiline_string_literal() {
-    while (get_cur_char() != '`' && !eof()) {
-        if (get_cur_char() == '\n') line++;
+    while (get_cur_char() != '`') {
+        if (get_cur_char() == '\n') line_++;
+        next();
+    }
+    if (eof()) {
+        // TODO: unterminated string literal error
+        cur_--;
+        add_token(token_type::STRING);
+        return;
+    }
+    next();  // skip closing '`'
+    add_token(token_type::STRING);
+}
+
+void lexer::scan_char_literal() {
+    bool escaped = false;
+    while (get_cur_char() != '\'' || escaped) {
+        if (get_cur_char() == '\n') {
+            // TODO: unterminated string literal error
+            add_token(token_type::CHAR);
+            return;
+        }
+        escaped = get_cur_char() == '\\' ? !escaped : false;
         next();
     }
     if (eof()) {
         // TODO: unterminated string literal error
         return;
     }
-    next();  // skip closing '`'
-    add_token(token_type::STRING);
+    next();  // skip closing '\''
+    add_token(token_type::CHAR);
 }
 
 void lexer::scan_number_starts_with_period() {
@@ -186,18 +229,18 @@ void lexer::scan_number_starts_with_period() {
 
 void lexer::scan_number_starts_with_digit() {
     if (std::tolower(get_cur_char()) == 'b') {
-        cur++;
+        cur_++;
         scan_number_bin();
     } else if (std::tolower(get_cur_char()) == 'o') {
-        cur++;
+        cur_++;
         scan_number_oct();
     } else if (std::tolower(get_cur_char()) == 'x') {
-        cur++;
+        cur_++;
         scan_number_hex();
     } else {
         while (std::isdigit(get_cur_char())) next();
         if (get_cur_char() == '.') {
-            cur++;
+            cur_++;
             scan_number_starts_with_period();
         } else if (get_cur_char() == 'i') {
             next();  // take i
@@ -209,7 +252,7 @@ void lexer::scan_number_starts_with_digit() {
 }
 
 void lexer::scan_number_bin() {
-    while (get_cur_char() == '1' || get_cur_char() == '0') next();
+    while (std::isdigit(get_cur_char())) next();
     if (get_cur_char() == 'i') {
         next();
         add_token(token_type::IMAG);
@@ -219,7 +262,7 @@ void lexer::scan_number_bin() {
 }
 
 void lexer::scan_number_hex() {
-    while ((get_cur_char() >= '0' && get_cur_char() <= '9') ||
+    while ((std::isdigit(get_cur_char())) ||
            (std::toupper(get_cur_char()) >= 'A' &&
             std::toupper(get_cur_char()) <= 'F'))
         next();
@@ -232,7 +275,7 @@ void lexer::scan_number_hex() {
 }
 
 void lexer::scan_number_oct() {
-    while (get_cur_char() >= '0' && get_cur_char() <= '7') next();
+    while (std::isdigit(get_cur_char())) next();
     if (get_cur_char() == 'i') {
         next();
         add_token(token_type::IMAG);
@@ -242,11 +285,11 @@ void lexer::scan_number_oct() {
 }
 
 void lexer::scan_number() {
-    if (source_[cur - 1] == '.') {
+    if (source_[cur_ - 1] == '.') {
         scan_number_starts_with_period();
-    } else if (std::isdigit(source_[cur - 1])) {
-        if (source_[cur] == '.') {
-            cur++;
+    } else if (std::isdigit(source_[cur_ - 1])) {
+        if (source_[cur_] == '.') {
+            cur_++;
             scan_number_starts_with_period();
         } else {
             scan_number_starts_with_digit();
@@ -256,7 +299,7 @@ void lexer::scan_number() {
 
 void lexer::scan_identifier() {
     while (is_alpha_numeric(get_cur_char()) || get_cur_char() == '_') next();
-    auto lexeme = source_.substr(start, cur - start);
+    auto lexeme = source_.substr(start_, cur_ - start_);
     auto is_kw = try_get_keyword(lexeme);
     add_token(is_kw.first ? is_kw.second : token_type::IDENT);
 }
@@ -292,8 +335,8 @@ void lexer::scan_token() {
             break;
         // 2
         case '.':  // .[0-9]
-            if (cur - 2 > 0 && std::isspace(source_[cur - 2]) &&
-                isdigit(source_[cur])) {
+            if (cur_ - 2 > 0 && std::isspace(source_[cur_ - 2]) &&
+                isdigit(source_[cur_])) {
                 scan_number();
             } else {
                 add_token(token_type::PERIOD);
@@ -394,9 +437,8 @@ void lexer::scan_token() {
             break;
         case '\n':
             // TODO: insert semicolon (;) by the rules
-            line++;
             insert_semicolon();
-            pos_in_line = 0;
+            line_++;
             break;
         case '"':
             scan_string_literal();
@@ -405,7 +447,7 @@ void lexer::scan_token() {
             scan_multiline_string_literal();
             break;
         case '\'':
-            // TODO char literal
+            scan_char_literal();
             break;
         default:
             if (std::isdigit(c)) {
@@ -423,14 +465,13 @@ bool lexer::looks_like_keyword(const std::string& word,
                                int max_changes = 1) const {
     auto word_copy = word, keyword_copy = keyword;
     std::transform(word_copy.begin(), word_copy.end(), word_copy.begin(),
-                   [](unsigned char c) { return std::toupper(c); });
+                   ::toupper);
     std::transform(keyword_copy.begin(), keyword_copy.end(),
-                   keyword_copy.begin(),
-                   [](unsigned char c) { return std::toupper(c); });
-    int len1 = word_copy.size();
-    int len2 = keyword_copy.size();
+                   keyword_copy.begin(), ::toupper);
+    int w_size = word_copy.size();
+    int kw_size = keyword_copy.size();
 
-    if (std::abs(len1 - len2) > max_changes) {
+    if (std::abs(w_size - kw_size) > max_changes) {
         return false;
     }
 
@@ -438,15 +479,15 @@ bool lexer::looks_like_keyword(const std::string& word,
     int i = 0;
     int j = 0;
 
-    while (i < len1 && j < len2) {
+    while (i < w_size && j < kw_size) {
         if (word_copy[i] != keyword_copy[j]) {
             if (count == max_changes) {
                 return false;
             }
 
-            if (len1 > len2) {
+            if (w_size > kw_size) {
                 i++;
-            } else if (len1 < len2) {
+            } else if (w_size < kw_size) {
                 j++;
             } else {
                 i++;
@@ -460,7 +501,7 @@ bool lexer::looks_like_keyword(const std::string& word,
         }
     }
 
-    while (i++ < len1 || j++ < len2) {
+    while (i++ < w_size || j++ < kw_size) {
         count++;
     }
 

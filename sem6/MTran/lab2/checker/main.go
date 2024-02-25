@@ -70,6 +70,6 @@ func main() {
 	}
 	filename := os.Args[1]
 	lexical(filename)
-	fmt.Println("\nDONE\n")
+	fmt.Println("\n--------------------------")
 	syntax(filename)
 }

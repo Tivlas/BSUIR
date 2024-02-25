@@ -1,6 +1,6 @@
 package main
 
 func main() {
-	a := undecl_var
-	b := a a
+    a := '
+    b := 123.123.123
 }

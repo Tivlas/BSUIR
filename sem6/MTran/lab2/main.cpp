@@ -25,23 +25,7 @@ int main(int argc, char *argv[]) {
     } */
     //std::filesystem::path path(argv[1]);
     std::filesystem::path path = "test-files/f2.txt";
-    path = std::filesystem::absolute(path);
-    std::ifstream file(path);
-    if (!file.is_open()) {
-        std::cout << "Invalid file! " + path.string();
-        return 0;
-    }
-
-    std::string code;
-    std::string line;
-
-    while (std::getline(file, line)) {
-        code += line + '\n';
-    }
-
-    file.close();
-    lexer lexer(code);
-
+    lexer lexer(path);
     lexer.tokenize();
     lexer.print_all();
     return 0;

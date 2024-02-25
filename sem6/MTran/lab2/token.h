@@ -207,22 +207,25 @@ bool is_valid_identifier(const std::string& name) {
 }
 
 struct Token {
+    struct token_position {
+        std::filesystem::path file_path;
+        size_t line;
+        size_t col;
+
+        token_position(): file_path(""), line(0), col(0) {}
+ 
+        token_position(std::filesystem::path file_path, size_t line, size_t col)
+            : file_path(file_path), line(line), col(col) {}
+    };
+
     token_type type;
     std::string lexeme;
-    std::string error = "";
-    int line;
-    int col;
+    token_position pos;
 
     Token() {}
 
-    Token(token_type type, std::string lexeme, int line, int col,
-          std::string error = "")
-        : type(type), lexeme(lexeme), error(error), line(line), col(col) {}
-
-    bool operator==(const Token& other) const {
-        return type == other.type && lexeme == other.lexeme &&
-               error == other.error;
-    }
+    Token(token_type type, std::string lexeme, token_position pos)
+        : type(type), lexeme(lexeme), pos(pos) {}
 
     bool is_keyword() const;
     bool is_literal() const;
