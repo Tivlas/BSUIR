@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
         return 0;
     } */
     //std::filesystem::path path(argv[1]);
-    std::filesystem::path path = "go-files/f1.go";
+    std::filesystem::path path = "test-files/f2.txt";
     path = std::filesystem::absolute(path);
     std::ifstream file(path);
     if (!file.is_open()) {

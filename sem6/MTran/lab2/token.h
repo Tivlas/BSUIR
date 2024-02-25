@@ -170,7 +170,13 @@ const std::unordered_map<token_type, std::string> token_type_map = {
     {token_type::TYPE, "TYPE"},
     {token_type::VAR, "VAR"}};
 
-std::pair<bool, token_type> is_keyword(const std::string& name) {
+bool is_alpha(char c) {
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
+}
+
+bool is_alpha_numeric(char c) { return is_alpha(c) || std::isdigit(c); }
+
+std::pair<bool, token_type> try_get_keyword(const std::string& name) {
     auto copy = name;
     std::transform(copy.begin(), copy.end(), copy.begin(),
                    [](unsigned char c) { return std::toupper(c); });
@@ -190,8 +196,8 @@ std::pair<bool, token_type> is_keyword(const std::string& name) {
                  : std::pair{false, token_type::ILLEGAL};
 }
 
-bool is_identifier(const std::string& name) {
-    if (name == "" || is_keyword(name).first) return false;
+bool is_valid_identifier(const std::string& name) {
+    if (name == "" || try_get_keyword(name).first) return false;
     for (size_t i = 0; i < name.size(); i++) {
         if (!std::isalpha(name[i]) && name[i] != '_' &&
             (i == 0 || !std::isdigit(name[i])))
