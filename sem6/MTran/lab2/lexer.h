@@ -121,9 +121,9 @@ void lexer::insert_semicolon() {
 }
 
 void lexer::print_as_token_sequence() const {
-    auto out_path =
-        file_path_.parent_path() / (file_path_.stem().string() + "_tokens" +
-                                    file_path_.extension().string());
+    auto out_path = file_path_.parent_path() / "tokens" /
+                    (file_path_.stem().string() + "_tokens" +
+                     file_path_.extension().string());
     std::ofstream out(out_path);
     size_t prev_line = 1;
     int id = 0;
@@ -277,7 +277,8 @@ void lexer::scan_multiline_string_literal() {
 
 void lexer::scan_char_literal() {
     static const std::unordered_set<std::string> escape_sequences = {
-        "\n", "\r", "\t", "\b", "\'", "\\", "\'"};
+        "\\n", "\\r", "\\t", "\\'", "\\\\", "\\'",
+        "\\f", "\\0", "\\v", "\\r", "\\a",  "\\b"};
     bool escaped = false;
     while (!eof() && (get_cur_char() != '\'' || escaped)) {
         if (get_cur_char() == '\n') {
@@ -293,12 +294,14 @@ void lexer::scan_char_literal() {
         add_error({file_path_, line_, get_lexem_col()},
                   "rune literal not terminated");
         add_token(token_type::CHAR);
-
         return;
     }
-    auto rune_literal = source_.substr(start_, cur_ - start_);
+    auto rune_literal = source_.substr(start_ + 1, cur_ - start_ - 1);
     if (rune_literal.size() > 1 &&
-        escape_sequences.find(rune_literal) != escape_sequences.end()) {
+        escape_sequences.find(rune_literal) == escape_sequences.end()) {
+        add_error({file_path_, line_, get_lexem_col()}, "illegal rune literal");
+    }
+    if (rune_literal.size() == 0) {
         add_error({file_path_, line_, get_lexem_col()}, "illegal rune literal");
     }
     next();  // skip closing '\''

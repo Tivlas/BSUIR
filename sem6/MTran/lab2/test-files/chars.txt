@@ -1,0 +1,14 @@
+package main
+
+func main() {
+    char := 'a'
+    char = '
+    char = 'bc'
+    char = ''d''e
+    char = '\f'
+    char = '\n'
+    char = '\t'
+    char = ''
+    char = '\''
+    char = '''
+}
