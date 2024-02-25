@@ -1,0 +1,23 @@
+package main
+
+func main() int {
+    // comment
+    /*
+    *
+    *
+    asfa */
+    a := "LL\\"OO"
+    a := "LL\\\"OO"
+    a := "L
+    a := '
+    abc
+    '
+    a := `
+    abc
+    `
+}
+/**/
+"
+'
+` long
+long

@@ -55,7 +55,7 @@ class lexer {
     char get_prev_char() const;
     size_t get_lexem_col() const;
     char next();
-    void add_token(token_type);
+    void add_token(token_type, size_t = -1);
     void add_error(const Token::token_position&, const std::string&);
     void add_warning(const Token::token_position&, const std::string&);
     bool match(char, char = '\0');
@@ -192,12 +192,15 @@ char lexer::get_prev_char() const {
 char lexer::next() { return source_[cur_++]; }
 
 size_t lexer::get_lexem_col() const {
-    return start_ - source_.rfind('\n', cur_ - 1);
+    return start_ - source_.rfind('\n', start_);
 }
 
-void lexer::add_token(token_type type) {
+void lexer::add_token(token_type type, size_t line) {
     auto lexeme = source_.substr(start_, cur_ - start_);
-    tokens_.push_back({type, lexeme, {file_path_, line_, get_lexem_col()}});
+    tokens_.push_back(
+        {type,
+         lexeme,
+         {file_path_, line == -1 ? line_ : line, get_lexem_col()}});
 }
 
 void lexer::add_error(const Token::token_position& pos,
@@ -236,7 +239,7 @@ const lexer::Tokens& lexer::tokenize() {
 
 void lexer::scan_string_literal() {
     bool escaped = false;
-    while (get_cur_char() != '"' || escaped) {
+    while (!eof() && (get_cur_char() != '"' || escaped)) {
         if (get_cur_char() == '\n') {
             add_error({file_path_, line_, get_lexem_col()},
                       "string literal not terminated");
@@ -256,7 +259,8 @@ void lexer::scan_string_literal() {
 }
 
 void lexer::scan_multiline_string_literal() {
-    while (get_cur_char() != '`') {
+    size_t prev_line = line_;
+    while (!eof() && get_cur_char() != '`') {
         if (get_cur_char() == '\n') line_++;
         next();
     }
@@ -264,18 +268,18 @@ void lexer::scan_multiline_string_literal() {
         cur_--;
         add_error({file_path_, line_, get_lexem_col()},
                   "string literal not terminated");
-        add_token(token_type::STRING);
+        add_token(token_type::STRING, prev_line);
         return;
     }
     next();  // skip closing '`'
-    add_token(token_type::STRING);
+    add_token(token_type::STRING, prev_line);
 }
 
 void lexer::scan_char_literal() {
     static const std::unordered_set<std::string> escape_sequences = {
         "\n", "\r", "\t", "\b", "\'", "\\", "\'"};
     bool escaped = false;
-    while (get_cur_char() != '\'' || escaped) {
+    while (!eof() && (get_cur_char() != '\'' || escaped)) {
         if (get_cur_char() == '\n') {
             add_error({file_path_, line_, get_lexem_col()},
                       "rune literal not terminated");
@@ -302,7 +306,7 @@ void lexer::scan_char_literal() {
 }
 
 void lexer::scan_number_starts_with_period() {
-    while (std::isdigit(get_cur_char())) next();
+    while (!eof() && std::isdigit(get_cur_char())) next();
     if (get_cur_char() == 'e') {
         if (get_next_char() == '+' || get_next_char() == '-' ||
             std::isdigit(get_next_char())) {
@@ -316,7 +320,7 @@ void lexer::scan_number_starts_with_period() {
                 return;
             }
             next();  // skip e
-            while (std::isdigit(get_cur_char())) next();
+            while (!eof() && std::isdigit(get_cur_char())) next();
         } else {
             next();  // take e
             add_token(token_type::FLOAT);
@@ -343,7 +347,7 @@ void lexer::scan_number_starts_with_digit() {
         cur_++;
         scan_number_hex();
     } else {
-        while (std::isdigit(get_cur_char())) next();
+        while (!eof() && std::isdigit(get_cur_char())) next();
         if (get_cur_char() == 'e') {
             if (get_next_char() == '+' || get_next_char() == '-' ||
                 std::isdigit(get_next_char())) {
@@ -357,8 +361,13 @@ void lexer::scan_number_starts_with_digit() {
                     return;
                 }
                 next();
-                while (std::isdigit(get_cur_char())) next();
-                add_token(token_type::FLOAT);
+                while (!eof() && std::isdigit(get_cur_char())) next();
+                if (get_cur_char() == 'i') {
+                    next();  // take i
+                    add_token(token_type::IMAG);
+                } else {
+                    add_token(token_type::FLOAT);
+                }
             } else {
                 next();  // take e
                 add_token(token_type::FLOAT);
@@ -378,7 +387,7 @@ void lexer::scan_number_starts_with_digit() {
 }
 
 void lexer::scan_number_bin() {
-    while (std::isdigit(get_cur_char())) next();
+    while (!eof() && std::isdigit(get_cur_char())) next();
     if (get_prev_char() == 'b' || get_prev_char() == 'b') {
         add_error({file_path_, line_, get_lexem_col()},
                   "binary literal has no digits");
@@ -399,9 +408,9 @@ void lexer::scan_number_bin() {
 }
 
 void lexer::scan_number_hex() {
-    while ((std::isdigit(get_cur_char())) ||
-           (std::toupper(get_cur_char()) >= 'A' &&
-            std::toupper(get_cur_char()) <= 'F')) {
+    while (!eof() && ((std::isdigit(get_cur_char())) ||
+                      (std::toupper(get_cur_char()) >= 'A' &&
+                       std::toupper(get_cur_char()) <= 'F'))) {
         next();
     }
     if (get_prev_char() == 'x' || get_prev_char() == 'X') {
@@ -417,7 +426,7 @@ void lexer::scan_number_hex() {
 }
 
 void lexer::scan_number_oct() {
-    while (std::isdigit(get_cur_char())) next();
+    while (!eof() && std::isdigit(get_cur_char())) next();
     if (get_prev_char() == 'o' || get_prev_char() == 'O') {
         add_error({file_path_, line_, get_lexem_col()},
                   "octal literal has no digits");
@@ -451,7 +460,7 @@ void lexer::scan_number() {
 }
 
 void lexer::scan_identifier() {
-    while (is_alpha_numeric(get_cur_char())) next();
+    while (!eof() && is_alpha_numeric(get_cur_char())) next();
     auto lexeme = source_.substr(start_, cur_ - start_);
     auto is_kw = try_get_keyword(lexeme);
     if (!is_kw.first && only_lowercase_letters(lexeme)) {
@@ -535,14 +544,26 @@ void lexer::scan_token() {
             if (match('=')) {
                 add_token(token_type::QUO_ASSIGN);
             } else if (match('/')) {
-                while (get_cur_char() != '\n' && !eof()) next();
+                while (!eof() && get_cur_char() != '\n') next();
+                add_token(token_type::COMMENT);
             } else if (match('*')) {
-                while (get_cur_char() != '*' && !eof()) next();
-                while (get_cur_char() != '/' && !eof()) next();
+                size_t prev_line = line_;
+                while (!eof() &&
+                       (get_cur_char() != '*' ||
+                        (get_cur_char() == '*' && get_next_char() != '/'))) {
+                    if (get_cur_char() == '\n') line_++;
+                    next();
+                };
                 if (eof()) {
-                    add_error({file_path_, line_, get_lexem_col()},
+                    add_error({file_path_, prev_line, get_lexem_col()},
                               "comment not terminated");
                 }
+                if (!eof()) next();
+                if (!eof()) next();
+                auto lexeme = source_.substr(start_, cur_ - start_);
+                tokens_.push_back({token_type::COMMENT,
+                                   lexeme,
+                                   {file_path_, prev_line, get_lexem_col()}});
             } else {
                 add_token(token_type::QUO);
             }

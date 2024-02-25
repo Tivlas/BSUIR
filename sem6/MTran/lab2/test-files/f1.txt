@@ -1,7 +1,5 @@
 package main
 
 func main() {
-    a := 3;
-    b := a + 2
-    a = b -2
+    var a-b int = 4
 }
