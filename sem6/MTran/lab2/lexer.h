@@ -21,12 +21,20 @@ class lexer {
         Token::token_position pos;
         std::string msg;
     };
+
+    struct lexical_warning {
+        Token::token_position pos;
+        std::string msg;
+    };
+
     using Tokens = std::vector<Token>;
     using Errors = std::vector<lexical_error>;
+    using Warnings = std::vector<lexical_warning>;
 
    private:
     Tokens tokens_;
     Errors errors_;
+    Warnings warnings_;
     std::string source_;
     size_t start_ = 0;
     size_t cur_ = 0;
@@ -43,6 +51,7 @@ class lexer {
     char next();
     void add_token(token_type);
     void add_error(const Token::token_position&, const std::string&);
+    void add_warning(const Token::token_position&, const std::string&);
     bool match(char, char = '\0');
     void scan_string_literal();
     void scan_multiline_string_literal();
@@ -107,22 +116,32 @@ void lexer::insert_semicolon() {
 void lexer::print_all() const {
     std::cout << std::left << std::setw(10) << "ID" << std::setw(15) << "POS"
               << std::setw(15) << "TYPE"
-              << "LEXEME" << std::endl;
+              << "LEXEME" << '\n';
     std::cout << "------------------------------------------------------"
-              << std::endl;
+              << '\n';
 
     for (size_t i = 0; i < tokens_.size() - 1; ++i) {
         const Token& token = tokens_[i];
         std::cout << std::setw(10) << i << std::setw(15)
                   << std::to_string(token.pos.line) + ":" +
                          std::to_string(token.pos.col)
-                  << std::setw(15) << token_type_map.at(token.type)
-                  << token.lexeme << std::endl;
+                  << std::setw(15) << type_string_map.at(token.type)
+                  << token.lexeme << '\n';
     }
     const Token& token = tokens_.back();
     std::cout << std::setw(10) << tokens_.size() - 1 << std::setw(15) << ""
-              << std::setw(15) << token_type_map.at(token.type) << token.lexeme
-              << std::endl;
+              << std::setw(15) << type_string_map.at(token.type) << token.lexeme
+              << '\n';
+    std::cout << '\n';
+    for (const auto& e : errors_) {
+        std::cout << "Error at " << e.pos.line << ':' << e.pos.col << " — "
+                  << e.msg << '\n';
+    }
+    std::cout << '\n';
+    for (const auto& w : warnings_) {
+        std::cout << "Error at " << w.pos.line << ':' << w.pos.col << " — "
+                  << w.msg << '\n';
+    }
 }
 
 bool lexer::eof() const { return cur_ >= source_.size(); }
@@ -151,6 +170,11 @@ void lexer::add_token(token_type type) {
 void lexer::add_error(const Token::token_position& pos,
                       const std::string& msg) {
     errors_.push_back({pos, msg});
+}
+
+void lexer::add_warning(const Token::token_position& pos,
+                        const std::string& msg) {
+    warnings_.push_back({pos, msg});
 }
 
 bool lexer::match(char expected, char expected2) {
@@ -360,9 +384,17 @@ void lexer::scan_number() {
 }
 
 void lexer::scan_identifier() {
-    while (is_alpha_numeric(get_cur_char()) || get_cur_char() == '_') next();
+    while (is_alpha_numeric(get_cur_char())) next();
     auto lexeme = source_.substr(start_, cur_ - start_);
     auto is_kw = try_get_keyword(lexeme);
+    if (!is_kw.first) {
+        for (const auto& [type, kw] : type_string_map) {
+            if (looks_like_keyword(lexeme, kw, 2)) {
+                add_warning({file_path_, line_, get_lexem_col()},
+                            "did you mean " + kw);
+            }
+        }
+    }
     add_token(is_kw.first ? is_kw.second : token_type::IDENT);
 }
 

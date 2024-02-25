@@ -92,7 +92,7 @@ enum class token_type : uint8_t {
     keywords_end,  // END
 };
 
-const std::unordered_map<token_type, std::string> token_type_map = {
+const std::unordered_map<token_type, std::string> type_string_map = {
     {token_type::ILLEGAL, "ILLEGAL"},
     {token_type::EOF_, "EOF_"},
     {token_type::COMMENT, "COMMENT"},
@@ -184,7 +184,7 @@ std::pair<bool, token_type> try_get_keyword(const std::string& name) {
         std::unordered_map<std::string, token_type> ump;
         for (int i = static_cast<int>(token_type::keywords_beg) + 1;
              i < static_cast<int>(token_type::keywords_end); i++) {
-            ump[token_type_map.at(static_cast<token_type>(i))] =
+            ump[type_string_map.at(static_cast<token_type>(i))] =
                 static_cast<token_type>(i);
         }
         return ump;
