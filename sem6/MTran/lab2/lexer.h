@@ -316,7 +316,7 @@ void lexer::scan_number_starts_with_period() {
                 return;
             }
             next();  // skip e
-            while (std::isdigit(get_cur_char()) && !eof()) next();
+            while (std::isdigit(get_cur_char())) next();
         } else {
             next();  // take e
             add_token(token_type::FLOAT);
@@ -344,7 +344,28 @@ void lexer::scan_number_starts_with_digit() {
         scan_number_hex();
     } else {
         while (std::isdigit(get_cur_char())) next();
-        if (get_cur_char() == '.') {
+        if (get_cur_char() == 'e') {
+            if (get_next_char() == '+' || get_next_char() == '-' ||
+                std::isdigit(get_next_char())) {
+                next();
+                if ((get_cur_char() == '+' || get_cur_char() == '-') &&
+                    !std::isdigit(get_next_char())) {
+                    next();  // take + or -
+                    add_token(token_type::FLOAT);
+                    add_error({file_path_, line_, get_lexem_col()},
+                              "exponent has no digits");
+                    return;
+                }
+                next();
+                while (std::isdigit(get_cur_char())) next();
+                add_token(token_type::FLOAT);
+            } else {
+                next();  // take e
+                add_token(token_type::FLOAT);
+                add_error({file_path_, line_, get_lexem_col()},
+                          "exponent has no digits");
+            }
+        } else if (get_cur_char() == '.') {
             cur_++;
             scan_number_starts_with_period();
         } else if (get_cur_char() == 'i') {
