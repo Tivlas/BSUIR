@@ -111,6 +111,7 @@ void lexer::insert_semicolon() {
         last_token_type == token_type::INC ||
         last_token_type == token_type::DEC ||
         last_token_type == token_type::RPAREN ||
+        last_token_type == token_type::RBRACK ||
         last_token_type == token_type::RBRACE) {
         auto insert_pos = source_.begin();
         std::advance(insert_pos, cur_ - 1);
@@ -200,7 +201,7 @@ void lexer::add_token(token_type type, size_t line) {
     tokens_.push_back(
         {type,
          lexeme,
-         {file_path_, line == -1 ? line_ : line, get_lexem_col()}});
+         {file_path_, line == -1ULL ? line_ : line, get_lexem_col()}});
 }
 
 void lexer::add_error(const Token::token_position& pos,

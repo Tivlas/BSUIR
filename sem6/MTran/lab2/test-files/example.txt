@@ -1,0 +1,15 @@
+package main
+
+func main() {
+    ___var___ :=3
+    a_ = 5
+    var strings [4]string
+    strings [2] = something.str()
+    b = +.12e-5i -4
+    str = "abc
+    var name$ int = 4
+    char:='ab'
+    /**
+    *
+    /
+}

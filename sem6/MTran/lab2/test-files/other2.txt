@@ -1,0 +1,110 @@
+//common test
+
+using System;
+
+int max(a int, b int) {
+    if a > b {
+        return a
+    }
+    return b
+}
+
+int main() {
+    string[] strings = new string[] { "123" };
+    strings
+          [
+              2
+] = something.str()
+    strings [    3
+]            = something .            str()
+    for (var i=0;i<3;i++){
+        a = 2
+    }
+    + - -- ++ +=             -= *= /= & && |||| &&&& &^ = &^= () {} []
+                          f = 1-2
+            fop
+     ir 2 < 3 {
+        i/=3
+     }
+}
+
+//num test
+
+999e4
+123
+.123
+123.
+.99.
+123.456
+44.55.66
+.123.555
++.12e5
+1e-1.1
+0b1010
+0b10.10
+0b1210
+0B1210
+0b1f10
+0x1234567890abcdef
+0X1abcGdef
+0b
+0B
+0x
+.88.e
+.88.e-5
+
+//char test
+char = 'a'
+    char = '
+    char = 'bc'
+    char = ''d''e
+    char = '\f'
+    char = '\n'
+    char = '\t'
+    char = ''
+    char = '\''
+    char = '''
+char c ='\u123';
+char c ='\u0123';
+char c ='\xDDDD';
+char c ='\xDDDDD';
+char c ='\xDDTDD';
+
+string str = "1 qwe q\we " 'sdfsdfs"d \\';
+var parts = Console
+  .         ReadLine     (     )   ;
+        var array = new  int   [    parts   .    Length ] ;
+
+//some rand thins
+int t = 1--2;
+a = 12$$$$12;
+c = null;
+int 1t1emp1 = current;
+        _curr
+ent_ = next;
+a = 1e-1F;
+a = 1e1F;
+a = 1e1.1F;
+a = 1e-.1F;
+a = 1e-1.1;
+2t/emp
+
+// string test
+    /*
+    *
+    *
+    asfa */
+    a = "LL\\"OO"
+    a = "LL\\\"OO"
+    a = "L
+    a = '
+    abc
+    '
+    a =
+    abc
+/**/
+"
+'
+int
+int
+/*

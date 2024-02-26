@@ -8,6 +8,8 @@ funct max(a int, b int) int {
 }
  
 func main() {
+    ___var___ :=3
+    a_ = 5
     var strings [4]string
     strings [2] = something.str()
     strings[3]            = something .            str()
@@ -20,4 +22,5 @@ func main() {
      ir 2 < 3 {
         i/=3
      }
+    a := make(map[int]char, 10)
 }
