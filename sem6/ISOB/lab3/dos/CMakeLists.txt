@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 project(LAB3_DOS)
 
-set(CMAKE_CXX_COMPILER "C:/Program Files/LLVM/bin/clang++")
 set(CMAKE_CXX_STANDARD 20)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
