@@ -152,7 +152,7 @@ int main(int argc, char **argv) {
 
     struct sockaddr_in server_sa;
     server_sa.sin_family = AF_INET;
-    server_sa.sin_port = htons(8000);
+    server_sa.sin_port = htons(1234);
     server_sa.sin_addr.s_addr = inet_addr("127.0.0.1");
     char user_name[14];
     char txt[240], msg[256];

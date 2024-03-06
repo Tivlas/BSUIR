@@ -1,16 +1,17 @@
 #include <boost/asio.hpp>
 #include <iostream>
+#include <stdexcept>
 
 using namespace boost::asio;
 using namespace boost::asio::ip;
 
 void handle_connect(const boost::system::error_code& error) {
     if (error) {
-        std::cerr << "false";
+        std::cerr << "false" << std::endl;
+        throw std::runtime_error("Cannot connect.");
     } else {
-        std::cerr << "true";
+        std::cerr << "true" << std::endl;
     }
-    std::cout << std::endl;
 }
 
 int main(int argc, char* argv[]) {
@@ -41,8 +42,14 @@ int main(int argc, char* argv[]) {
             auto skt_ptr = new tcp::socket(*ctx_ptr);
             contexts.push_back(ctx_ptr);
             sockets.push_back(skt_ptr);
-            sockets.back()->async_connect(*endpoint_iterator, handle_connect);
-            contexts.back()->run();
+            try {
+                sockets.back()->async_connect(*endpoint_iterator,
+                                              handle_connect);
+                contexts.back()->run();
+            } catch (...) {
+                std::cout << "Exception handled.\n";
+                break;
+            }
         }
         io_context.run();
         for (auto& skt : sockets) {
