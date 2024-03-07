@@ -514,7 +514,9 @@ void lexer::scan_token() {
             break;
         // 2
         case '.':  // .[0-9]
-            if (isdigit(source_[cur_])) {
+            if (match('.', '.')) {
+                add_token(token_type::ELLIPSIS);
+            } else if (isdigit(source_[cur_])) {
                 scan_number();
             } else {
                 add_token(token_type::PERIOD);

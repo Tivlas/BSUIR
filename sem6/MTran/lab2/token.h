@@ -54,6 +54,7 @@ enum class token_type : uint8_t {
     LEQ,             // <=
     GEQ,             // >=
     DEFINE,          // :=
+    ELLIPSIS,        // ...
     LPAREN,          // (
     LBRACK,          // [
     LBRACE,          // {
@@ -221,10 +222,18 @@ struct Token {
         size_t line;
         size_t col;
 
-        token_position() : file_path(""), line(0), col(0) {}
+        token_position() : file_path(""), line(0), col(0) {} // NoPos by default
 
         token_position(std::filesystem::path file_path, size_t line, size_t col)
             : file_path(file_path), line(line), col(col) {}
+
+        bool operator==(const token_position& other) const {
+            return line == other.line && col == other.col;
+        }
+
+        bool IsValid() const {
+            return *this != token_position();
+        }
     };
 
     token_type type;
