@@ -3,6 +3,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <filesystem>
 
 enum class token_type : uint8_t {
     ILLEGAL,
@@ -91,6 +92,11 @@ enum class token_type : uint8_t {
     TYPE,
     VAR,
     keywords_end,  // END
+
+    additional_beg,
+    // additional tokens, handled in an ad-hoc manner
+    TILDE,
+    additional_end,
 };
 
 const std::unordered_map<token_type, std::string> type_string_map = {
@@ -138,6 +144,7 @@ const std::unordered_map<token_type, std::string> type_string_map = {
     {token_type::LEQ, "<="},
     {token_type::GEQ, ">="},
     {token_type::DEFINE, ":="},
+    {token_type::ELLIPSIS, "..."},
     {token_type::LPAREN, "("},
     {token_type::LBRACK, "["},
     {token_type::LBRACE, "{"},
@@ -169,7 +176,9 @@ const std::unordered_map<token_type, std::string> type_string_map = {
     {token_type::STRUCT, "STRUCT"},
     {token_type::SWITCH, "SWITCH"},
     {token_type::TYPE, "TYPE"},
-    {token_type::VAR, "VAR"}};
+    {token_type::VAR, "VAR"},
+    {token_type::TILDE, "TILDE"},
+};
 
 bool is_alpha(char c) {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
