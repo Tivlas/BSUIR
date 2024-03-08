@@ -19,7 +19,7 @@ struct Node {
 };
 
 struct Expr : Node {
-    virtual void exprNode() const = 0;
+    // virtual void exprNode() const = 0;
 };
 
 struct Stmt : Node {
@@ -45,6 +45,9 @@ struct Field : Node {
     SP<Expr> Type;           // field/method/parameter type; or nullptr
     SP<BasicLitExpr> Tag;    // field tag; or nullptr
 
+    Field(V<SP<IdentExpr>> names, SP<Expr> typ, SP<BasicLitExpr> tag)
+        : Names(names), Type(typ), Tag(tag) {}
+
     pos_t Pos() const override {
         if (!Names.empty()) return Names[0]->Pos();
         if (Type != nullptr) return Type->Pos();
@@ -58,6 +61,9 @@ struct FieldList : Node {
     pos_t Opening;      // position of opening parenthesis/brace/bracket, if any
     V<SP<Field>> List;  // field list; or nullptr
     pos_t Closing;      // position of closing parenthesis/brace/bracket, if any
+
+    FieldList(pos_t opening, V<SP<Field>> list, pos_t closing)
+        : Opening(opening), List(list), Closing(closing) {}
 
     pos_t Pos() const override {
         if (Opening.IsValid()) return Opening;
@@ -81,14 +87,16 @@ struct BadExpr : Expr {
     pos_t From;
     pos_t To;
 
+    BadExpr(pos_t from, pos_t to) : From(from), To(to) {}
     pos_t Pos() const override { return From; }
 };
 
 struct IdentExpr : Expr {
     pos_t NamePos;  // identifier position
-    std::string name;
+    std::string Name;
     // TODO Obj *Object
 
+    IdentExpr(pos_t pos, std::string name) : NamePos(pos), Name(name) {}
     pos_t Pos() const override { return NamePos; }
 };
 
@@ -96,6 +104,8 @@ struct EllipsisExpr : Expr {
     pos_t Ellipsis;  // position of "..."
     SP<Expr> Elt;    // ellipsis element type (parameter lists only); or nullptr
 
+    EllipsisExpr() {}
+    EllipsisExpr(pos_t pos) : Ellipsis(pos) {}
     pos_t Pos() const override { return Ellipsis; }
 };
 
@@ -103,8 +113,10 @@ struct BasicLitExpr : Expr {
     pos_t ValuePos;
     token_type Kind;    // token.INT, token.FLOAT, token.IMAG, token.CHAR, or
                         // token.STRING
-    std::string value;  // literal string; e.g. 42, 0x7f, 3.14, 1e-9, 2.4i, 'a'
+    std::string Value;  // literal string; e.g. 42, 0x7f, 3.14, 1e-9, 2.4i, 'a'
 
+    BasicLitExpr(pos_t pos, token_type kind, std::string value)
+        : ValuePos(pos), Kind(kind), Value(value) {}
     pos_t Pos() const override { return ValuePos; }
 };
 
@@ -135,6 +147,8 @@ struct SelectorExpr : Expr {
     SP<Expr> X;
     SP<IdentExpr> Sel;  // field selector
 
+    SelectorExpr() {}
+    SelectorExpr(SP<Expr> x, SP<IdentExpr> sel) : X(x), Sel(sel) {}
     pos_t Pos() const override { return X->Pos(); }
 };
 
@@ -191,6 +205,7 @@ struct StarExpr : Expr {
     pos_t Star;
     SP<Expr> X;  // operand (*ptr)
 
+    StarExpr(pos_t pos, SP<Expr> x) : Star(pos), X(x) {}
     pos_t Pos() const override { return Star; }
 };
 
@@ -227,6 +242,10 @@ struct ArrayTypeExpr : Expr {
     SP<Expr> Len;  // ellipsis node for [...]T arrays, nullptr for slice
     SP<Expr> Elt;  // elem type
 
+    ArrayTypeExpr() {}
+    ArrayTypeExpr(pos_t lbrack, SP<Expr> len, SP<Expr> elt)
+        : Lbrack(lbrack), Len(len), Elt(elt) {}
+
     pos_t Pos() const override { return Lbrack; }
 };
 
@@ -235,6 +254,8 @@ struct StructTypeExpr : Expr {
     SP<FieldList> Fields;  // list of field declarations
     bool Incomplete;  // true if (source) fields are missing in the Fields list
 
+    StructTypeExpr(pos_t pos, SP<FieldList> fields)
+        : Struct(pos), Fields(fields) {}
     pos_t Pos() const override { return Struct; }
 };
 

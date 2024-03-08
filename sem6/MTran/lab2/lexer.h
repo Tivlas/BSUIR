@@ -1,10 +1,12 @@
 #pragma once
+#include <filesystem>
 #include <stack>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
+#include "error.h"
 #include "token.h"
 
 namespace color {
@@ -13,28 +15,12 @@ const std::string warning = "\033[1;95m";
 const std::string reset = "\033[0m";
 };  // namespace color
 
-/*
-TODO
-
-semicolon token pos after inser
-
-tests
-
-errors
-*/
 class lexer {
-    struct lexical_error {
-        Token::token_position pos;
-        std::string msg;
-    };
-
     struct lexical_warning {
         Token::token_position pos;
         std::string msg;
     };
 
-    using Tokens = std::vector<Token>;
-    using Errors = std::vector<lexical_error>;
     using Warnings = std::vector<lexical_warning>;
 
    private:
@@ -46,6 +32,7 @@ class lexer {
     size_t cur_ = 0;
     size_t line_ = 1;
     std::filesystem::path file_path_;
+    bool insertSemi_ = false;
 
     bool looks_like_keyword(const std::string&, const std::string&, int) const;
     bool eof() const;
@@ -77,6 +64,8 @@ class lexer {
     const Tokens& tokenize();
     void print_as_table() const;
     void print_as_token_sequence() const;
+    Tokens get_tokens() const { return tokens_; }
+    Errors get_errors() const { return errors_; }
 };
 
 lexer::lexer(const std::filesystem::path& path) : file_path_(path) {
@@ -115,6 +104,7 @@ void lexer::insert_semicolon() {
         last_token_type == token_type::RBRACE) {
         auto insert_pos = source_.begin();
         std::advance(insert_pos, cur_ - 1);
+        insertSemi_ = true;
         source_.insert(insert_pos, ';');
         add_token(token_type::SEMICOLON);
         next();
@@ -198,6 +188,10 @@ size_t lexer::get_lexem_col() const {
 
 void lexer::add_token(token_type type, size_t line) {
     auto lexeme = source_.substr(start_, cur_ - start_);
+    if (type == token_type::SEMICOLON && insertSemi_) {
+        lexeme = "\n";
+        insertSemi_ = false;
+    }
     tokens_.push_back(
         {type,
          lexeme,
@@ -230,11 +224,13 @@ bool lexer::match(char expected, char expected2) {
     return true;
 }
 
-const lexer::Tokens& lexer::tokenize() {
+const Tokens& lexer::tokenize() {
+    tokens_.clear();
     while (!eof()) {
         start_ = cur_;
         scan_token();
     }
+    tokens_.push_back({token_type::EOF_, "", {file_path_, -1, -1}});
     return tokens_;
 }
 
@@ -551,7 +547,6 @@ void lexer::scan_token() {
                 add_token(token_type::QUO_ASSIGN);
             } else if (match('/')) {
                 while (!eof() && get_cur_char() != '\n') next();
-                add_token(token_type::COMMENT);
             } else if (match('*')) {
                 size_t prev_line = line_;
                 while (!eof() &&
@@ -566,10 +561,6 @@ void lexer::scan_token() {
                 }
                 if (!eof()) next();
                 if (!eof()) next();
-                auto lexeme = source_.substr(start_, cur_ - start_);
-                tokens_.push_back({token_type::COMMENT,
-                                   lexeme,
-                                   {file_path_, prev_line, get_lexem_col()}});
             } else {
                 add_token(token_type::QUO);
             }

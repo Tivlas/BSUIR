@@ -222,7 +222,8 @@ struct Token {
         size_t line;
         size_t col;
 
-        token_position() : file_path(""), line(0), col(0) {} // NoPos by default
+        token_position()
+            : file_path(""), line(0), col(0) {}  // NoPos by default
 
         token_position(std::filesystem::path file_path, size_t line, size_t col)
             : file_path(file_path), line(line), col(col) {}
@@ -231,9 +232,17 @@ struct Token {
             return line == other.line && col == other.col;
         }
 
-        bool IsValid() const {
-            return *this != token_position();
+        bool operator>(const token_position& other) const {
+            if (line == other.line) {
+                return col > other.col;
+            }
+            if (line < other.line) {
+                return false;
+            }
+            return true;
         }
+
+        bool IsValid() const { return *this != token_position(); }
     };
 
     token_type type;
@@ -261,3 +270,5 @@ bool Token::is_literal() const {
 bool Token::is_operator() const {
     return type > token_type::operators_beg && type < token_type::operators_end;
 }
+
+using Tokens = std::vector<Token>;
