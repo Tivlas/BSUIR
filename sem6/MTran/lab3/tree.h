@@ -752,6 +752,14 @@ struct GenDecl : Decl {
     pos_t Rparen;
     V<SP<Spec>> Specs;
 
+    GenDecl(pos_t tokPos, token_type tok, pos_t lparen, V<SP<Spec>> specs,
+            pos_t rparen)
+        : TokPos(tokPos),
+          Tok(tok),
+          Lparen(lparen),
+          Rparen(rparen),
+          Specs(specs) {}
+
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }

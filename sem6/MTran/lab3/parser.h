@@ -143,15 +143,13 @@ class parser {
     // parseSpecFunction interface
     void parseGenericType(SP<TypeSpec> spec, pos_t openPos, SP<IdentExpr> name0,
                           SP<Expr> typ0);
+    SP<GenDecl> parseGenDecl(token_type keyword, parseSpecFunction f);
+    SP<FuncDecl> parseFuncDecl();
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    GenDecl parseGenDecl(token_type keyword, parseSpecFunction f);
     SP<Decl> parseDecl(std::unordered_map<token_type, bool> sync);
     SP<Expr> packIndexExpr(SP<Expr> x, pos_t lbrack, V<SP<Expr>> exprs,
                            pos_t rbrack);
     SP<Expr> parsePrimaryExpr(SP<Expr> x);
-    SP<StructTypeExpr> parseStructType();
-    SP<FuncTypeExpr> parseFuncType();
-    FuncDecl parseFuncDecl();
 
     // Error methods
     void errorExpected(pos_t pos, std::string msg);
@@ -1947,22 +1945,69 @@ void parser::parseGenericType(SP<TypeSpec> spec, pos_t openPos,
     pos_t closePos = expect(token_type::RBRACK);
     spec->TypeParams = std::make_shared<FieldList>(openPos, list, closePos);
 
-    if(tok_ == token_type::ASSIGN) {
+    if (tok_ == token_type::ASSIGN) {
         spec->Assign = pos_;
         next();
     }
     spec->Type = parseType();
 }
 
+bool isTypeElem(SP<Expr> x) {
+    if (isOfType<ArrayTypeExpr>(x.get()).second ||
+        isOfType<StructTypeExpr>(x.get()).second ||
+        isOfType<FuncTypeExpr>(x.get()).second ||
+        isOfType<InterfaceTypeExpr>(x.get()).second ||
+        isOfType<MapTypeExpr>(x.get()).second) {
+        return true;
+    } else if (auto [ptr, is] = isOfType<BinaryExpr>(x.get()); is) {
+        return isTypeElem(ptr->X) || isTypeElem(ptr->Y);
+    } else if (auto [ptr, is] = isOfType<UnaryExpr>(x.get()); is) {
+        return ptr->Op == token_type::TILDE;
+    } else if (auto [ptr, is] = isOfType<ParenExpr>(x.get()); is) {
+        return isTypeElem(ptr->X);
+    }
+    return false;
+}
+
 std::pair<SP<IdentExpr>, SP<Expr>> extractName(SP<Expr> x, bool force) {
-    
+    if (auto [ptr, is] = isOfType<IdentExpr>(x.get()); is) {
+        return {ptr, nullptr};
+    } else if (auto [ptr, is] = isOfType<BinaryExpr>(x.get()); is) {
+        switch (ptr->Op) {
+            case token_type::MUL:
+                if (auto [name, _] = isOfType<IdentExpr>(ptr->X.get());
+                    name != nullptr && (force || isTypeElem(ptr->Y))) {
+                    return {name,
+                            std::make_shared<StarExpr>(ptr->OpPos, ptr->Y)};
+                }
+                break;
+            case token_type::OR:
+                if (auto [name, lhs] =
+                        extractName(ptr->X, force || isTypeElem(ptr->Y));
+                    name != nullptr && lhs != nullptr) {
+                    auto op = *ptr;
+                    op.X = lhs;
+                    return {name, std::make_shared<Expr>(op)};
+                }
+                break;
+        }
+    } else if (auto [ptr, is] = isOfType<CallExpr>(x.get()); is) {
+        if (auto [name, _] = isOfType<IdentExpr>(ptr->Fun.get());
+            name != nullptr) {
+            if (ptr->Args.size() == 1 && ptr->Ellipsis == NoPos &&
+                (force || isTypeElem(ptr->Args[0]))) {
+                return {name, ptr->Args[0]};
+            }
+        }
+    }
+    return {nullptr, x};
 }
 
 SP<Spec> parser::parseTypeSpec(token_type _, int __) {
     auto name = parseIdent();
     auto spec = std::make_shared<TypeSpec>(name, nullptr, NoPos, nullptr);
 
-    if(tok_ == token_type::LBRACK) {
+    if (tok_ == token_type::LBRACK) {
         pos_t lbrack = pos_;
         next();
         if (tok_ == token_type::IDENT) {
@@ -1973,7 +2018,9 @@ SP<Spec> parser::parseTypeSpec(token_type _, int __) {
                 x = parseBinaryExpr(lhs, LowestPrec + 1);
                 exprLev_--;
             }
-            if (auto [pname, ptype] = extractName(x, tok_ == token_type::COMMA); pname != nullptr && (ptype != nullptr || tok_ != token_type::RBRACK)) {
+            if (auto [pname, ptype] = extractName(x, tok_ == token_type::COMMA);
+                pname != nullptr &&
+                (ptype != nullptr || tok_ != token_type::RBRACK)) {
                 parseGenericType(spec, lbrack, pname, ptype);
             } else {
                 spec->Type = parseArrayType(lbrack, x);
@@ -1993,3 +2040,27 @@ SP<Spec> parser::parseTypeSpec(token_type _, int __) {
     return spec;
 }
 
+SP<GenDecl> parser::parseGenDecl(token_type keyword, parseSpecFunction f) {
+    pos_t pos = expect(keyword);
+
+    pos_t lparen, rparen;
+    V<SP<Spec>> list;
+    if (tok_ == token_type::LPAREN) {
+        lparen = pos_;
+        next();
+        for (int iota = 0;
+             tok_ != token_type::RPAREN && tok_ != token_type::EOF_; iota++) {
+            list.push_back(f(keyword, iota));
+        }
+        rparen = expect(token_type::RPAREN);
+        expectSemi();
+    } else {
+        list.push_back(f(keyword, 0));
+    }
+
+    return std::make_shared<GenDecl>(pos, keyword, lparen, list, rparen);
+}
+
+SP<FuncDecl> parser::parseFuncDecl() {
+    
+}
