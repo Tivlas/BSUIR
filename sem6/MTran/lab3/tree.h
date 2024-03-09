@@ -633,6 +633,10 @@ struct ForStmt : Stmt {
     SP<Stmt> Post;  // post iteration statement; or nullptr
     SP<BlockStmt> Body;
 
+    ForStmt(pos_t forPos, SP<Stmt> init, SP<Expr> cond, SP<Stmt> post,
+            SP<BlockStmt> body)
+        : For(forPos), Init(init), Cond(cond), Post(post), Body(body) {}
+
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
@@ -647,6 +651,28 @@ struct RangeStmt : Stmt {
     pos_t Range;
     SP<Expr> X;
     SP<BlockStmt> Body;
+
+    RangeStmt(pos_t forPos, SP<Expr> key, SP<Expr> value, pos_t tokPos,
+              token_type tok, pos_t rangePos, SP<Expr> x, SP<BlockStmt> body)
+        : For(forPos),
+          Key(key),
+          Value(value),
+          TokPos(tokPos),
+          Tok(tok),
+          Range(rangePos),
+          X(x),
+          Body(body) {}
+
+    virtual bool operator==(const Node& rhs) const override {
+        return compare(*this, rhs);
+    }
+};
+
+struct EmptyStmt : Stmt {
+    pos_t Semicolon;
+    bool Implicit;
+
+    EmptyStmt(pos_t sc, bool implicit) : Semicolon(sc), Implicit(implicit) {}
 
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);

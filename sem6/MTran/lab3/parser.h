@@ -132,6 +132,8 @@ class parser {
     SP<CaseClauseStmt> parseCaseClause();
     bool isTypeSwitchGuard(SP<Stmt> s);
     SP<Stmt> parseSwitchStmt();
+    SP<Stmt> parseForStmt();
+    SP<Stmt> parseStmt();
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     GenDecl parseGenDecl(token_type keyword, parseSpecFunction f);
     SP<Spec> parseImportSpec(token_type _,
@@ -1677,29 +1679,29 @@ bool parser::isTypeSwitchGuard(SP<Stmt> s) {
 SP<Stmt> parser::parseSwitchStmt() {
     pos_t pos = expect(token_type::SWITCH);
     SP<Stmt> s1, s2;
-    if(tok_ != token_type::LBRACE) {
+    if (tok_ != token_type::LBRACE) {
         int prevLev = exprLev_;
         exprLev_ = -1;
         if (tok_ != token_type::SEMICOLON) {
             s2 = parseSimpleStmt(basic).first;
         }
-        if(tok_ == token_type::SEMICOLON) {
+        if (tok_ == token_type::SEMICOLON) {
             next();
             s1 = s2;
             s2 = nullptr;
             if (tok_ != token_type::LBRACE) {
                 // A TypeSwitchGuard may declare a variable in addition
-				// to the variable declared in the initial SimpleStmt.
-				// Introduce extra scope to avoid redeclaration errors:
-				//
-				//	switch t := 0; t := x.(T) { ... }
-				//
-				// (this code is not valid Go because the first t
-				// cannot be accessed and thus is never used, the extra
-				// scope is needed for the correct error message).
-				//
-				// If we don't have a type switch, s2 must be an expression.
-				// Having the extra nested but empty scope won't affect it.
+                // to the variable declared in the initial SimpleStmt.
+                // Introduce extra scope to avoid redeclaration errors:
+                //
+                //	switch t := 0; t := x.(T) { ... }
+                //
+                // (this code is not valid Go because the first t
+                // cannot be accessed and thus is never used, the extra
+                // scope is needed for the correct error message).
+                //
+                // If we don't have a type switch, s2 must be an expression.
+                // Having the extra nested but empty scope won't affect it.
                 s2 = parseSimpleStmt(basic).first;
             }
         }
@@ -1720,5 +1722,151 @@ SP<Stmt> parser::parseSwitchStmt() {
         return std::make_shared<TypeSwitchStmt>(pos, s1, s2, body);
     }
 
-    return std::make_shared<SwitchStmt>(pos, s1, makeExpr(s2, "switch expression"), body);
+    return std::make_shared<SwitchStmt>(
+        pos, s1, makeExpr(s2, "switch expression"), body);
 }
+
+SP<Stmt> parser::parseForStmt() {
+    pos_t pos = expect(token_type::FOR);
+
+    SP<Stmt> s1, s2, s3;
+    bool isRange = false;
+
+    if (tok_ != token_type::LBRACE) {
+        int prevLev = exprLev_;
+        exprLev_ = -1;
+        if (tok_ != token_type::SEMICOLON) {
+            if (tok_ == token_type::RANGE) {
+                pos_t pos = pos_;
+                next();
+                V<SP<Expr>> y = {std::make_shared<UnaryExpr>(
+                    pos, token_type::RANGE, parseRhs())};
+                s2 = std::make_shared<AssignStmt>(nullptr, nullptr, nullptr, y);
+                isRange = true;
+            } else {
+                std::tie(s2, isRange) = parseSimpleStmt(rangeOk);
+            }
+        }
+        if (!isRange && tok_ == token_type::SEMICOLON) {
+            next();
+            s1 = s2;
+            s2 = nullptr;
+            if (tok_ != token_type::SEMICOLON) {
+                s2 = parseSimpleStmt(basic).first;
+            }
+            expectSemi();
+            if (tok_ != token_type::LBRACE) {
+                s3 = parseSimpleStmt(basic).first;
+            }
+        }
+        exprLev_ = prevLev;
+    }
+
+    auto body = parseBlockStmt();
+    expectSemi();
+
+    if (isRange) {
+        auto as = isOfType<AssignStmt>(s2.get()).first;
+        SP<Expr> key, value;
+        switch (as->Lhs.size()) {
+            case 0:
+                break;
+            case 1: {
+                key = as->Lhs[0];
+                break;
+            }
+            case 2: {
+                key = as->Lhs[0];
+                value = as->Lhs[1];
+                break;
+            }
+            default:
+                // TODO errorExpected()
+                return std::make_shared<BadStmt>(pos, body->End());
+        }
+
+        auto x = isOfType<UnaryExpr>(as->Rhs[0].get()).first->X;
+        return std::make_shared<RangeStmt>(pos, key, value, as->TokPos, as->Tok,
+                                           as->Rhs[0]->Pos(), x, body);
+    }
+
+    return std::make_shared<ForStmt>(
+        pos, s1, makeExpr(s2, "boolean or range expression"), s3, body);
+}
+
+SP<Stmt> parser::parseStmt() {
+    incNestLev();
+    SP<Stmt> s;
+    switch (tok_) {
+        case token_type::IDENT:
+        case token_type::INT:
+        case token_type::FLOAT:
+        case token_type::IMAG:
+        case token_type::CHAR:
+        case token_type::STRING:
+        case token_type::FUNC:
+        case token_type::LPAREN:
+        case token_type::LBRACK:
+        case token_type::STRUCT:
+        case token_type::MAP:
+        case token_type::INTERFACE:
+        case token_type::ADD:
+        case token_type::SUB:
+        case token_type::MUL:
+        case token_type::AND:
+        case token_type::XOR:
+        case token_type::NOT: {
+            auto s = parseSimpleStmt(labelOk).first;
+            if (auto [_, isLabeledStmt] = isOfType<LabeledStmt>(s.get());
+                !isLabeledStmt) {
+                expectSemi();
+            }
+            break;
+        }
+        case token_type::DEFER:
+            s = parseDeferStmt();
+            break;
+        case token_type::RETURN:
+            s = parseReturnStmt();
+            break;
+        case token_type::BREAK:
+        case token_type::CONTINUE:
+        case token_type::GOTO:
+        case token_type::FALLTHROUGH:
+            s = parseBranchStmt(tok_);
+            break;
+        case token_type::LBRACE:
+            s = parseBlockStmt();
+            expectSemi();
+            break;
+        case token_type::IF:
+            s = parseIfStmt();
+            break;
+        case token_type::SWITCH:
+            s = parseSwitchStmt();
+            break;
+        case token_type::FOR:
+            s = parseForStmt();
+            break;
+        case token_type::SEMICOLON:
+            s = std::make_shared<EmptyStmt>(pos_, lit_ == "\n");
+            next();
+            break;
+
+        case token_type::RBRACE:
+            s = std::make_shared<EmptyStmt>(pos_, true);
+            break;
+        default:
+            pos_t pos = pos_;
+            // TODO errorExpected()
+            advance(stmtStart);
+            s = std::make_shared<BadStmt>(pos, pos_);
+            break;
+    }
+
+    decNestLev();
+    return s;
+}
+
+// ----------------------------------------------------------------------------
+// Declarations
