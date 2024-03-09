@@ -8,6 +8,7 @@
 #include "tree.h"
 
 // TODO IMPORTANT interface comparison (check all == usage)
+// TODO check all switch case var decls (use {} instead of outer declaration)
 
 using parseSpecFunction = std::function<SP<Spec>(token_type keyword, int iota)>;
 
@@ -84,20 +85,25 @@ class parser {
     SP<StarExpr> parsePointerType();
     SP<EllipsisExpr> parseDotsType();
     field parseParamDecl(SP<IdentExpr> name, bool typeSetsOk);
-    V<SP<Field>> parseParameterList(SP<IdentExpr> name0, SP<Expr> typ0, token_type closing);
+    V<SP<Field>> parseParameterList(SP<IdentExpr> name0, SP<Expr> typ0,
+                                    token_type closing);
     std::pair<SP<FieldList>, SP<FieldList>> parseParameters(bool acceptTParams);
-
-
-
-
+    SP<FieldList> parseResult();
+    SP<FuncTypeExpr> parseFuncType();
+    SP<Field> parseMethodSpec();
+    SP<Expr> embeddedElem(SP<Expr> x);
+    SP<Expr> embeddedTerm();
+    SP<InterfaceTypeExpr> parseInterfaceType();
+    SP<MapTypeExpr> parseMapType();
     SP<Expr> parseTypeInstance(SP<Expr> typ);
+    SP<Expr> tryIdentOrType();
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     GenDecl parseGenDecl(token_type keyword, parseSpecFunction f);
     SP<Spec> parseImportSpec(token_type _,
                              int __);  // do not need parameters, but match
                                        // parseSpecFunction interface
     SP<Decl> parseDecl(std::unordered_map<token_type, bool> sync);
     SP<Spec> parseValueSpec(token_type keyword, int iota);
-    SP<Expr> tryIdentOrType();
     SP<Expr> packIndexExpr(SP<Expr> x, pos_t lbrack, V<SP<Expr>> exprs,
                            pos_t rbrack);
     SP<Expr> parseRhs();
@@ -112,8 +118,6 @@ class parser {
     V<SP<Stmt>> parseStmtList();
     SP<StructTypeExpr> parseStructType();
     SP<FuncTypeExpr> parseFuncType();
-    SP<InterfaceTypeExpr> parseInterfaceType();
-    SP<MapTypeExpr> parseMapType();
     SP<Spec> parseTypeSpec(token_type _,
                            int __);  // do not need parameters, but match
                                      // parseSpecFunction interface
@@ -584,12 +588,13 @@ field parser::parseParamDecl(SP<IdentExpr> name, bool typeSetsOk) {
     return f;
 }
 
-V<SP<Field>> parser::parseParameterList(SP<IdentExpr> name0, SP<Expr> typ0, token_type closing) {
+V<SP<Field>> parser::parseParameterList(SP<IdentExpr> name0, SP<Expr> typ0,
+                                        token_type closing) {
     V<SP<Field>> params;
     bool tparams = closing == token_type::RBRACK;
     bool typeSetOk = tparams;
     pos_t pos = pos_;
-    if(name0 != nullptr) {
+    if (name0 != nullptr) {
         pos = name0->Pos();
     }
 
@@ -597,7 +602,7 @@ V<SP<Field>> parser::parseParameterList(SP<IdentExpr> name0, SP<Expr> typ0, toke
     int named = 0;
     while (name0 != nullptr || tok_ != closing && tok_ != token_type::EOF_) {
         field par;
-        if(typ0 != nullptr) {
+        if (typ0 != nullptr) {
             if (typeSetOk) {
                 typ0 = embeddedElem(typ0);
             }
@@ -605,8 +610,8 @@ V<SP<Field>> parser::parseParameterList(SP<IdentExpr> name0, SP<Expr> typ0, toke
         } else {
             par = parseParamDecl(name0, typeSetOk);
         }
-        name0 = nullptr; // 1st name was consumed if present
-        typ0 = nullptr; // 1st typ was consumed if present
+        name0 = nullptr;  // 1st name was consumed if present
+        typ0 = nullptr;   // 1st typ was consumed if present
         if (par.name != nullptr || par.typ != nullptr) {
             list.push_back(par);
             if (par.name != nullptr && par.typ != nullptr) {
@@ -624,7 +629,7 @@ V<SP<Field>> parser::parseParameterList(SP<IdentExpr> name0, SP<Expr> typ0, toke
     }
 
     if (named == 0) {
-		// all unnamed => found names are type names
+        // all unnamed => found names are type names
         for (size_t i = 0; i < list.size(); i++) {
             auto par = list[i];
             if (auto typ = par.name; typ != nullptr) {
@@ -653,7 +658,8 @@ V<SP<Field>> parser::parseParameterList(SP<IdentExpr> name0, SP<Expr> typ0, toke
             } else if (typ != nullptr) {
                 par.typ = typ;
             } else {
-                // par.typ == nulltpr && typ == nullptr => we only have a par.name
+                // par.typ == nulltpr && typ == nullptr => we only have a
+                // par.name
                 ok = false;
                 missingName = par.name->Pos();
                 par.typ = std::make_shared<BadExpr>(par.name->Pos(), pos_);
@@ -669,37 +675,40 @@ V<SP<Field>> parser::parseParameterList(SP<IdentExpr> name0, SP<Expr> typ0, toke
     }
 
     if (named == 0) {
-        for (const auto& par: list) {
-            assert(par.typ != nullptr, "nullptr type in unnamed parameter list");
-            params.push_back(std::make_shared<Field>(nullptr, par.typ, nullptr));
+        for (const auto& par : list) {
+            assert(par.typ != nullptr,
+                   "nullptr type in unnamed parameter list");
+            params.push_back(
+                std::make_shared<Field>(nullptr, par.typ, nullptr));
         }
         return params;
     }
 
     V<SP<IdentExpr>> names;
     SP<Expr> typ;
-    auto addParams = [&params, &typ, &names, this] () {
+    auto addParams = [&params, &typ, &names, this]() {
         assert(typ != nullptr, "nullptr type in named parameter list");
         auto field = std::make_shared<Field>(names, typ, nullptr);
         params.push_back(field);
         names.clear();
     };
-    for(const auto& par: list) {
+    for (const auto& par : list) {
         if (*par.typ != *typ) {
-            if(names.size() > 0) {
+            if (names.size() > 0) {
                 addParams();
             }
             typ = par.typ;
         }
         names.push_back(par.name);
     }
-    if(names.size() > 0) {
+    if (names.size() > 0) {
         addParams();
     }
     return params;
 }
 
-std::pair<SP<FieldList>, SP<FieldList>> parser::parseParameters(bool acceptTParams) {
+std::pair<SP<FieldList>, SP<FieldList>> parser::parseParameters(
+    bool acceptTParams) {
     SP<FieldList> tparams, params;
 
     if (acceptTParams && tok_ == token_type::LBRACK) {
@@ -717,7 +726,7 @@ std::pair<SP<FieldList>, SP<FieldList>> parser::parseParameters(bool acceptTPara
     pos_t opening = expect(token_type::LPAREN);
 
     V<SP<Field>> fields;
-    if(tok_ != token_type::RPAREN) {
+    if (tok_ != token_type::RPAREN) {
         fields = parseParameterList(nullptr, nullptr, token_type::RPAREN);
     }
 
@@ -725,4 +734,259 @@ std::pair<SP<FieldList>, SP<FieldList>> parser::parseParameters(bool acceptTPara
     params = std::make_shared<FieldList>(opening, fields, rparen);
 
     return {tparams, params};
+}
+
+SP<FieldList> parser::parseResult() {
+    if (tok_ == token_type::LPAREN) {
+        auto [_, results] = parseParameters(false);
+        return results;
+    }
+    auto typ = tryIdentOrType();
+    if (typ == nullptr) {
+        V<SP<Field>> list;
+        list.push_back(std::make_shared<Field>(nullptr, typ, nullptr));
+        return std::make_shared<FieldList>(NoPos, list, NoPos);
+    }
+    return nullptr;
+}
+
+SP<FuncTypeExpr> parser::parseFuncType() {
+    auto pos = expect(token_type::FUNC);
+    auto [tparams, params] = parseParameters(true);
+    if (tparams != nullptr) {
+        // TODO error()
+    }
+    auto results = parseResult();
+    return std::make_shared<FuncTypeExpr>(pos, nullptr, params, results);
+}
+
+SP<Field> parser::parseMethodSpec() {
+    V<SP<IdentExpr>> idents;
+    SP<Expr> typ;
+    auto x = parseTypeName(nullptr);
+    if (auto ident = dynamic_cast<IdentExpr*>(x.get()); ident != nullptr) {
+        switch (tok_) {
+            case token_type::LBRACK: {
+                pos_t lbrack = pos_;
+                next();
+                exprLev_++;
+                auto x = parseExpr();
+                exprLev_--;
+                if (auto name0 = dynamic_cast<IdentExpr*>(x.get());
+                    name0 != nullptr && tok_ != token_type::COMMA &&
+                    tok_ != token_type::RBRACK) {
+                    // generic method m[T any]
+                    //
+                    // Interface methods do not have type parameters. We parse
+                    // them for a better error message and improved error
+                    // recovery.
+                    parseParameterList(std::shared_ptr<IdentExpr>(name0),
+                                       nullptr, token_type::RBRACK);
+                    expect(token_type::RBRACK);
+                    // TODO error()
+
+                    auto [_, params] = parseParameters(false);
+                    auto results = parseResult();
+                    idents = {std::shared_ptr<IdentExpr>(ident)};
+                    typ = std::make_shared<FuncTypeExpr>(NoPos, nullptr, params,
+                                                         results);
+                } else {
+                    V<SP<Expr>> list = {x};
+                    if (atComma("type argument list", token_type::RBRACK)) {
+                        exprLev_++;
+                        next();
+                        while (tok_ != token_type::RBRACK &&
+                               tok_ != token_type::EOF_) {
+                            list.push_back(parseType());
+                            if (!atComma("type argument list",
+                                         token_type::RBRACK)) {
+                                break;
+                            }
+                            next();
+                        }
+                        exprLev_--;
+                    }
+                    auto rbrack =
+                        expectClosing(token_type::RBRACK, "type argument list");
+                    typ = packIndexExpr(std::shared_ptr<IdentExpr>(ident),
+                                        lbrack, list, rbrack);
+                }
+                break;
+            }
+            case token_type::LPAREN: {
+                auto [_, params] = parseParameters(false);
+                auto results = parseResult();
+                idents = {std::shared_ptr<IdentExpr>(ident)};
+                typ = std::make_shared<FuncTypeExpr>(NoPos, nullptr, params,
+                                                     results);
+                break;
+            }
+            default:
+                typ = x;
+                break;
+        }
+    } else {
+        typ = x;
+        if (tok_ == token_type::LBRACK) {
+            typ = parseTypeInstance(typ);
+        }
+    }
+
+    return std::make_shared<Field>(idents, typ, nullptr);
+}
+
+SP<Expr> parser::embeddedElem(SP<Expr> x) {
+    if (x == nullptr) {
+        x = embeddedTerm();
+    }
+    while (tok_ == token_type::OR) {
+        auto t = BinaryExpr();
+        t.OpPos = pos_;
+        t.Op = token_type::OR;
+        next();
+        t.X = x;
+        t.Y = embeddedTerm();
+        x = std::make_shared<BinaryExpr>(t);
+    }
+    return x;
+}
+
+SP<Expr> parser::embeddedTerm() {
+    if (tok_ == token_type::TILDE) {
+        auto t = UnaryExpr();
+        t.OpPos = pos_;
+        t.Op = token_type::TILDE;
+        next();
+        t.X = parseType();
+        return std::make_shared<UnaryExpr>(t);
+    }
+
+    auto t = tryIdentOrType();
+    if (t == nullptr) {
+        pos_t pos = pos_;
+        // TODO errorExpected()
+        advance(exprEnd);
+        return std::make_shared<BadExpr>(pos, pos_);
+    }
+
+    return t;
+}
+
+SP<InterfaceTypeExpr> parser::parseInterfaceType() {
+    pos_t pos = expect(token_type::INTERFACE);
+    pos_t lbrace = expect(token_type::LBRACE);
+    V<SP<Field>> list;
+    while (true) {
+        switch (tok_) {
+            case token_type::IDENT: {
+                auto f = parseMethodSpec();
+                if (f->Names.empty()) {
+                    f->Type = embeddedElem(f->Type);
+                }
+                expectSemi();
+                list.push_back(f);
+                break;
+            }
+            case token_type::TILDE: {
+                auto typ = embeddedElem(nullptr);
+                expectSemi();
+                list.push_back(std::make_shared<Field>(nullptr, typ, nullptr));
+                break;
+            }
+            default: {
+                if (auto t = tryIdentOrType(); t != nullptr) {
+                    auto typ = embeddedElem(t);
+                    expectSemi();
+                    list.push_back(
+                        std::make_shared<Field>(nullptr, typ, nullptr));
+                } else {
+                    goto finish;
+                }
+            }
+        }
+    }
+finish:
+    pos_t rbrace = expect(token_type::RBRACE);
+    return std::make_shared<InterfaceTypeExpr>(
+        pos, std::make_shared<FieldList>(lbrace, list, rbrace));
+}
+
+SP<MapTypeExpr> parser::parseMapType() {
+    pos_t pos = expect(token_type::MAP);
+    expect(token_type::LBRACK);
+    auto key = parseType();
+    expect(token_type::RBRACK);
+    auto value = parseType();
+    return std::make_shared<MapTypeExpr>(pos, key, value);
+}
+
+SP<Expr> parser::parseTypeInstance(SP<Expr> typ) {
+    pos_t opening = expect(token_type::LBRACK);
+    exprLev_++;
+    V<SP<Expr>> list;
+    while (tok_ != token_type::RBRACK && tok_ != token_type::EOF_) {
+        list.push_back(parseType());
+        if (!atComma("type argument list", token_type::RBRACK)) {
+            break;
+        }
+        next();
+    }
+    exprLev_--;
+
+    pos_t closing = expectClosing(token_type::RBRACK, "type argument list");
+
+    if (list.empty()) {
+        // TODO errorEcpected()
+        return std::make_shared<IndexExpr>(
+            typ, opening,
+            std::make_shared<BadExpr>(opening /*TODO + 1*/, closing), closing);
+    }
+
+    return packIndexExpr(typ, opening, list, closing);
+}
+
+SP<Expr> parser::tryIdentOrType() {
+    incNestLev();
+    SP<Expr> ret = nullptr;
+    switch (tok_) {
+        case token_type::IDENT: {
+            auto typ = parseTypeName(nullptr);
+            if (tok_ == token_type::LBRACK) {
+                typ = parseTypeInstance(typ);
+            }
+            ret = typ;
+            break;
+        }
+        case token_type::LBRACK: {
+            pos_t lbrack = expect(token_type::LBRACK);
+            ret = parseArrayType(lbrack, nullptr);
+            break;
+        }
+        case token_type::STRUCT:
+            ret = parseStructType();
+            break;
+        case token_type::MUL:
+            ret = parsePointerType();
+            break;
+        case token_type::FUNC:
+            ret = parseFuncType();
+            break;
+        case token_type::INTERFACE:
+            ret = parseInterfaceType();
+            break;
+        case token_type::MAP:
+            ret = parseMapType();
+            break;
+        // TODO case CHAN, ARROW
+        case token_type::LPAREN: {
+            pos_t lparen = pos_;
+            next();
+            auto typ = parseType();
+            pos_t rparen = expect(token_type::RPAREN);
+            ret = std::make_shared<ParenExpr>(lparen, typ, rparen);
+            break;
+        }
+    }
+    decNestLev();
+    return ret;
 }

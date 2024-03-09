@@ -155,6 +155,9 @@ struct IndexExpr : Expr {
     SP<Expr> Index;
     pos_t Rbrack;
 
+    IndexExpr(SP<Expr> x, pos_t l, SP<Expr> idx, pos_t r)
+        : X(x), Lbrack(l), Index(idx), Rbrack(r) {}
+
     pos_t Pos() const override { return X->Pos(); }
 
     virtual bool operator==(const Node& rhs) const override {
@@ -363,6 +366,10 @@ struct FuncTypeExpr : Expr {
     SP<FieldList> Params;      // (incoming) parameters; non-nullptr
     SP<FieldList> Results;     // (outgoing) results; or nullptr
 
+    FuncTypeExpr(pos_t pos, SP<FieldList> tps, SP<FieldList> ps,
+                 SP<FieldList> rs)
+        : Func(pos), TypeParams(tps), Params(ps), Results(rs) {}
+
     pos_t Pos() const override {
         return (Func.IsValid() || Params == nullptr) ? Func : Params->Pos();
     }
@@ -378,6 +385,9 @@ struct InterfaceTypeExpr : Expr {
     bool Incomplete;  // true if (source) methods or types are missing in the
                       // Methods list
 
+    InterfaceTypeExpr(pos_t pos, SP<FieldList> ms)
+        : Interface(pos), Methods(ms) {}
+
     pos_t Pos() const override { return Interface; }
 
     virtual bool operator==(const Node& rhs) const override {
@@ -390,6 +400,8 @@ struct MapTypeExpr : Expr {
     SP<Expr> Key;
     SP<Expr> Value;
 
+    MapTypeExpr(pos_t pos, SP<Expr> key, SP<Expr> value)
+        : Map(pos), Key(key), Value(value) {}
     pos_t Pos() const override { return Map; }
 
     virtual bool operator==(const Node& rhs) const override {
