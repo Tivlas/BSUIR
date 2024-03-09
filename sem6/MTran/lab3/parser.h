@@ -14,6 +14,12 @@ using parseSpecFunction = std::function<SP<Spec>(token_type keyword, int iota)>;
 
 enum class operator_precedence { Lowest = 0, Unary = 6, Highest = 7 };
 
+template <typename T>
+std::pair<std::shared_ptr<T>, bool> isOfType(const Node* ptr) {
+    T* ptr = dynamic_cast<T*>(ptr);
+    return {std::shared_ptr<T>(ptr), ptr != nullptr};
+}
+
 std::unordered_map<token_type, bool> stmtStart = {
     {token_type::BREAK, true},       {token_type::CONST, true},
     {token_type::CONTINUE, true},    {token_type::DEFER, true},
@@ -97,6 +103,20 @@ class parser {
     SP<MapTypeExpr> parseMapType();
     SP<Expr> parseTypeInstance(SP<Expr> typ);
     SP<Expr> tryIdentOrType();
+    V<SP<Stmt>> parseStmtList();
+    SP<BlockStmt> parseBody();
+    SP<BlockStmt> parseBlockStmt();
+    SP<Expr> parseFuncTypeOrLit();
+    SP<Expr> parseOperand();
+    SP<Expr> parseSelector(SP<Expr> x);
+    SP<Expr> parseTypeAssertion(SP<Expr> x);
+    SP<Expr> parseIndexOrSliceOrInstance(SP<Expr> x);
+    SP<CallExpr> parseCallOrConversion(SP<Expr> fun);
+    SP<Expr> parseValue();
+    SP<Expr> parseElement();
+    V<SP<Expr>> parseElementList();
+    SP<Expr> parseLiteralValue(SP<Expr> typ);
+    SP<Expr> unparen(SP<Expr> x);
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     GenDecl parseGenDecl(token_type keyword, parseSpecFunction f);
     SP<Spec> parseImportSpec(token_type _,
@@ -112,10 +132,6 @@ class parser {
     SP<Expr> parseUnaryExpr();
     std::pair<token_type, int> tokPrec();
     SP<Expr> parsePrimaryExpr(SP<Expr> x);
-    SP<Expr> parseOperand();
-    SP<Expr> parseFuncTypeOrLit();
-    SP<BlockStmt> parseBody();
-    V<SP<Stmt>> parseStmtList();
     SP<StructTypeExpr> parseStructType();
     SP<FuncTypeExpr> parseFuncType();
     SP<Spec> parseTypeSpec(token_type _,
@@ -989,4 +1005,251 @@ SP<Expr> parser::tryIdentOrType() {
     }
     decNestLev();
     return ret;
+}
+
+V<SP<Stmt>> parser::parseStmtList() {
+    V<SP<Stmt>> list;
+    while (tok_ != token_type::CASE && tok_ != token_type::DEFAULT &&
+           tok_ != token_type::RBRACE && tok_ != token_type::EOF_) {
+        list.push_back(parseStmt());
+    }
+    return list;
+}
+
+SP<BlockStmt> parser::parseBody() {
+    pos_t lbrace = expect(token_type::LBRACE);
+    auto list = parseStmtList();
+    pos_t rbrace = expect2(token_type::RBRACE);
+    return std::make_shared<BlockStmt>(lbrace, list, rbrace);
+}
+
+SP<BlockStmt> parser::parseBlockStmt() {
+    pos_t lbrace = expect(token_type::LBRACE);
+    auto list = parseStmtList();
+    pos_t rbrace = expect2(token_type::RBRACE);
+    return std::make_shared<BlockStmt>(lbrace, list, rbrace);
+}
+
+SP<Expr> parser::parseFuncTypeOrLit() {
+    auto typ = parseFuncType();
+    if (tok_ != token_type::LBRACE) {
+        return typ;
+    }
+
+    exprLev_++;
+    auto body = parseBody();
+    exprLev_--;
+
+    return std::make_shared<FuncLitExpr>(typ, body);
+}
+
+SP<Expr> parser::parseOperand() {
+    switch (tok_) {
+        case token_type::IDENT: {
+            auto x = parseIdent();
+            return x;
+        }
+        case token_type::INT:
+        case token_type::FLOAT:
+        case token_type::CHAR:
+        case token_type::IMAG:
+        case token_type::STRING: {
+            auto x = std::make_shared<BasicLitExpr>(pos_, tok_, lit_);
+            next();
+            return x;
+        }
+
+        case token_type::LPAREN: {
+            pos_t lparen = pos_;
+            next();
+            exprLev_++;
+            auto x = parseRhs();
+            exprLev_--;
+            pos_t rparen = expect(token_type::RPAREN);
+            return std::make_shared<ParenExpr>(lparen, x, rparen);
+        }
+        case token_type::FUNC:
+            return parseFuncTypeOrLit();
+        default:
+            break;
+    }
+
+    if (auto typ = tryIdentOrType(); typ != nullptr) {
+        bool isIdent = dynamic_cast<IdentExpr*>(typ.get()) != nullptr;
+        assert(!isIdent, "type cannot be identifier");
+        return typ;
+    }
+
+    pos_t pos = pos_;
+    // TODO errorExpected()
+    advance(stmtStart);
+    return std::make_shared<BadExpr>(pos, pos_);
+}
+
+SP<Expr> parser::parseSelector(SP<Expr> x) {
+    auto sel = parseIdent();
+    return std::make_shared<SelectorExpr>(x, sel);
+}
+
+SP<Expr> parser::parseTypeAssertion(SP<Expr> x) {
+    pos_t lparen = expect(token_type::LPAREN);
+    SP<Expr> typ;
+    if (tok_ == token_type::TYPE) {
+        next();
+    } else {
+        typ = parseType();
+    }
+    pos_t rparen = expect(token_type::RPAREN);
+
+    return std::make_shared<TypeAssertExpr>(x, typ, lparen, rparen);
+}
+
+SP<Expr> parser::parseIndexOrSliceOrInstance(SP<Expr> x) {
+    pos_t lbrack = expect(token_type::LBRACK);
+    if (tok_ == token_type::RBRACK) {
+        // TODO errorExpected()
+        pos_t rbrack = pos_;
+        next();
+        return std::make_shared<IndexExpr>(
+            x, lbrack, std::make_shared<BadExpr>(rbrack, rbrack), rbrack);
+    }
+    exprLev_++;
+
+    const int N = 3;
+    V<SP<Expr>> args;
+    SP<Expr> index[N];
+    pos_t colons[N - 1];
+    if (tok_ != token_type::COLON) {
+        index[0] = parseRhs();
+    }
+
+    int ncolons = 0;
+    switch (tok_) {
+        case token_type::COLON: {
+            while (tok_ == token_type::COLON && ncolons < (N - 1)) {
+                colons[ncolons] = pos_;
+                ncolons++;
+                next();
+                if (tok_ != token_type::COLON && tok_ != token_type::RBRACK &&
+                    tok_ != token_type::EOF_) {
+                    index[ncolons] = parseRhs();
+                }
+            }
+            break;
+        }
+        case token_type::COMMA: {
+            args.push_back(index[0]);
+            while (tok_ == token_type::COMMA) {
+                next();
+                if (tok_ != token_type::RBRACK && tok_ != token_type::EOF_) {
+                    args.push_back(parseType());
+                }
+            }
+            break;
+        }
+        default:
+            break;
+    }
+
+    exprLev_--;
+    pos_t rbrack = expect(token_type::RBRACK);
+
+    if (ncolons > 0) {
+        bool slice3 = false;
+        if (ncolons == 2) {
+            slice3 = true;
+            if (index[1] == nullptr) {
+                // TODO error()
+                index[1] = std::make_shared<BadExpr>(colons[0], colons[1]);
+            }
+            if (index[2] == nullptr) {
+                // TODO error()
+                index[1] = std::make_shared<BadExpr>(colons[1], rbrack);
+            }
+        }
+        return std::make_shared<SliceExpr>(x, lbrack, index[0], index[1],
+                                           index[2], slice3, rbrack);
+    }
+
+    if (args.size() == 0) {
+        return std::make_shared<IndexExpr>(x, lbrack, index[0], rbrack);
+    }
+
+    return packIndexExpr(x, lbrack, args, rbrack);
+}
+
+SP<CallExpr> parser::parseCallOrConversion(SP<Expr> fun) {
+    pos_t lparen = expect(token_type::LPAREN);
+    exprLev_++;
+    V<SP<Expr>> list;
+    pos_t ellipsis;
+    while (tok_ != token_type::RPAREN && tok_ != token_type::EOF_ &&
+           !ellipsis.IsValid()) {
+        list.push_back(parseRhs());
+        if (tok_ == token_type::ELLIPSIS) {
+            ellipsis = pos_;
+            next();
+        }
+        if (!atComma("argument list", token_type::RPAREN)) {
+            break;
+        }
+        next();
+    }
+    exprLev_--;
+    pos_t rparen = expectClosing(token_type::RPAREN, "argument list");
+
+    return std::make_shared<CallExpr>(fun, lparen, list, ellipsis, rparen);
+}
+
+SP<Expr> parser::parseValue() {
+    if (tok_ == token_type::LBRACE) {
+        return parseLiteralValue(nullptr);
+    }
+
+    auto x = parseExpr();
+    return x;
+}
+
+SP<Expr> parser::parseElement() {
+    auto x = parseValue();
+
+    if (tok_ == token_type::COLON) {
+        pos_t colon = pos_;
+        next();
+        x = std::make_shared<KeyValueExpr>(x, colon, parseValue());
+    }
+
+    return x;
+}
+
+V<SP<Expr>> parser::parseElementList() {
+    V<SP<Expr>> list;
+    while (tok_ != token_type::RBRACE && tok_ != token_type::EOF_) {
+        list.push_back(parseElement());
+        if (!atComma("composite literal", token_type::RBRACE)) {
+            break;
+        }
+        next();
+    }
+    return list;
+}
+
+SP<Expr> parser::parseLiteralValue(SP<Expr> typ) {
+    pos_t lbrace = expect(token_type::LBRACE);
+    V<SP<Expr>> elts;
+    exprLev_++;
+    if (tok_ != token_type::RBRACE) {
+        elts = parseElementList();
+    }
+    exprLev_--;
+    pos_t rbrace = expectClosing(token_type::RBRACE, "composite literal");
+    return std::make_shared<CompositeLitExpr>(typ, lbrace, elts, rbrace);
+}
+
+SP<Expr> parser::unparen(SP<Expr> x) {
+    auto pair = isOfType<ParenExpr>(x.get());
+    if (pair.second) {
+        x = unparen(pair.first->X);
+    }
+    return x;
 }
