@@ -130,6 +130,8 @@ class parser {
     std::pair<SP<Stmt>, SP<Expr>> parseIfHeader();
     SP<IfStmt> parseIfStmt();
     SP<CaseClauseStmt> parseCaseClause();
+    bool isTypeSwitchGuard(SP<Stmt> s);
+    SP<Stmt> parseSwitchStmt();
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     GenDecl parseGenDecl(token_type keyword, parseSpecFunction f);
     SP<Spec> parseImportSpec(token_type _,
@@ -1654,3 +1656,69 @@ bool isTypeSwitchAssert(SP<Expr> x) {
     return ok && a->Type == nullptr;
 }
 
+bool parser::isTypeSwitchGuard(SP<Stmt> s) {
+    if (auto [t, ok] = isOfType<ExprStmt>(s.get()); ok) {
+        return isTypeSwitchAssert(t->X);
+    } else if (auto [t, ok] = isOfType<AssignStmt>(s.get()); ok) {
+        if (t->Lhs.size() == 1 && t->Rhs.size() == 1 &&
+            isTypeSwitchAssert(t->Rhs[0])) {
+            switch (tok_) {
+                case token_type::ASSIGN:
+                // TODO error()
+                // no break intentionally
+                case token_type::DEFINE:
+                    return true;
+            }
+        }
+    }
+    return false;
+}
+
+SP<Stmt> parser::parseSwitchStmt() {
+    pos_t pos = expect(token_type::SWITCH);
+    SP<Stmt> s1, s2;
+    if(tok_ != token_type::LBRACE) {
+        int prevLev = exprLev_;
+        exprLev_ = -1;
+        if (tok_ != token_type::SEMICOLON) {
+            s2 = parseSimpleStmt(basic).first;
+        }
+        if(tok_ == token_type::SEMICOLON) {
+            next();
+            s1 = s2;
+            s2 = nullptr;
+            if (tok_ != token_type::LBRACE) {
+                // A TypeSwitchGuard may declare a variable in addition
+				// to the variable declared in the initial SimpleStmt.
+				// Introduce extra scope to avoid redeclaration errors:
+				//
+				//	switch t := 0; t := x.(T) { ... }
+				//
+				// (this code is not valid Go because the first t
+				// cannot be accessed and thus is never used, the extra
+				// scope is needed for the correct error message).
+				//
+				// If we don't have a type switch, s2 must be an expression.
+				// Having the extra nested but empty scope won't affect it.
+                s2 = parseSimpleStmt(basic).first;
+            }
+        }
+        exprLev_ = prevLev;
+    }
+
+    bool typeSwitch = isTypeSwitchGuard(s2);
+    pos_t lbrace = expect(token_type::LBRACE);
+    V<SP<Stmt>> list;
+    while (tok_ == token_type::CASE || tok_ == token_type::DEFAULT) {
+        list.push_back(parseCaseClause());
+    }
+    pos_t rbrace = expect(token_type::RBRACE);
+    expectSemi();
+    auto body = std::make_shared<BlockStmt>(lbrace, list, rbrace);
+
+    if (typeSwitch) {
+        return std::make_shared<TypeSwitchStmt>(pos, s1, s2, body);
+    }
+
+    return std::make_shared<SwitchStmt>(pos, s1, makeExpr(s2, "switch expression"), body);
+}

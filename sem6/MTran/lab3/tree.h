@@ -600,6 +600,23 @@ struct SwitchStmt : Stmt {
     SP<Expr> Tag;
     SP<BlockStmt> Body;
 
+    SwitchStmt(pos_t pos, SP<Stmt> init, SP<Expr> tag, SP<BlockStmt> body)
+        : Switch(pos), Init(init), Tag(tag), Body(body) {}
+    virtual bool operator==(const Node& rhs) const override {
+        return compare(*this, rhs);
+    }
+};
+
+struct TypeSwitchStmt : Stmt {
+    pos_t Switch;
+    SP<Stmt> Init;       // initialization statement; or nullptr
+    SP<Stmt> Assign;     // x := y.(type) or y.(type)
+    SP<BlockStmt> Body;  // CaseClauses only
+
+    TypeSwitchStmt(pos_t pos, SP<Stmt> init, SP<Stmt> assign,
+                   SP<BlockStmt> body)
+        : Switch(pos), Init(init), Assign(assign), Body(body) {}
+
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
