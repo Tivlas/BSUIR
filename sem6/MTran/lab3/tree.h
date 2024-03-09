@@ -740,6 +740,8 @@ struct BadDecl : Decl {
     pos_t From;
     pos_t To;
 
+    BadDecl(pos_t from, pos_t to) : From(from), To(to) {}
+
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
@@ -771,6 +773,10 @@ struct FuncDecl : Decl {
     SP<FuncTypeExpr> Type;  // function signature: type and value parameters,
                             // results, and position of "func" keyword
     SP<BlockStmt> Body;
+
+    FuncDecl(SP<FieldList> recv, SP<IdentExpr> name, SP<FuncTypeExpr> type,
+             SP<BlockStmt> body)
+        : Recv(recv), Name(name), Type(type), Body(body) {}
 
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);

@@ -134,12 +134,12 @@ class parser {
     SP<Stmt> parseSwitchStmt();
     SP<Stmt> parseForStmt();
     SP<Stmt> parseStmt();
-    SP<Spec> parseImportSpec(token_type _,
-                             int __);  // do not need parameters, but match
-                                       // parseSpecFunction interface
+    SP<Spec> parseImportSpec(token_type,
+                             int);  // do not need parameters, but match
+                                    // parseSpecFunction interface
     SP<Spec> parseValueSpec(token_type keyword, int iota);
-    SP<Spec> parseTypeSpec(token_type _,
-                           int __);  // do not need parameters, but match
+    SP<Spec> parseTypeSpec(token_type,
+                           int);  // do not need parameters, but match
     // parseSpecFunction interface
     void parseGenericType(SP<TypeSpec> spec, pos_t openPos, SP<IdentExpr> name0,
                           SP<Expr> typ0);
@@ -2062,5 +2062,110 @@ SP<GenDecl> parser::parseGenDecl(token_type keyword, parseSpecFunction f) {
 }
 
 SP<FuncDecl> parser::parseFuncDecl() {
-    
+    pos_t pos = expect(token_type::FUNC);
+
+    SP<FieldList> recv;
+    if (tok_ == token_type::LPAREN) {
+        recv = parseParameters(false).second;
+    }
+
+    auto ident = parseIdent();
+
+    auto [tparams, params] = parseParameters(true);
+    if (recv != nullptr && tparams != nullptr) {
+        // TODO error
+        tparams = nullptr;
+    }
+    auto results = parseResult();
+
+    SP<BlockStmt> body;
+    switch (tok_) {
+        case token_type::LBRACE:
+            body = parseBody();
+            expectSemi();
+            break;
+
+        case token_type::SEMICOLON:
+            next();
+            if (tok_ == token_type::LBRACE) {
+                // TODO error
+                body = parseBody();
+                expectSemi();
+            }
+            break;
+
+        default:
+            expectSemi();
+            break;
+    }
+
+    auto decl = std::make_shared<FuncDecl>(
+        recv, ident,
+        std::make_shared<FuncTypeExpr>(pos, tparams, params, results), body);
+    return decl;
+}
+
+SP<Decl> parser::parseDecl(std::unordered_map<token_type, bool> sync) {
+    parseSpecFunction f;
+    switch (tok_) {
+        case token_type::IMPORT:
+            f = std::bind(&parser::parseImportSpec, this, std::placeholders::_1,
+                          std::placeholders::_2);
+            break;
+
+        case token_type::CONST:
+        case token_type::VAR:
+            f = std::bind(&parser::parseValueSpec, this, std::placeholders::_1,
+                          std::placeholders::_2);
+            break;
+
+        case token_type::TYPE:
+            f = std::bind(&parser::parseTypeSpec, this, std::placeholders::_1,
+                          std::placeholders::_2);
+            break;
+
+        case token_type::FUNC:
+            return parseFuncDecl();
+        default:
+            pos_t pos = pos_;
+            // TODO error()
+            advance(sync);
+            return std::make_shared<BadDecl>(pos, pos_);
+    }
+
+    return parseGenDecl(tok_, f);
+}
+
+void parser::parseFile() {
+    if (errors_.empty()) {
+        return;
+    }
+
+    pos_t pos = expect(token_type::PACKAGE);
+    auto ident = parseIdent();
+    if (ident->Name == "_") {
+        // TODO error()
+    }
+
+    expectSemi();
+
+    if (errors_.empty()) {
+        return;
+    }
+
+    while (tok_ == token_type::IMPORT) {
+        decls_.push_back(parseGenDecl(
+            token_type::IMPORT,
+            std::bind(&parser::parseImportSpec, this, std::placeholders::_1,
+                      std::placeholders::_2)));
+    }
+
+    auto prev = token_type::IMPORT;
+    while (tok_ !=token_type::EOF_) {
+        if (tok_ == token_type::IMPORT && prev != token_type::IMPORT) {
+            // TODO error
+        }
+        prev = tok_;
+        decls_.push_back(parseDecl(declStart));
+    }
 }
