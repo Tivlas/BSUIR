@@ -28,6 +28,7 @@ bool compare(const LHS& lhs, const RHS& rhs) {
 
 struct Node {
     virtual pos_t Pos() const = 0;  // first node char
+    virtual pos_t End() const = 0;  // first node char
 
     virtual bool operator==(const Node& rhs) const {
         return compare(*this, rhs);
@@ -124,6 +125,8 @@ struct CompositeLitExpr : Expr {  // structs literals, slice literals, etc
     bool Incomplete;  // true if (source) expressions are missing in the Elts
                       // list
 
+    CompositeLitExpr(SP<Expr> typ, pos_t l, V<SP<Expr>> elts, pos_t r)
+        : Type(typ), Lbrace(l), Elts(elts), Rbrace(r) {}
     pos_t Pos() const override {
         return Type != nullptr ? Type->Pos() : Lbrace;
     }
@@ -257,10 +260,13 @@ struct StarExpr : Expr {
 };
 
 struct UnaryExpr : Expr {
-    token_type Op;  // operator
     pos_t OpPos;    // position of Op
+    token_type Op;  // operator
     SP<Expr> X;     // operand
 
+    UnaryExpr() {}
+    UnaryExpr(pos_t pos, token_type op, SP<Expr> x)
+        : OpPos(pos), Op(op), X(x) {}
     pos_t Pos() const override { return OpPos; }
 
     virtual bool operator==(const Node& rhs) const override {
@@ -269,11 +275,14 @@ struct UnaryExpr : Expr {
 };
 
 struct BinaryExpr : Expr {
-    token_type Op;  // operator
-    pos_t OpPos;    // position of Op
     SP<Expr> X;     // left operand
+    pos_t OpPos;    // position of Op
+    token_type Op;  // operator
     SP<Expr> Y;     // right operand
 
+    BinaryExpr() {}
+    BinaryExpr(SP<Expr> x, pos_t pos, token_type op, SP<Expr> y)
+        : X(x), OpPos(pos), Op(op), Y(y) {}
     pos_t Pos() const override { return X->Pos(); }
 
     virtual bool operator==(const Node& rhs) const override {
@@ -456,10 +465,23 @@ struct DeclStmt : Stmt {
     }
 };
 
-// TODO LabeledStmt
+struct LabeledStmt : Stmt {
+    SP<IdentExpr> Label;
+    pos_t Colon;
+    SP<Stmt> Stmt_;
+
+    LabeledStmt(SP<IdentExpr> lbl, pos_t pos, SP<Stmt> stmt)
+        : Label(lbl), Colon(pos), Stmt_(stmt) {}
+
+    virtual bool operator==(const Node& rhs) const override {
+        return compare(*this, rhs);
+    }
+};
 
 struct ExprStmt : Stmt {
     SP<Expr> X;
+
+    ExprStmt(SP<Expr> x) : X(x) {}
 
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
@@ -468,10 +490,13 @@ struct ExprStmt : Stmt {
 
 // TODO SendStmt (also need to support channels)
 
-struct IncDecStms : Stmt {
+struct IncDecStmt : Stmt {
     SP<Expr> X;
     pos_t TokPos;
     token_type Tok;  // inc or dec
+
+    IncDecStmt(SP<Expr> x, pos_t pos, token_type tok)
+        : X(x), TokPos(pos), Tok(tok) {}
 
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
@@ -484,6 +509,9 @@ struct AssignStmt : Stmt {
     token_type Tok;  // assignment token, DEFINE token
     V<SP<Expr>> Rhs;
 
+    AssignStmt(V<SP<Expr>> lhs, pos_t pos, token_type tok, V<SP<Expr>> rhs)
+        : Lhs(lhs), TokPos(pos), Tok(tok), Rhs(rhs) {}
+
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
@@ -495,6 +523,7 @@ struct DeferStmt : Stmt {
     pos_t Defer;  // pos of defer keyword
     SP<CallExpr> Call;
 
+    DeferStmt(pos_t pos, SP<CallExpr> call) : Defer(pos), Call(call) {}
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
@@ -504,6 +533,7 @@ struct ReturnStmt : Stmt {
     pos_t Return;
     V<SP<Expr>> Results;
 
+    ReturnStmt(pos_t pos, V<SP<Expr>> res) : Return(pos), Results(res) {}
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
@@ -514,6 +544,8 @@ struct BranchStmt : Stmt {
     token_type Tok;  // keyword token (BREAK, CONTINUE, GOTO, FALLTHROUGH)
     SP<IdentExpr> Label;
 
+    BranchStmt(pos_t pos, token_type tok, SP<IdentExpr> lbl)
+        : TokPos(pos), Tok(tok), Label(lbl) {}
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
@@ -539,6 +571,9 @@ struct IfStmt : Stmt {
     SP<BlockStmt> Body;
     SP<Stmt> Else;
 
+    IfStmt(pos_t pos, SP<Stmt> init, SP<Expr> cond, SP<BlockStmt> body,
+           SP<Stmt> els)
+        : If(pos), Init(init), Cond(cond), Body(body), Else(els) {}
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
@@ -550,6 +585,9 @@ struct CaseClauseStmt : Stmt {
         List;  // list of expressions or types; nullptr means default case
     pos_t Colon;
     V<SP<Stmt>> Body;
+
+    CaseClauseStmt(pos_t pos, V<SP<Expr>> list, pos_t colon, V<SP<Stmt>> body)
+        : Case(pos), List(list), Colon(colon), Body(body) {}
 
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);

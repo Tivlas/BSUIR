@@ -12,8 +12,6 @@
 
 using parseSpecFunction = std::function<SP<Spec>(token_type keyword, int iota)>;
 
-enum class operator_precedence { Lowest = 0, Unary = 6, Highest = 7 };
-
 template <typename T>
 std::pair<std::shared_ptr<T>, bool> isOfType(const Node* ptr) {
     T* ptr = dynamic_cast<T*>(ptr);
@@ -117,6 +115,21 @@ class parser {
     V<SP<Expr>> parseElementList();
     SP<Expr> parseLiteralValue(SP<Expr> typ);
     SP<Expr> unparen(SP<Expr> x);
+    SP<Expr> parsePrimaryExpr(SP<Expr> x);
+    SP<Expr> parseUnaryExpr();
+    SP<Expr> parseBinaryExpr(SP<Expr> x, int prec1);
+    std::pair<token_type, int> tokPrec();
+    SP<Expr> parseExpr();
+    SP<Expr> parseRhs();
+    std::pair<SP<Stmt>, bool> parseSimpleStmt(int mode);
+    SP<CallExpr> parseCallExpr(std::string callType);
+    SP<Stmt> parseDeferStmt();
+    SP<ReturnStmt> parseReturnStmt();
+    SP<BranchStmt> parseBranchStmt(token_type tok);
+    SP<Expr> makeExpr(SP<Stmt> s, std::string want);
+    std::pair<SP<Stmt>, SP<Expr>> parseIfHeader();
+    SP<IfStmt> parseIfStmt();
+    SP<CaseClauseStmt> parseCaseClause();
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     GenDecl parseGenDecl(token_type keyword, parseSpecFunction f);
     SP<Spec> parseImportSpec(token_type _,
@@ -126,11 +139,6 @@ class parser {
     SP<Spec> parseValueSpec(token_type keyword, int iota);
     SP<Expr> packIndexExpr(SP<Expr> x, pos_t lbrack, V<SP<Expr>> exprs,
                            pos_t rbrack);
-    SP<Expr> parseRhs();
-    SP<Expr> parseExpr();
-    SP<Expr> parseBinaryExpr(SP<Expr> x, operator_precedence prec1);
-    SP<Expr> parseUnaryExpr();
-    std::pair<token_type, int> tokPrec();
     SP<Expr> parsePrimaryExpr(SP<Expr> x);
     SP<StructTypeExpr> parseStructType();
     SP<FuncTypeExpr> parseFuncType();
@@ -141,6 +149,7 @@ class parser {
 
     // Error methods
     void errorExpected(pos_t pos, std::string msg);
+    // TODO error()
 
    public:
     parser(const std::filesystem::path&);
@@ -1253,3 +1262,395 @@ SP<Expr> parser::unparen(SP<Expr> x) {
     }
     return x;
 }
+
+SP<Expr> parser::parsePrimaryExpr(SP<Expr> x) {
+    if (x == nullptr) {
+        x = parseOperand();
+    }
+    int n;
+    for (n = 1;; n++) {
+        incNestLev();
+        switch (tok_) {
+            case token_type::PERIOD: {
+                next();
+                switch (tok_) {
+                    case token_type::IDENT: {
+                        x = parseSelector(x);
+                        break;
+                    }
+                    case token_type::LPAREN: {
+                        x = parseTypeAssertion(x);
+                        break;
+                    }
+                    default: {
+                        pos_t pos = pos_;
+                        // TODO errorExpected()
+                        if (tok_ != token_type::RBRACE) {
+                            next();
+                        }
+                        auto sel = IdentExpr(pos, "_");
+                        x = std::make_shared<SelectorExpr>(
+                            x, std::make_shared<IdentExpr>(sel));
+                        break;
+                    }
+                }
+                break;
+            }
+            case token_type::LBRACK: {
+                x = parseIndexOrSliceOrInstance(x);
+                break;
+            }
+            case token_type::LPAREN: {
+                x = parseCallOrConversion(x);
+                break;
+            }
+            case token_type::LBRACE: {
+                auto t = unparen(x);
+                if (isOfType<BadExpr>(x.get()).second ||
+                    isOfType<IdentExpr>(x.get()).second ||
+                    isOfType<SelectorExpr>(x.get()).second) {
+                    if (exprLev_ < 0) {
+                        nestLev_ -= n;
+                        return x;
+                    }
+                } else if (isOfType<IndexExpr>(x.get()).second ||
+                           isOfType<IndexListExpr>(x.get()).second) {
+                    if (exprLev_ < 0) {
+                        nestLev_ -= n;
+                        return x;
+                    }
+                } else if (isOfType<ArrayTypeExpr>(x.get()).second ||
+                           isOfType<StructTypeExpr>(x.get()).second ||
+                           isOfType<MapTypeExpr>(x.get()).second) {
+                } else {
+                    nestLev_ -= n;
+                    return x;
+                }
+
+                if (*t != *x) {
+                    // TODO error()
+                }
+                x = parseLiteralValue(x);
+                break;
+            }
+            default:
+                nestLev_ -= n;
+                return x;
+                break;
+        }
+    }
+}
+
+SP<Expr> parser::parseUnaryExpr() {
+    incNestLev();
+    switch (tok_) {
+        case token_type::ADD:
+        case token_type::SUB:
+        case token_type::NOT:
+        case token_type::XOR:
+        case token_type::AND:
+        case token_type::TILDE: {
+            pos_t pos = pos_;
+            auto op = tok_;
+            next();
+            auto x = parseUnaryExpr();
+            decNestLev();
+            return std::make_shared<UnaryExpr>(pos, op, x);
+        }
+        case token_type::MUL: {
+            pos_t pos = pos_;
+            next();
+            auto x = parseUnaryExpr();
+            decNestLev();
+            return std::make_shared<StarExpr>(pos, x);
+        }
+        default:
+            break;
+    }
+    auto ret = parsePrimaryExpr(nullptr);
+    decNestLev();
+    return ret;
+}
+
+std::pair<token_type, int> parser::tokPrec() {
+    auto tok = tok_;
+    if (inRhs_ && tok == token_type::ASSIGN) {
+        tok = token_type::EQL;
+    }
+    return {tok, Precedence(tok)};
+}
+
+SP<Expr> parser::parseBinaryExpr(SP<Expr> x, int prec1) {
+    if (x == nullptr) {
+        x = parseUnaryExpr();
+    }
+    int n = 0;
+    for (n = 1;; n++) {
+        incNestLev();
+        token_type op;
+        int oprec;
+        std::tie(op, oprec) = tokPrec();
+        if (oprec < prec1) {
+            nestLev_ -= n;
+            return x;
+        }
+        pos_t pos = expect(op);
+        auto y = parseBinaryExpr(nullptr, oprec + 1);
+        x = std::make_shared<BinaryExpr>(x, pos, op, y);
+    }
+}
+
+SP<Expr> parser::parseExpr() {
+    return parseBinaryExpr(nullptr, LowestPrec + 1);
+}
+
+SP<Expr> parser::parseRhs() {
+    bool old = inRhs_;
+    inRhs_ = true;
+    auto x = parseExpr();
+    inRhs_ = old;
+    return x;
+}
+
+const int basic = 0;
+const int labelOk = 1;
+const int rangeOk = 2;
+
+std::pair<SP<Stmt>, bool> parser::parseSimpleStmt(int mode) {
+    auto x = parseList(false);
+    switch (tok_) {
+        case token_type::DEFINE:
+        case token_type::ASSIGN:
+        case token_type::ADD_ASSIGN:
+        case token_type::SUB_ASSIGN:
+        case token_type::MUL_ASSIGN:
+        case token_type::QUO_ASSIGN:
+        case token_type::REM_ASSIGN:
+        case token_type::AND_ASSIGN:
+        case token_type::OR_ASSIGN:
+        case token_type::XOR_ASSIGN:
+        case token_type::SHL_ASSIGN:
+        case token_type::SHR_ASSIGN:
+        case token_type::AND_NOT_ASSIGN: {
+            pos_t pos = pos_;
+            token_type tok = tok_;
+            next();
+            V<SP<Expr>> y;
+            bool isRange = false;
+            if (mode == rangeOk && tok_ == token_type::RANGE &&
+                (tok == token_type::DEFINE || tok == token_type::ASSIGN)) {
+                pos_t pos = pos_;
+                next();
+                y = {std::make_shared<UnaryExpr>(pos, token_type::RANGE,
+                                                 parseRhs())};
+                isRange = true;
+            } else {
+                y = parseList(true);
+            }
+            return {std::make_shared<AssignStmt>(x, pos, tok, y), isRange};
+        }
+    }
+
+    if (x.size() > 1) {
+        // TODO errorExpected()
+    }
+
+    switch (tok_) {
+        case token_type::COLON: {
+            pos_t colon = pos_;
+            next();
+            if (auto [label, isIdent] = isOfType<IdentExpr>(x[0].get());
+                mode == labelOk && isIdent) {
+                auto stmt =
+                    std::make_shared<LabeledStmt>(label, colon, parseStmt());
+                return {stmt, false};
+            }
+            // TODO error()
+            return {std::make_shared<BadStmt>(x[0]->Pos(), colon), false};
+        }
+        case token_type::INC:
+        case token_type::DEC: {
+            auto s = std::make_shared<IncDecStmt>(x[0], pos_, tok_);
+            next();
+            return {s, false};
+        }
+    }
+
+    return {std::make_shared<ExprStmt>(x[0]), false};
+}
+
+SP<CallExpr> parser::parseCallExpr(std::string callType) {
+    auto x = parseRhs();
+    if (auto t = unparen(x); *t != *x) {
+        // TODO error()
+        x = t;
+    }
+    if (auto [call, isCall] = isOfType<CallExpr>(x.get()); isCall) {
+        return call;
+    }
+    if (auto [_, isBad] = isOfType<BadExpr>(x.get()); !isBad) {
+        // TODO error()
+    }
+    return nullptr;
+}
+
+// TODO parse go
+
+SP<Stmt> parser::parseDeferStmt() {
+    pos_t pos = expect(token_type::DEFER);
+    auto call = parseCallExpr("defer");
+    expectSemi();
+    if (call == nullptr) {
+        return std::make_shared<BadStmt>(pos, pos /*TODO + 5 (len defer)*/);
+    }
+
+    return std::make_shared<DeferStmt>(pos, call);
+}
+
+SP<ReturnStmt> parser::parseReturnStmt() {
+    pos_t pos = pos_;
+    expect(token_type::RETURN);
+    V<SP<Expr>> x;
+    if (tok_ != token_type::SEMICOLON && tok_ != token_type::RBRACE) {
+        x = parseList(true);
+    }
+    expectSemi();
+    return std::make_shared<ReturnStmt>(pos, x);
+}
+
+SP<BranchStmt> parser::parseBranchStmt(token_type tok) {
+    pos_t pos = expect(tok);
+    SP<IdentExpr> label;
+    if (tok != token_type::FALLTHROUGH && tok_ == token_type::IDENT) {
+        label = parseIdent();
+    }
+    expectSemi();
+    return std::make_shared<BranchStmt>(pos, tok, label);
+}
+
+SP<Expr> parser::makeExpr(SP<Stmt> s, std::string want) {
+    if (s == nullptr) {
+        return nullptr;
+    }
+    if (auto [es, isExpr] = isOfType<ExprStmt>(s.get()); isExpr) {
+        return es->X;
+    }
+    std::string found = "simple statement";
+    if (auto [_, isAss] = isOfType<AssignStmt>(s.get()); isAss) {
+        found = "assignment";
+    }
+    // TODO error()
+    return std::make_shared<BadExpr>(s->Pos(), s->End());
+}
+
+std::pair<SP<Stmt>, SP<Expr>> parser::parseIfHeader() {
+    SP<Stmt> init;
+    SP<Expr> cond;
+    if (tok_ == token_type::LBRACE) {
+        // TODO error()
+        cond = std::make_shared<BadExpr>(pos_, pos_);
+        return {init, cond};
+    }
+
+    int prevLev = exprLev_;
+    exprLev_ = -1;
+
+    if (tok_ != token_type::SEMICOLON) {
+        if (tok_ == token_type::VAR) {
+            next();
+            // TODO error()
+        }
+        init = parseSimpleStmt(basic).first;
+    }
+
+    SP<Stmt> condStmt;
+    struct semi {
+        pos_t pos;
+        std::string lit;
+    };
+    semi semi;
+    if (tok_ != token_type::LBRACE) {
+        if (tok_ == token_type::SEMICOLON) {
+            semi.pos = pos_;
+            semi.lit = lit_;
+            next();
+        } else {
+            expect(token_type::SEMICOLON);
+        }
+        if (tok_ != token_type::LBRACE) {
+            condStmt = parseSimpleStmt(basic).first;
+        }
+    } else {
+        condStmt = init;
+        init = nullptr;
+    }
+
+    if (condStmt != nullptr) {
+        cond = makeExpr(condStmt, "boolean expression");
+    } else if (semi.pos.IsValid()) {
+        if (semi.lit == "\n") {
+            // TODO error()
+        } else {
+            // TODO error()
+        }
+    }
+
+    if (cond == nullptr) {
+        cond = std::make_shared<BadExpr>(pos_, pos_);
+    }
+
+    exprLev_ = prevLev;
+    return {init, cond};
+}
+
+SP<IfStmt> parser::parseIfStmt() {
+    incNestLev();
+    pos_t pos = expect(token_type::IF);
+    auto [init, cond] = parseIfHeader();
+    auto body = parseBlockStmt();
+
+    SP<Stmt> else_;
+    if (tok_ == token_type::ELSE) {
+        next();
+        switch (tok_) {
+            case token_type::IF:
+                else_ = parseIfStmt();
+                break;
+            case token_type::LBRACE:
+                else_ = parseBlockStmt();
+                expectSemi();
+                break;
+            default:
+                // TODO errorExpected()
+                else_ = std::make_shared<BadStmt>(pos_, pos_);
+                break;
+        }
+    } else {
+        expectSemi();
+    }
+    decNestLev();
+
+    return std::make_shared<IfStmt>(pos, init, cond, body, else_);
+}
+
+SP<CaseClauseStmt> parser::parseCaseClause() {
+    pos_t pos = pos_;
+    V<SP<Expr>> list;
+    if (tok_ == token_type::CASE) {
+        next();
+        list = parseList(true);
+    } else {
+        expect(token_type::DEFAULT);
+    }
+
+    pos_t colon = expect(token_type::COLON);
+    auto body = parseStmtList();
+
+    return std::make_shared<CaseClauseStmt>(pos, list, colon, body);
+}
+
+bool isTypeSwitchAssert(SP<Expr> x) {
+    auto [a, ok] = isOfType<TypeAssertExpr>(x.get());
+    return ok && a->Type == nullptr;
+}
+
