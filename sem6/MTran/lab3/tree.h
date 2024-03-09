@@ -691,6 +691,9 @@ struct ImportSpec : Spec {
     SP<BasicLitExpr> Path;  // import path
     pos_t EndPos;
 
+    ImportSpec(SP<IdentExpr> name, SP<BasicLitExpr> path, pos_t endPos)
+        : Name(name), Path(path), EndPos(endPos) {}
+
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
@@ -704,6 +707,9 @@ struct ValueSpec : Spec {
     SP<Expr> Type;           // value type; or nullptr
     V<SP<Expr>> Values;      // initial values; or nullptr
 
+    ValueSpec(V<SP<IdentExpr>> names, SP<Expr> type, V<SP<Expr>> values)
+        : Names(names), Type(type), Values(values) {}
+
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
@@ -716,6 +722,10 @@ struct TypeSpec : Spec {
     pos_t Assign;   // position of '=', if any
     SP<Expr> Type;  // IdentExpr, ParenExpr, SelectorExpr, StarExpr, or any of
     // the XxxTypes
+
+    TypeSpec(SP<IdentExpr> name, SP<FieldList> typeParams, pos_t assign,
+             SP<Expr> type)
+        : Name(name), TypeParams(typeParams), Assign(assign), Type(type) {}
 
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);

@@ -134,21 +134,23 @@ class parser {
     SP<Stmt> parseSwitchStmt();
     SP<Stmt> parseForStmt();
     SP<Stmt> parseStmt();
-    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    GenDecl parseGenDecl(token_type keyword, parseSpecFunction f);
     SP<Spec> parseImportSpec(token_type _,
                              int __);  // do not need parameters, but match
                                        // parseSpecFunction interface
-    SP<Decl> parseDecl(std::unordered_map<token_type, bool> sync);
     SP<Spec> parseValueSpec(token_type keyword, int iota);
+    SP<Spec> parseTypeSpec(token_type _,
+                           int __);  // do not need parameters, but match
+    // parseSpecFunction interface
+    void parseGenericType(SP<TypeSpec> spec, pos_t openPos, SP<IdentExpr> name0,
+                          SP<Expr> typ0);
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    GenDecl parseGenDecl(token_type keyword, parseSpecFunction f);
+    SP<Decl> parseDecl(std::unordered_map<token_type, bool> sync);
     SP<Expr> packIndexExpr(SP<Expr> x, pos_t lbrack, V<SP<Expr>> exprs,
                            pos_t rbrack);
     SP<Expr> parsePrimaryExpr(SP<Expr> x);
     SP<StructTypeExpr> parseStructType();
     SP<FuncTypeExpr> parseFuncType();
-    SP<Spec> parseTypeSpec(token_type _,
-                           int __);  // do not need parameters, but match
-                                     // parseSpecFunction interface
     FuncDecl parseFuncDecl();
 
     // Error methods
@@ -1741,7 +1743,7 @@ SP<Stmt> parser::parseForStmt() {
                 next();
                 V<SP<Expr>> y = {std::make_shared<UnaryExpr>(
                     pos, token_type::RANGE, parseRhs())};
-                s2 = std::make_shared<AssignStmt>(nullptr, nullptr, nullptr, y);
+                s2 = std::make_shared<AssignStmt>(nullptr, NoPos, nullptr, y);
                 isRange = true;
             } else {
                 std::tie(s2, isRange) = parseSimpleStmt(rangeOk);
@@ -1870,3 +1872,124 @@ SP<Stmt> parser::parseStmt() {
 
 // ----------------------------------------------------------------------------
 // Declarations
+
+SP<Spec> parser::parseImportSpec(token_type _, int __) {
+    SP<IdentExpr> ident;
+    switch (tok_) {
+        case token_type::IDENT:
+            ident = parseIdent();
+            break;
+        case token_type::PERIOD:
+            ident = std::make_shared<IdentExpr>(pos_, ".");
+            next();
+    }
+
+    pos_t pos = pos_;
+    std::string path;
+    if (tok_ == token_type::STRING) {
+        path = lit_;
+        next();
+    } else if (is_literal(tok_)) {
+        // TODO error()
+        next();
+    } else {
+        // TODO error()
+        advance(exprEnd);
+    }
+    expectSemi();
+
+    auto spec = std::make_shared<ImportSpec>(
+        ident, std::make_shared<BasicLitExpr>(pos, token_type::STRING, path),
+        nullptr);
+
+    // TODO imports append
+    return spec;
+}
+
+SP<Spec> parser::parseValueSpec(token_type keyword, int iota) {
+    auto idents = parseIdentList();
+    SP<Expr> typ;
+    V<SP<Expr>> values;
+    switch (keyword) {
+        case token_type::CONST:
+            if (tok_ != token_type::EOF_ && tok_ != token_type::SEMICOLON &&
+                tok_ != token_type::RPAREN) {
+                typ = tryIdentOrType();
+                if (tok_ == token_type::ASSIGN) {
+                    next();
+                    values = parseList(true);
+                }
+            }
+            break;
+
+        case token_type::VAR:
+            if (tok_ != token_type::ASSIGN) {
+                typ = parseType();
+            }
+            if (tok_ == token_type::ASSIGN) {
+                next();
+                values = parseList(true);
+            }
+            break;
+        default:
+            throw std::runtime_error("unreachable");
+            break;
+    }
+    expectSemi();
+
+    auto spec = std::make_shared<ValueSpec>(idents, typ, values);
+    return spec;
+}
+
+void parser::parseGenericType(SP<TypeSpec> spec, pos_t openPos,
+                              SP<IdentExpr> name0, SP<Expr> typ0) {
+    auto list = parseParameterList(name0, typ0, token_type::RBRACK);
+    pos_t closePos = expect(token_type::RBRACK);
+    spec->TypeParams = std::make_shared<FieldList>(openPos, list, closePos);
+
+    if(tok_ == token_type::ASSIGN) {
+        spec->Assign = pos_;
+        next();
+    }
+    spec->Type = parseType();
+}
+
+std::pair<SP<IdentExpr>, SP<Expr>> extractName(SP<Expr> x, bool force) {
+    
+}
+
+SP<Spec> parser::parseTypeSpec(token_type _, int __) {
+    auto name = parseIdent();
+    auto spec = std::make_shared<TypeSpec>(name, nullptr, NoPos, nullptr);
+
+    if(tok_ == token_type::LBRACK) {
+        pos_t lbrack = pos_;
+        next();
+        if (tok_ == token_type::IDENT) {
+            SP<Expr> x = parseIdent();
+            if (tok_ != token_type::LBRACK) {
+                exprLev_++;
+                auto lhs = parsePrimaryExpr(x);
+                x = parseBinaryExpr(lhs, LowestPrec + 1);
+                exprLev_--;
+            }
+            if (auto [pname, ptype] = extractName(x, tok_ == token_type::COMMA); pname != nullptr && (ptype != nullptr || tok_ != token_type::RBRACK)) {
+                parseGenericType(spec, lbrack, pname, ptype);
+            } else {
+                spec->Type = parseArrayType(lbrack, x);
+            }
+        } else {
+            spec->Type = parseArrayType(lbrack, nullptr);
+        }
+    } else {
+        if (tok_ == token_type::ASSIGN) {
+            spec->Assign = pos_;
+            next();
+        }
+        spec->Type = parseType();
+    }
+
+    expectSemi();
+    return spec;
+}
+
