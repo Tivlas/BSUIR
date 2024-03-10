@@ -1,9 +1,9 @@
 #pragma once
 #include <algorithm>
+#include <filesystem>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <filesystem>
 
 enum class token_type : uint8_t {
     ILLEGAL,
@@ -251,7 +251,10 @@ struct Token {
             return true;
         }
 
-        bool IsValid() const { return *this != token_position(); }
+        bool IsValid() const {
+            const auto tmp = token_position();
+            return *this != tmp;
+        }
     };
 
     token_type type;
@@ -262,22 +265,50 @@ struct Token {
 
     Token(token_type type, std::string lexeme, token_position pos)
         : type(type), lexeme(lexeme), pos(pos) {}
-
-    bool is_keyword() const;
-    bool is_literal() const;
-    bool is_operator() const;
 };
 
-bool Token::is_keyword() const {
+bool is_keyword(token_type type) {
     return type > token_type::keywords_beg && type < token_type::keywords_end;
 }
 
-bool Token::is_literal() const {
+bool is_literal(token_type type) {
     return type > token_type::literal_beg && type < token_type::literal_end;
 }
 
-bool Token::is_operator() const {
+bool is_operator(token_type type) {
     return type > token_type::operators_beg && type < token_type::operators_end;
+}
+
+const int LowestPrec = 0, UnaryPrec = 6, HighestPrec = 7;
+
+int Precedence(token_type type) {
+    switch (type) {
+        case token_type::LOR:
+            return 1;
+        case token_type::LAND:
+            return 2;
+        case token_type::EQL:
+        case token_type::NEQ:
+        case token_type::LSS:
+        case token_type::LEQ:
+        case token_type::GTR:
+        case token_type::GEQ:
+            return 3;
+        case token_type::ADD:
+        case token_type::SUB:
+        case token_type::OR:
+        case token_type::XOR:
+            return 4;
+        case token_type::MUL:
+        case token_type::QUO:
+        case token_type::REM:
+        case token_type::SHL:
+        case token_type::SHR:
+        case token_type::AND:
+        case token_type::AND_NOT:
+            return 5;
+    }
+    return LowestPrec;
 }
 
 using Tokens = std::vector<Token>;

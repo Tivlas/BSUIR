@@ -1,0 +1,11 @@
+package main
+
+func max(a int) {
+
+}
+
+func main() {
+    a := 4
+    a := 5
+    b := max(a, a)
+}

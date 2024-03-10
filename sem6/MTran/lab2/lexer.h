@@ -1,5 +1,6 @@
 #pragma once
 #include <filesystem>
+#include <fstream>
 #include <stack>
 #include <string>
 #include <unordered_map>
@@ -42,7 +43,7 @@ class lexer {
     char get_prev_char() const;
     size_t get_lexem_col() const;
     char next();
-    void add_token(token_type, size_t = -1);
+    void add_token(token_type, size_t = 0);
     void add_error(const Token::token_position&, const std::string&);
     void add_warning(const Token::token_position&, const std::string&);
     bool match(char, char = '\0');
@@ -195,7 +196,7 @@ void lexer::add_token(token_type type, size_t line) {
     tokens_.push_back(
         {type,
          lexeme,
-         {file_path_, line == -1ULL ? line_ : line, get_lexem_col()}});
+         {file_path_, line == 0 ? line_ : line, get_lexem_col()}});
 }
 
 void lexer::add_error(const Token::token_position& pos,
@@ -230,7 +231,7 @@ const Tokens& lexer::tokenize() {
         start_ = cur_;
         scan_token();
     }
-    tokens_.push_back({token_type::EOF_, "", {file_path_, -1, -1}});
+    tokens_.push_back({token_type::EOF_, "", {file_path_, 0, 0}});
     return tokens_;
 }
 

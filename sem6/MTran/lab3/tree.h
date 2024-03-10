@@ -12,6 +12,12 @@ using SP = std::shared_ptr<T>;
 
 using pos_t = Token::token_position;
 
+pos_t operator+(const pos_t& pos, int n) {
+    auto tmp = pos;
+    tmp.col += n;
+    return tmp;
+}
+
 const pos_t NoPos{};
 
 // TODO implement Pos method for each type
@@ -20,7 +26,8 @@ template <class LHS, class RHS>
 bool compare(const LHS& lhs, const RHS& rhs) {
     try {
         auto& casted = dynamic_cast<const LHS&>(rhs);
-        return lhs == casted;
+        // return lhs == casted;
+        return true;
     } catch (std::bad_cast& error) {
         return false;
     }
@@ -28,7 +35,7 @@ bool compare(const LHS& lhs, const RHS& rhs) {
 
 struct Node {
     virtual pos_t Pos() const = 0;  // first node char
-    virtual pos_t End() const = 0;  // first node char
+    virtual pos_t End() const = 0;  // after
 
     virtual bool operator==(const Node& rhs) const {
         return compare(*this, rhs);
@@ -37,18 +44,30 @@ struct Node {
 
 struct Expr : Node {
     // virtual void exprNode() const = 0;
+    virtual bool operator==(const Node& rhs) const {
+        return compare(*this, rhs);
+    }
 };
 
 struct Stmt : Node {
     // virtual void stmtNode() const = 0;
+    virtual bool operator==(const Node& rhs) const {
+        return compare(*this, rhs);
+    }
 };
 
 struct Spec : Node {
     // virtual void specNode() const = 0;
+    virtual bool operator==(const Node& rhs) const {
+        return compare(*this, rhs);
+    }
 };
 
 struct Decl : Node {
     // virtual void declNode() const = 0;
+    virtual bool operator==(const Node& rhs) const {
+        return compare(*this, rhs);
+    }
 };
 
 // Expressions
@@ -57,7 +76,10 @@ struct BadExpr : Expr {
     pos_t To;
 
     BadExpr(pos_t from, pos_t to) : From(from), To(to) {}
+
     pos_t Pos() const override { return From; }
+
+    pos_t End() const override { return To; }
 
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
@@ -73,6 +95,8 @@ struct IdentExpr : Expr {
 
     pos_t Pos() const override { return NamePos; }
 
+    pos_t End() const override { return NamePos + Name.size(); }
+
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
@@ -83,8 +107,17 @@ struct EllipsisExpr : Expr {
     SP<Expr> Elt;    // ellipsis element type (parameter lists only); or nullptr
 
     EllipsisExpr() {}
-    EllipsisExpr(pos_t pos) : Ellipsis(pos) {}
+    EllipsisExpr(pos_t pos) : EllipsisExpr(pos, nullptr) {}
+    EllipsisExpr(pos_t pos, SP<Expr> elt) : Elt(nullptr), Ellipsis(pos) {}
+
     pos_t Pos() const override { return Ellipsis; }
+
+    pos_t End() const override {
+        if (Elt != nullptr) {
+            return Elt->Pos();
+        }
+        return Ellipsis + 3;
+    }
 
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
@@ -99,18 +132,153 @@ struct BasicLitExpr : Expr {
 
     BasicLitExpr(pos_t pos, token_type kind, std::string value)
         : ValuePos(pos), Kind(kind), Value(value) {}
+
     pos_t Pos() const override { return ValuePos; }
+
+    pos_t End() const override { return ValuePos + Value.size(); }
 
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
 };
 
+// A Field represents a Field declaration list in a struct type,
+// a method list in an interface type, or a parameter/result declaration
+// in a signature.
+// Field.Names is nullptr for unnamed parameters (parameter lists which only
+// contain types) and embedded struct fields. In the latter case, the field
+// name is the type name.
+struct Field : Node {
+    V<SP<IdentExpr>> Names;  // field/method/(type) parameter names; or nullptr
+    SP<Expr> Type;           // field/method/parameter type; or nullptr
+    SP<BasicLitExpr> Tag;    // field tag; or nullptr
+
+    Field(V<SP<IdentExpr>> names, SP<Expr> typ, SP<BasicLitExpr> tag)
+        : Names(names), Type(typ), Tag(tag) {}
+
+    pos_t Pos() const override {
+        if (!Names.empty()) return Names[0]->Pos();
+        if (Type != nullptr) return Type->Pos();
+        return NoPos;
+    }
+
+    pos_t End() const override {
+        if (Tag != nullptr) {
+            return Tag->End();
+        }
+        if (Type != nullptr) {
+            return Type->End();
+        }
+        if (Names.size() > 0) {
+            return Names.back()->End();
+        }
+    }
+
+    virtual bool operator==(const Node& rhs) const override {
+        return compare(*this, rhs);
+    }
+};
+
+// A FieldList represents a list of Fields, enclosed by parentheses,
+// curly braces, or square brackets.
+struct FieldList : Node {
+    pos_t Opening;      // position of opening parenthesis/brace/bracket, if any
+    V<SP<Field>> List;  // field list; or nullptr
+    pos_t Closing;      // position of closing parenthesis/brace/bracket, if any
+
+    FieldList(pos_t opening, V<SP<Field>> list, pos_t closing)
+        : Opening(opening), List(list), Closing(closing) {}
+
+    pos_t Pos() const override {
+        if (Opening.IsValid()) return Opening;
+        if (!List.empty()) return List[0]->Pos();
+        return NoPos;
+    }
+
+    pos_t End() const override {
+        if (Closing.IsValid()) {
+            return Closing + 1;
+        }
+        if (List.size() > 0) {
+            return List.back()->End();
+        }
+    }
+
+    int NumFields() const {
+        int n = 0;
+        for (const auto& field : List) {
+            int m = field->Names.size();
+            if (m == 0) m = 1;
+            n += m;
+        }
+        return n;
+    }
+
+    virtual bool operator==(const Node& rhs) const override {
+        return compare(*this, rhs);
+    }
+};
+
+struct FuncTypeExpr : Expr {
+    pos_t Func;  // position of "func" keyword (token.NoPos if there is no
+                 // "func")
+    SP<FieldList> TypeParams;  // type parameters; or nullptr
+    SP<FieldList> Params;      // (incoming) parameters; non-nullptr
+    SP<FieldList> Results;     // (outgoing) results; or nullptr
+
+    FuncTypeExpr(pos_t pos, SP<FieldList> tps, SP<FieldList> ps,
+                 SP<FieldList> rs)
+        : Func(pos), TypeParams(tps), Params(ps), Results(rs) {}
+
+    pos_t Pos() const override {
+        return (Func.IsValid() || Params == nullptr) ? Func : Params->Pos();
+    }
+
+    pos_t End() const override {
+        if (Results != nullptr) {
+            return Results->End();
+        }
+        return Params->End();
+    }
+
+    virtual bool operator==(const Node& rhs) const override {
+        return compare(*this, rhs);
+    }
+};
+
+struct BlockStmt : Stmt {
+    pos_t Lbrace;
+    V<SP<Stmt>> List;
+    pos_t Rbrace;
+
+    BlockStmt(pos_t l, V<SP<Stmt>> list, pos_t r)
+        : Lbrace(l), List(list), Rbrace(r) {}
+
+    virtual bool operator==(const Node& rhs) const override {
+        return compare(*this, rhs);
+    }
+
+    pos_t Pos() const override { return Lbrace; }
+
+    pos_t End() const override {
+        if (Rbrace.IsValid()) {
+            return Rbrace + 1;
+        }
+        if (List.size() > 0) {
+            return List.back()->End();
+        }
+        return Lbrace + 1;
+    }
+};
 struct FuncLitExpr : Expr {
     SP<FuncTypeExpr> Type;
     SP<BlockStmt> Body;
 
     FuncLitExpr(SP<FuncTypeExpr> t, SP<BlockStmt> b) : Type(t), Body(b) {}
+
+    pos_t Pos() const override { return Type->Pos(); }
+
+    pos_t End() const override { return Body->End(); }
 
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
@@ -122,14 +290,17 @@ struct CompositeLitExpr : Expr {  // structs literals, slice literals, etc
     pos_t Lbrace;
     V<SP<Expr>> Elts;  // list of composite elements; or nullptr
     pos_t Rbrace;
-    bool Incomplete;  // true if (source) expressions are missing in the Elts
-                      // list
+    bool Incomplete;  // true if (source) expressions are missing in the
+                      // Elts list
 
     CompositeLitExpr(SP<Expr> typ, pos_t l, V<SP<Expr>> elts, pos_t r)
         : Type(typ), Lbrace(l), Elts(elts), Rbrace(r) {}
+
     pos_t Pos() const override {
         return Type != nullptr ? Type->Pos() : Lbrace;
     }
+
+    pos_t End() const override { return Rbrace + 1; }
 
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
@@ -142,7 +313,10 @@ struct ParenExpr : Expr {
     pos_t Rparen;
 
     ParenExpr(pos_t l, SP<Expr> x, pos_t r) : Lparen(l), X(x), Rparen(r) {}
+
     pos_t Pos() const override { return Lparen; }
+
+    pos_t End() const override { return Rparen + 1; }
 
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
@@ -155,7 +329,10 @@ struct SelectorExpr : Expr {
 
     SelectorExpr() {}
     SelectorExpr(SP<Expr> x, SP<IdentExpr> sel) : X(x), Sel(sel) {}
+
     pos_t Pos() const override { return X->Pos(); }
+
+    pos_t End() const override { return Sel->End(); }
 
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
@@ -173,6 +350,8 @@ struct IndexExpr : Expr {
 
     pos_t Pos() const override { return X->Pos(); }
 
+    pos_t End() const override { return Rbrack + 1; }
+
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
@@ -184,7 +363,12 @@ struct IndexListExpr : Expr {
     V<SP<Expr>> Indeces;
     pos_t Rbrack;
 
+    IndexListExpr(SP<Expr> x, pos_t lbrack, V<SP<Expr>> indeces, pos_t rbrack)
+        : X(x), Lbrack(lbrack), Indeces(indeces), Rbrack(rbrack) {}
+
     pos_t Pos() const override { return X->Pos(); }
+
+    pos_t End() const override { return Rbrack + 1; }
 
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
@@ -209,7 +393,10 @@ struct SliceExpr : Expr {
           Max(max),
           Slice3(slice3),
           Rbrack(rb) {}
+
     pos_t Pos() const override { return X->Pos(); }
+
+    pos_t End() const override { return Rbrack + 1; }
 
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
@@ -224,7 +411,10 @@ struct TypeAssertExpr : Expr {
 
     TypeAssertExpr(SP<Expr> x, SP<Expr> typ, pos_t l, pos_t r)
         : X(x), Type(typ), Lparen(l), Rparen(r) {}
+
     pos_t Pos() const override { return X->Pos(); }
+
+    pos_t End() const override { return Rparen + 1; }
 
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
@@ -240,7 +430,10 @@ struct CallExpr : Expr {
 
     CallExpr(SP<Expr> fun, pos_t l, V<SP<Expr>> args, pos_t ellipsis, pos_t r)
         : Fun(fun), Lparen(l), Args(args), Ellipsis(ellipsis), Rparen(r) {}
+
     pos_t Pos() const override { return Fun->Pos(); }
+
+    pos_t End() const override { return Rparen + 1; }
 
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
@@ -252,7 +445,10 @@ struct StarExpr : Expr {
     SP<Expr> X;  // operand (*ptr)
 
     StarExpr(pos_t pos, SP<Expr> x) : Star(pos), X(x) {}
+
     pos_t Pos() const override { return Star; }
+
+    pos_t End() const override { return X->End(); }
 
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
@@ -267,7 +463,10 @@ struct UnaryExpr : Expr {
     UnaryExpr() {}
     UnaryExpr(pos_t pos, token_type op, SP<Expr> x)
         : OpPos(pos), Op(op), X(x) {}
+
     pos_t Pos() const override { return OpPos; }
+
+    pos_t End() const override { return X->End(); }
 
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
@@ -283,7 +482,10 @@ struct BinaryExpr : Expr {
     BinaryExpr() {}
     BinaryExpr(SP<Expr> x, pos_t pos, token_type op, SP<Expr> y)
         : X(x), OpPos(pos), Op(op), Y(y) {}
+
     pos_t Pos() const override { return X->Pos(); }
+
+    pos_t End() const override { return Y->End(); }
 
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
@@ -300,7 +502,10 @@ struct KeyValueExpr : Expr {
 
     KeyValueExpr(SP<Expr> k, pos_t colon, SP<Expr> v)
         : Key(k), Colon(colon), Value(v) {}
+
     pos_t Pos() const override { return Key->Pos(); }
+
+    pos_t End() const override { return Value->End(); }
 
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
@@ -318,61 +523,7 @@ struct ArrayTypeExpr : Expr {
 
     pos_t Pos() const override { return Lbrack; }
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
-};
-
-// A Field represents a Field declaration list in a struct type,
-// a method list in an interface type, or a parameter/result declaration
-// in a signature.
-// Field.Names is nullptr for unnamed parameters (parameter lists which only
-// contain types) and embedded struct fields. In the latter case, the field name
-// is the type name.
-struct Field : Node {
-    V<SP<IdentExpr>> Names;  // field/method/(type) parameter names; or nullptr
-    SP<Expr> Type;           // field/method/parameter type; or nullptr
-    SP<BasicLitExpr> Tag;    // field tag; or nullptr
-
-    Field(V<SP<IdentExpr>> names, SP<Expr> typ, SP<BasicLitExpr> tag)
-        : Names(names), Type(typ), Tag(tag) {}
-
-    pos_t Pos() const override {
-        if (!Names.empty()) return Names[0]->Pos();
-        if (Type != nullptr) return Type->Pos();
-        return NoPos;
-    }
-
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
-};
-
-// A FieldList represents a list of Fields, enclosed by parentheses,
-// curly braces, or square brackets.
-struct FieldList : Node {
-    pos_t Opening;      // position of opening parenthesis/brace/bracket, if any
-    V<SP<Field>> List;  // field list; or nullptr
-    pos_t Closing;      // position of closing parenthesis/brace/bracket, if any
-
-    FieldList(pos_t opening, V<SP<Field>> list, pos_t closing)
-        : Opening(opening), List(list), Closing(closing) {}
-
-    pos_t Pos() const override {
-        if (Opening.IsValid()) return Opening;
-        if (!List.empty()) return List[0]->Pos();
-        return NoPos;
-    }
-
-    int NumFields() const {
-        int n = 0;
-        for (const auto& field : List) {
-            int m = field->Names.size();
-            if (m == 0) m = 1;
-            n += m;
-        }
-        return n;
-    }
+    pos_t End() const override { return Elt->End(); }
 
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
@@ -380,33 +531,17 @@ struct FieldList : Node {
 };
 
 struct StructTypeExpr : Expr {
-    pos_t Struct;          // pos of struct keyword
-    SP<FieldList> Fields;  // list of field declarations
-    bool Incomplete;  // true if (source) fields are missing in the Fields list
+    pos_t Struct;             // pos of struct keyword
+    SP<FieldList> Fields;     // list of field declarations
+    bool Incomplete = false;  // true if (source) fields are missing in the
+                              // Fields list
 
     StructTypeExpr(pos_t pos, SP<FieldList> fields)
         : Struct(pos), Fields(fields) {}
+
     pos_t Pos() const override { return Struct; }
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
-};
-
-struct FuncTypeExpr : Expr {
-    pos_t
-        Func;  // position of "func" keyword (token.NoPos if there is no "func")
-    SP<FieldList> TypeParams;  // type parameters; or nullptr
-    SP<FieldList> Params;      // (incoming) parameters; non-nullptr
-    SP<FieldList> Results;     // (outgoing) results; or nullptr
-
-    FuncTypeExpr(pos_t pos, SP<FieldList> tps, SP<FieldList> ps,
-                 SP<FieldList> rs)
-        : Func(pos), TypeParams(tps), Params(ps), Results(rs) {}
-
-    pos_t Pos() const override {
-        return (Func.IsValid() || Params == nullptr) ? Func : Params->Pos();
-    }
+    pos_t End() const override { return Fields->End(); }
 
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
@@ -416,13 +551,15 @@ struct FuncTypeExpr : Expr {
 struct InterfaceTypeExpr : Expr {
     pos_t Interface;        // pos of interface keyword
     SP<FieldList> Methods;  // list of embedded interfaces, methods, or types
-    bool Incomplete;  // true if (source) methods or types are missing in the
-                      // Methods list
+    bool Incomplete;        // true if (source) methods or types are missing in
+                            // the Methods list
 
     InterfaceTypeExpr(pos_t pos, SP<FieldList> ms)
         : Interface(pos), Methods(ms) {}
 
     pos_t Pos() const override { return Interface; }
+
+    pos_t End() const override { return Methods->End(); }
 
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
@@ -436,7 +573,10 @@ struct MapTypeExpr : Expr {
 
     MapTypeExpr(pos_t pos, SP<Expr> key, SP<Expr> value)
         : Map(pos), Key(key), Value(value) {}
+
     pos_t Pos() const override { return Map; }
+
+    pos_t End() const override { return Value->End(); }
 
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
@@ -450,7 +590,10 @@ struct BadStmt : Stmt {
     pos_t To;
 
     BadStmt(pos_t from, pos_t to) : From(from), To(to) {}
+
     pos_t Pos() const override { return From; }
+
+    pos_t End() const override { return To; }
 
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
@@ -463,6 +606,10 @@ struct DeclStmt : Stmt {
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
+
+    pos_t Pos() const override { return Decl->Pos(); }
+
+    pos_t End() const override { return Decl->End(); }
 };
 
 struct LabeledStmt : Stmt {
@@ -476,6 +623,10 @@ struct LabeledStmt : Stmt {
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
+
+    pos_t Pos() const override { return Label->Pos(); }
+
+    pos_t End() const override { return Stmt_->End(); }
 };
 
 struct ExprStmt : Stmt {
@@ -486,6 +637,10 @@ struct ExprStmt : Stmt {
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
+
+    pos_t Pos() const override { return X->Pos(); }
+
+    pos_t End() const override { return X->End(); }
 };
 
 // TODO SendStmt (also need to support channels)
@@ -501,6 +656,10 @@ struct IncDecStmt : Stmt {
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
+
+    pos_t Pos() const override { return X->Pos(); }
+
+    pos_t End() const override { return TokPos + 2; }
 };
 
 struct AssignStmt : Stmt {
@@ -515,6 +674,10 @@ struct AssignStmt : Stmt {
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
+
+    pos_t Pos() const override { return Lhs[0]->Pos(); }
+
+    pos_t End() const override { return Rhs.back()->End(); }
 };
 
 // TODO GoStmt (also need to support channels)
@@ -524,9 +687,14 @@ struct DeferStmt : Stmt {
     SP<CallExpr> Call;
 
     DeferStmt(pos_t pos, SP<CallExpr> call) : Defer(pos), Call(call) {}
+
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
+
+    pos_t Pos() const override { return Defer; }
+
+    pos_t End() const override { return Call->End(); }
 };
 
 struct ReturnStmt : Stmt {
@@ -537,6 +705,15 @@ struct ReturnStmt : Stmt {
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
+
+    pos_t Pos() const override { return Return; }
+
+    pos_t End() const override {
+        if (Results.size() > 0) {
+            return Results.back()->End();
+        }
+        return Return + 6;
+    }
 };
 
 struct BranchStmt : Stmt {
@@ -546,21 +723,18 @@ struct BranchStmt : Stmt {
 
     BranchStmt(pos_t pos, token_type tok, SP<IdentExpr> lbl)
         : TokPos(pos), Tok(tok), Label(lbl) {}
+
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
-};
 
-struct BlockStmt : Stmt {
-    pos_t Lbrace;
-    V<SP<Stmt>> List;
-    pos_t Rbrace;
+    pos_t Pos() const override { return TokPos; }
 
-    BlockStmt(pos_t l, V<SP<Stmt>> list, pos_t r)
-        : Lbrace(l), List(list), Rbrace(r) {}
-
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
+    pos_t End() const override {
+        if (Label != nullptr) {
+            return Label->End();
+        }
+        return TokPos + type_string_map.at(Tok).size();
     }
 };
 
@@ -577,6 +751,15 @@ struct IfStmt : Stmt {
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
+
+    pos_t Pos() const override { return If; }
+
+    pos_t End() const override {
+        if (Else != nullptr) {
+            return Else->End();
+        }
+        return Body->End();
+    }
 };
 
 struct CaseClauseStmt : Stmt {
@@ -592,6 +775,15 @@ struct CaseClauseStmt : Stmt {
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
+
+    pos_t Pos() const override { return Case; }
+
+    pos_t End() const override {
+        if (Body.size() > 0) {
+            return Body.back()->End();
+        }
+        return Colon + 1;
+    }
 };
 
 struct SwitchStmt : Stmt {
@@ -602,9 +794,14 @@ struct SwitchStmt : Stmt {
 
     SwitchStmt(pos_t pos, SP<Stmt> init, SP<Expr> tag, SP<BlockStmt> body)
         : Switch(pos), Init(init), Tag(tag), Body(body) {}
+
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
+
+    pos_t Pos() const override { return Switch; }
+
+    pos_t End() const override { return Body->End(); }
 };
 
 struct TypeSwitchStmt : Stmt {
@@ -620,6 +817,10 @@ struct TypeSwitchStmt : Stmt {
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
+
+    pos_t Pos() const override { return Switch; }
+
+    pos_t End() const override { return Body->End(); }
 };
 
 // TODO CommClauseStmt
@@ -640,6 +841,10 @@ struct ForStmt : Stmt {
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
+
+    pos_t Pos() const override { return For; }
+
+    pos_t End() const override { return Body->End(); }
 };
 
 struct RangeStmt : Stmt {
@@ -666,6 +871,10 @@ struct RangeStmt : Stmt {
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
+
+    pos_t Pos() const override { return For; }
+
+    pos_t End() const override { return Body->End(); }
 };
 
 struct EmptyStmt : Stmt {
@@ -676,6 +885,15 @@ struct EmptyStmt : Stmt {
 
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
+    }
+
+    pos_t Pos() const override { return Semicolon; }
+
+    pos_t End() const override {
+        if (Implicit) {
+            return Semicolon;
+        }
+        return Semicolon + 1;
     }
 };
 
@@ -697,6 +915,20 @@ struct ImportSpec : Spec {
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
+
+    pos_t Pos() const override {
+        if (Name != nullptr) {
+            return Name->Pos();
+        }
+        return Path->Pos();
+    }
+
+    pos_t End() const override {
+        if (EndPos != NoPos) {
+            return EndPos;
+        }
+        return Path->End();
+    }
 };
 
 // A ValueSpec node represents a constant or variable declaration
@@ -712,6 +944,18 @@ struct ValueSpec : Spec {
 
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
+    }
+
+    pos_t Pos() const override { return Names[0]->Pos(); }
+
+    pos_t End() const override {
+        if (Values.size() > 0) {
+            return Values.back()->End();
+        }
+        if (Type != nullptr) {
+            return Type->End();
+        }
+        return Names.back()->End();
     }
 };
 
@@ -730,6 +974,10 @@ struct TypeSpec : Spec {
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
+
+    pos_t Pos() const override { return Name->Pos(); }
+
+    pos_t End() const override { return Type->End(); }
 };
 
 // end Spec
@@ -745,6 +993,10 @@ struct BadDecl : Decl {
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
+
+    pos_t Pos() const override { return From; }
+
+    pos_t End() const override { return To; }
 };
 
 struct GenDecl : Decl {
@@ -765,6 +1017,15 @@ struct GenDecl : Decl {
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
     }
+
+    pos_t Pos() const override { return TokPos; }
+
+    pos_t End() const override {
+        if (Rparen.IsValid()) {
+            return Rparen;
+        }
+        return Specs[0]->End();
+    }
 };
 
 struct FuncDecl : Decl {
@@ -780,6 +1041,15 @@ struct FuncDecl : Decl {
 
     virtual bool operator==(const Node& rhs) const override {
         return compare(*this, rhs);
+    }
+
+    pos_t Pos() const override { return Type->Pos(); }
+
+    pos_t End() const override {
+        if (Body != nullptr) {
+            return Body->End();
+        }
+        return Type->End();
     }
 };
 

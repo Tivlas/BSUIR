@@ -13,9 +13,9 @@
 using parseSpecFunction = std::function<SP<Spec>(token_type keyword, int iota)>;
 
 template <typename T>
-std::pair<std::shared_ptr<T>, bool> isOfType(const Node* ptr) {
-    T* ptr = dynamic_cast<T*>(ptr);
-    return {std::shared_ptr<T>(ptr), ptr != nullptr};
+std::pair<std::shared_ptr<T>, bool> isOfType(Node* ptr) {
+    T* casted = dynamic_cast<T*>(ptr);
+    return {std::shared_ptr<T>(casted), casted != nullptr};
 }
 
 std::unordered_map<token_type, bool> stmtStart = {
@@ -54,9 +54,11 @@ class parser {
     Errors errors_;
     V<SP<Decl>> decls_;
 
+    // next token
     pos_t pos_;
     token_type tok_;   // one token look-ahead
     std::string lit_;  // token literal
+
     int nestLev_ = 0;
     int exprLev_ = 0;
     bool inRhs_ = false;
@@ -145,11 +147,9 @@ class parser {
                           SP<Expr> typ0);
     SP<GenDecl> parseGenDecl(token_type keyword, parseSpecFunction f);
     SP<FuncDecl> parseFuncDecl();
-    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     SP<Decl> parseDecl(std::unordered_map<token_type, bool> sync);
     SP<Expr> packIndexExpr(SP<Expr> x, pos_t lbrack, V<SP<Expr>> exprs,
                            pos_t rbrack);
-    SP<Expr> parsePrimaryExpr(SP<Expr> x);
 
     // Error methods
     void errorExpected(pos_t pos, std::string msg);
@@ -157,14 +157,33 @@ class parser {
 
    public:
     parser(const std::filesystem::path&);
-    ~parser();
+    ~parser() {}
     void parseFile();
 };
+
+SP<Expr> parser::packIndexExpr(SP<Expr> x, pos_t lbrack, V<SP<Expr>> exprs,
+                               pos_t rbrack) {
+    switch (exprs.size()) {
+        case 0:
+            throw std::runtime_error(
+                "internal error: PackIndexExpr with empty expr slice");
+        case 1:
+            return std::make_shared<IndexExpr>(x, lbrack, exprs[0], rbrack);
+        default:
+            return std::make_shared<IndexListExpr>(x, lbrack, exprs, rbrack);
+    }
+}
 
 parser::parser(const std::filesystem::path& path) : lxr(path) {
     lxr.tokenize();
     tokens_ = std::move(lxr.get_tokens());
     errors_ = std::move(lxr.get_errors());
+    if (!tokens_.empty()) {
+        auto tk = tokens_[0];
+        tok_ = tk.type;
+        lit_ = tk.lexeme;
+        pos_ = tk.pos;
+    }
 }
 
 void parser::incNestLev() {
@@ -177,11 +196,10 @@ void parser::incNestLev() {
 void parser::decNestLev() { nestLev_--; }
 
 void parser::next() {
-    auto token = tokens_[cur_];
+    auto token = tokens_[++cur_];
     pos_ = token.pos;
     tok_ = token.type;
     lit_ = token.lexeme;
-    cur_++;
 }
 
 // TODO error()
@@ -708,7 +726,7 @@ V<SP<Field>> parser::parseParameterList(SP<IdentExpr> name0, SP<Expr> typ0,
             assert(par.typ != nullptr,
                    "nullptr type in unnamed parameter list");
             params.push_back(
-                std::make_shared<Field>(nullptr, par.typ, nullptr));
+                std::make_shared<Field>(V<SP<IdentExpr>>{}, par.typ, nullptr));
         }
         return params;
     }
@@ -773,7 +791,8 @@ SP<FieldList> parser::parseResult() {
     auto typ = tryIdentOrType();
     if (typ == nullptr) {
         V<SP<Field>> list;
-        list.push_back(std::make_shared<Field>(nullptr, typ, nullptr));
+        list.push_back(
+            std::make_shared<Field>(V<SP<IdentExpr>>{}, typ, nullptr));
         return std::make_shared<FieldList>(NoPos, list, NoPos);
     }
     return nullptr;
@@ -919,15 +938,16 @@ SP<InterfaceTypeExpr> parser::parseInterfaceType() {
             case token_type::TILDE: {
                 auto typ = embeddedElem(nullptr);
                 expectSemi();
-                list.push_back(std::make_shared<Field>(nullptr, typ, nullptr));
+                list.push_back(
+                    std::make_shared<Field>(V<SP<IdentExpr>>{}, typ, nullptr));
                 break;
             }
             default: {
                 if (auto t = tryIdentOrType(); t != nullptr) {
                     auto typ = embeddedElem(t);
                     expectSemi();
-                    list.push_back(
-                        std::make_shared<Field>(nullptr, typ, nullptr));
+                    list.push_back(std::make_shared<Field>(V<SP<IdentExpr>>{},
+                                                           typ, nullptr));
                 } else {
                     goto finish;
                 }
@@ -967,8 +987,8 @@ SP<Expr> parser::parseTypeInstance(SP<Expr> typ) {
     if (list.empty()) {
         // TODO errorEcpected()
         return std::make_shared<IndexExpr>(
-            typ, opening,
-            std::make_shared<BadExpr>(opening /*TODO + 1*/, closing), closing);
+            typ, opening, std::make_shared<BadExpr>(opening + 1, closing),
+            closing);
     }
 
     return packIndexExpr(typ, opening, list, closing);
@@ -1052,7 +1072,7 @@ SP<Expr> parser::parseFuncTypeOrLit() {
     exprLev_++;
     auto body = parseBody();
     exprLev_--;
-
+    SP<Expr> aa = std::make_shared<FuncLitExpr>(typ, body);
     return std::make_shared<FuncLitExpr>(typ, body);
 }
 
@@ -1505,7 +1525,7 @@ SP<Stmt> parser::parseDeferStmt() {
     auto call = parseCallExpr("defer");
     expectSemi();
     if (call == nullptr) {
-        return std::make_shared<BadStmt>(pos, pos /*TODO + 5 (len defer)*/);
+        return std::make_shared<BadStmt>(pos, pos + 5);
     }
 
     return std::make_shared<DeferStmt>(pos, call);
@@ -1741,7 +1761,8 @@ SP<Stmt> parser::parseForStmt() {
                 next();
                 V<SP<Expr>> y = {std::make_shared<UnaryExpr>(
                     pos, token_type::RANGE, parseRhs())};
-                s2 = std::make_shared<AssignStmt>(nullptr, NoPos, nullptr, y);
+                s2 = std::make_shared<AssignStmt>(V<SP<Expr>>{}, NoPos,
+                                                  token_type(), y);
                 isRange = true;
             } else {
                 std::tie(s2, isRange) = parseSimpleStmt(rangeOk);
@@ -1849,7 +1870,7 @@ SP<Stmt> parser::parseStmt() {
             s = parseForStmt();
             break;
         case token_type::SEMICOLON:
-            s = std::make_shared<EmptyStmt>(pos_, lit_ == "\n");
+            s = std::make_shared<EmptyStmt>(pos_, (lit_ == "\n"));
             next();
             break;
 
@@ -1898,7 +1919,7 @@ SP<Spec> parser::parseImportSpec(token_type _, int __) {
 
     auto spec = std::make_shared<ImportSpec>(
         ident, std::make_shared<BasicLitExpr>(pos, token_type::STRING, path),
-        nullptr);
+        NoPos);
 
     // TODO imports append
     return spec;
@@ -1987,7 +2008,7 @@ std::pair<SP<IdentExpr>, SP<Expr>> extractName(SP<Expr> x, bool force) {
                     name != nullptr && lhs != nullptr) {
                     auto op = *ptr;
                     op.X = lhs;
-                    return {name, std::make_shared<Expr>(op)};
+                    return {name, std::make_shared<BinaryExpr>(op)};
                 }
                 break;
         }
@@ -2137,7 +2158,7 @@ SP<Decl> parser::parseDecl(std::unordered_map<token_type, bool> sync) {
 }
 
 void parser::parseFile() {
-    if (errors_.empty()) {
+    if (!errors_.empty()) {
         return;
     }
 
@@ -2149,7 +2170,7 @@ void parser::parseFile() {
 
     expectSemi();
 
-    if (errors_.empty()) {
+    if (!errors_.empty()) {
         return;
     }
 
@@ -2161,7 +2182,7 @@ void parser::parseFile() {
     }
 
     auto prev = token_type::IMPORT;
-    while (tok_ !=token_type::EOF_) {
+    while (tok_ != token_type::EOF_) {
         if (tok_ == token_type::IMPORT && prev != token_type::IMPORT) {
             // TODO error
         }
