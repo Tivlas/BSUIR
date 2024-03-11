@@ -1,6 +1,19 @@
 package main
 
+type summer interface {
+    sum(nums []int) int;
+}
 
+type calculator struct {
+
+}
+
+func (c *calculator) sum(sl []int) (s int) {
+    for _, val := range sl {
+        s += val
+    }
+    return
+}
 
 func min(a, b int) int {
     return a + b
@@ -26,5 +39,13 @@ func main() {
     var sl []int = []int{1,2,3}
     for i, val := range sl {
         val++
+    }  
+
+    mp := make(map[int]string, 2)
+    if val, ok := mp[10]; ok {
+        a += val
+        if val > a {
+            b = val
+        }
     }
 }

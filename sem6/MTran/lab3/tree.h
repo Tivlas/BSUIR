@@ -226,16 +226,13 @@ struct Field : Node {
         res += "Field:\n";
         if (!Names.empty()) {
             for (const auto& name : Names) {
-                // res += std::string(shiftChar, shiftSize + 2) + "Name:\n";
                 if (name) res += name->Print(shiftSize + 4);
             }
         }
         if (Type != nullptr) {
-            // res += std::string(shiftChar, shiftSize + 2) + "Type:\n";
             res += Type->Print(shiftSize + 4);
         }
         if (Tag != nullptr) {
-            // res += std::string(shiftChar, shiftSize + 2) + "Tag";
             res += Tag->Print(shiftSize + 4);
         }
         return res;

@@ -397,7 +397,7 @@ std::pair<SP<IdentExpr>, SP<Expr>> parser::parseArrayFieldOrTypeInstance(SP<Iden
     auto lbrack = expect(token_type::LBRACK);
     auto trailingComma = NoPos;
     V<SP<Expr>> args;
-    if (tok_ == token_type::RBRACK) {
+    if (tok_ != token_type::RBRACK) {
         exprLev_++;
         args.push_back(parseRhs());
         while (tok_ == token_type::COMMA) {
@@ -552,7 +552,7 @@ SP<EllipsisExpr> parser::parseDotsType() {
 field parser::parseParamDecl(SP<IdentExpr> name, bool typeSetsOk) {
     auto ptok = tok_;
     field f;
-    if (name == nullptr) {
+    if (name != nullptr) {
         tok_ = token_type::IDENT;
     } else if (typeSetsOk && tok_ == token_type::TILDE) {
         // "~" ...
@@ -674,7 +674,7 @@ V<SP<Field>> parser::parseParameterList(SP<IdentExpr> name0, SP<Expr> typ0, toke
     if (named == 0) {
         // all unnamed => found names are type names
         for (size_t i = 0; i < list.size(); i++) {
-            auto par = list[i];
+            auto& par = list[i];
             if (auto typ = par.name; typ != nullptr) {
                 par.typ = typ;
                 par.name = nullptr;
@@ -720,7 +720,7 @@ V<SP<Field>> parser::parseParameterList(SP<IdentExpr> name0, SP<Expr> typ0, toke
     if (named == 0) {
         for (const auto& par : list) {
             assert(par.typ != nullptr, "nullptr type in unnamed parameter list");
-            params.push_back(std::make_shared<Field>(V<SP<IdentExpr>>{}, par.typ, nullptr));
+            params.push_back(std::make_shared<Field>(V<SP<IdentExpr>>(), par.typ, nullptr));
         }
         return params;
     }
@@ -782,9 +782,9 @@ SP<FieldList> parser::parseResult() {
         return results;
     }
     auto typ = tryIdentOrType();
-    if (typ == nullptr) {
+    if (typ != nullptr) {
         V<SP<Field>> list;
-        list.push_back(std::make_shared<Field>(V<SP<IdentExpr>>{}, typ, nullptr));
+        list.push_back(std::make_shared<Field>(V<SP<IdentExpr>>(), typ, nullptr));
         return std::make_shared<FieldList>(NoPos, list, NoPos);
     }
     return nullptr;
@@ -850,7 +850,8 @@ SP<Field> parser::parseMethodSpec() {
             case token_type::LPAREN: {
                 auto [_, params] = parseParameters(false);
                 auto results = parseResult();
-                idents = {std::shared_ptr<IdentExpr>(ident)};
+                idents.clear();
+                idents.push_back(std::shared_ptr<IdentExpr>(ident));
                 typ = std::make_shared<FuncTypeExpr>(NoPos, nullptr, params, results);
                 break;
             }
@@ -864,7 +865,6 @@ SP<Field> parser::parseMethodSpec() {
             typ = parseTypeInstance(typ);
         }
     }
-
     return std::make_shared<Field>(idents, typ, nullptr);
 }
 
@@ -909,7 +909,8 @@ SP<InterfaceTypeExpr> parser::parseInterfaceType() {
     pos_t pos = expect(token_type::INTERFACE);
     pos_t lbrace = expect(token_type::LBRACE);
     V<SP<Field>> list;
-    while (true) {
+    bool continueLoop = true;
+    while (continueLoop) {
         switch (tok_) {
             case token_type::IDENT: {
                 auto f = parseMethodSpec();
@@ -923,21 +924,21 @@ SP<InterfaceTypeExpr> parser::parseInterfaceType() {
             case token_type::TILDE: {
                 auto typ = embeddedElem(nullptr);
                 expectSemi();
-                list.push_back(std::make_shared<Field>(V<SP<IdentExpr>>{}, typ, nullptr));
+                list.push_back(std::make_shared<Field>(V<SP<IdentExpr>>(), typ, nullptr));
                 break;
             }
             default: {
                 if (auto t = tryIdentOrType(); t != nullptr) {
                     auto typ = embeddedElem(t);
                     expectSemi();
-                    list.push_back(std::make_shared<Field>(V<SP<IdentExpr>>{}, typ, nullptr));
+                    list.push_back(std::make_shared<Field>(V<SP<IdentExpr>>(), typ, nullptr));
                 } else {
-                    goto finish;
+                    continueLoop = false;
+                    break;
                 }
             }
         }
     }
-finish:
     pos_t rbrace = expect(token_type::RBRACE);
     return std::make_shared<InterfaceTypeExpr>(pos,
                                                std::make_shared<FieldList>(lbrace, list, rbrace));
