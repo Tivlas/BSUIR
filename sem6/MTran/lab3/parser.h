@@ -159,7 +159,7 @@ class parser {
     parser(const std::filesystem::path&);
     ~parser() {}
     void parseFile();
-    
+
     std::string getTreeStr() const {
         std::string tree;
         for (const auto& decl : decls_) {
@@ -571,7 +571,7 @@ field parser::parseParamDecl(SP<IdentExpr> name, bool typeSetsOk) {
 
     switch (tok_) {
         case token_type::IDENT:
-            if (name == nullptr) {
+            if (name != nullptr) {
                 f.name = name;
                 tok_ = ptok;
             } else {
@@ -1052,7 +1052,8 @@ V<SP<Stmt>> parser::parseStmtList() {
     V<SP<Stmt>> list;
     while (tok_ != token_type::CASE && tok_ != token_type::DEFAULT &&
            tok_ != token_type::RBRACE && tok_ != token_type::EOF_) {
-        list.push_back(parseStmt());
+        auto stmt = parseStmt();
+        list.push_back(stmt);
     }
     return list;
 }
@@ -1826,6 +1827,13 @@ SP<Stmt> parser::parseStmt() {
     incNestLev();
     SP<Stmt> s;
     switch (tok_) {
+        case token_type::CONST:
+        case token_type::TYPE:
+        case token_type::VAR: {
+            s = std::make_shared<DeclStmt>(parseDecl(stmtStart));
+            break;
+        }
+
         case token_type::IDENT:
         case token_type::INT:
         case token_type::FLOAT:
@@ -1844,7 +1852,7 @@ SP<Stmt> parser::parseStmt() {
         case token_type::AND:
         case token_type::XOR:
         case token_type::NOT: {
-            auto s = parseSimpleStmt(labelOk).first;
+            s = parseSimpleStmt(labelOk).first;
             if (auto [_, isLabeledStmt] = isOfType<LabeledStmt>(s.get());
                 !isLabeledStmt) {
                 expectSemi();

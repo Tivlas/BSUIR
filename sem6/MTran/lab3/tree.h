@@ -29,7 +29,7 @@ pos_t operator+(const pos_t& pos, int n) {
     return tmp;
 }
 
-const pos_t NoPos{};
+const pos_t NoPos = pos_t();
 
 // TODO implement Pos method for each type
 
@@ -100,7 +100,7 @@ struct BadExpr : Expr {
     }
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += color::error + "BadExpr " + color::reset + "<" +
                Pos().ToString() + " --- " + End().ToString() + ">\n";
         return res;
@@ -123,7 +123,7 @@ struct IdentExpr : Expr {
     }
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "IdentExpr " + Name + " <" + Pos().ToString() + " --- " +
                End().ToString() + ">\n";
         return res;
@@ -131,8 +131,8 @@ struct IdentExpr : Expr {
 };
 
 struct EllipsisExpr : Expr {
-    pos_t Ellipsis;  // position of "..."
-    SP<Expr> Elt;    // ellipsis element type (parameter lists only); or nullptr
+    pos_t Ellipsis = NoPos;  // position of "..."
+    SP<Expr> Elt;  // ellipsis element type (parameter lists only); or nullptr
 
     EllipsisExpr() {}
     EllipsisExpr(pos_t pos) : EllipsisExpr(pos, nullptr) {}
@@ -152,12 +152,12 @@ struct EllipsisExpr : Expr {
     }
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "Ellipsis <" + Pos().ToString() + " --- " + End().ToString() +
                ">\n";
         if (Elt != nullptr) {
-            // res += std::string(shiftChar, shiftSize + 1) + "Element type\n";
-            res += Elt->Print(shiftSize + 2);
+            // res += std::string(shiftChar, shiftSize + 2) + "Element type\n";
+            res += Elt->Print(shiftSize + 4);
         }
         return res;
     }
@@ -181,11 +181,11 @@ struct BasicLitExpr : Expr {
     }
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "BasicLitExpr <" + Pos().ToString() + " --- " +
                End().ToString() + ">\n";
-        res += std::string(shiftChar, shiftSize + 1) + "Kind and value\n";
-        res += type_string_map.at(Kind) + ' ' + Value;
+        res += std::string(shiftSize + 2, shiftChar) + "Kind and value";
+        res += type_string_map.at(Kind) + ' ' + Value + '\n';
         return res;
     }
 };
@@ -202,22 +202,22 @@ struct Field : Node {
     SP<BasicLitExpr> Tag;    // field tag; or nullptr
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res +=
             "Field <" + Pos().ToString() + " --- " + End().ToString() + ">\n";
         if (!Names.empty()) {
             for (const auto& name : Names) {
-                // res += std::string(shiftChar, shiftSize + 1) + "Name\n";
-                if (name) res += name->Print(shiftSize + 2);
+                // res += std::string(shiftChar, shiftSize + 2) + "Name\n";
+                if (name) res += name->Print(shiftSize + 4);
             }
         }
         if (Type != nullptr) {
-            // res += std::string(shiftChar, shiftSize + 1) + "Type\n";
-            res += Type->Print(shiftSize + 2);
+            // res += std::string(shiftChar, shiftSize + 2) + "Type\n";
+            res += Type->Print(shiftSize + 4);
         }
         if (Tag != nullptr) {
-            // res += std::string(shiftChar, shiftSize + 1) + "Tag";
-            res += Tag->Print(shiftSize + 2);
+            // res += std::string(shiftChar, shiftSize + 2) + "Tag";
+            res += Tag->Print(shiftSize + 4);
         }
         return res;
     }
@@ -260,13 +260,13 @@ struct FieldList : Node {
         : Opening(opening), List(list), Closing(closing) {}
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
-        res += "Ellipsis <" + Pos().ToString() + " --- " + End().ToString() +
+        std::string res(shiftSize, shiftChar);
+        res += "FieldList <" + Pos().ToString() + " --- " + End().ToString() +
                ">\n";
         if (!List.empty()) {
             for (const auto& field : List) {
-                // res += std::string(shiftChar, shiftSize + 1) + "Field\n";
-                if (field) res += field->Print(shiftSize + 2);
+                // res += std::string(shiftChar, shiftSize + 2) + "Field\n";
+                if (field) res += field->Print(shiftSize + 4);
             }
         }
         return res;
@@ -315,18 +315,18 @@ struct FuncTypeExpr : Expr {
         : Func(pos), TypeParams(tps), Params(ps), Results(rs) {}
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "FuncTypeExpr <" + Pos().ToString() + " --- " +
                End().ToString() + ">\n";
         if (TypeParams) {
-            res += std::string(shiftChar, shiftSize + 1);
-            res += TypeParams->Print(shiftSize + 1);
+            res += std::string(shiftSize + 2, shiftChar);
+            res += TypeParams->Print(shiftSize + 2);
         }
         if (Params) {
-            res += Params->Print(shiftSize + 1);
+            res += Params->Print(shiftSize + 2);
         }
         if (Results) {
-            res += Results->Print(shiftSize + 1);
+            res += Results->Print(shiftSize + 2);
         }
         return res;
     }
@@ -353,12 +353,12 @@ struct BlockStmt : Stmt {
     pos_t Rbrace;
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "BlockStmt <" + Pos().ToString() + " --- " + End().ToString() +
                ">\n";
         if (!List.empty()) {
             for (const auto& stmt : List) {
-                if (stmt) res += stmt->Print(shiftSize + 2);
+                if (stmt) res += stmt->Print(shiftSize + 4);
             }
         }
         return res;
@@ -388,14 +388,14 @@ struct FuncLitExpr : Expr {
     SP<BlockStmt> Body;
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "FuncLitExpr <" + Pos().ToString() + " --- " + End().ToString() +
                ">\n";
         if (Type != nullptr) {
-            res += Type->Print(shiftSize + 2);
+            res += Type->Print(shiftSize + 4);
         }
         if (Body != nullptr) {
-            res += Body->Print(shiftSize + 2);
+            res += Body->Print(shiftSize + 4);
         }
         return res;
     }
@@ -420,15 +420,15 @@ struct CompositeLitExpr : Expr {  // structs literals, slice literals, etc
                       // Elts list
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "CompositeLitExpr <" + Pos().ToString() + " --- " +
                End().ToString() + ">\n";
         if (Type != nullptr) {
-            res += Type->Print(shiftSize + 2);
+            res += Type->Print(shiftSize + 4);
         }
         if (!Elts.empty()) {
             for (const auto& elt : Elts) {
-                if (elt) res += elt->Print(shiftSize + 2);
+                if (elt) res += elt->Print(shiftSize + 4);
             }
         }
         return res;
@@ -454,11 +454,11 @@ struct ParenExpr : Expr {
     pos_t Rparen;
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "ParenExpr <" + Pos().ToString() + " --- " + End().ToString() +
                ">\n";
         if (X != nullptr) {
-            res += X->Print(shiftSize + 2);
+            res += X->Print(shiftSize + 4);
         }
         return res;
     }
@@ -479,14 +479,14 @@ struct SelectorExpr : Expr {
     SP<IdentExpr> Sel;  // field selector
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "SelectorExpr <" + Pos().ToString() + " --- " +
                End().ToString() + ">\n";
         if (X != nullptr) {
-            res += X->Print(shiftSize + 2);
+            res += X->Print(shiftSize + 4);
         }
         if (Sel != nullptr) {
-            res += Sel->Print(shiftSize + 2);
+            res += Sel->Print(shiftSize + 4);
         }
         return res;
     }
@@ -510,14 +510,14 @@ struct IndexExpr : Expr {
     pos_t Rbrack;
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "IndexExpr <" + Pos().ToString() + " --- " + End().ToString() +
                ">\n";
         if (X != nullptr) {
-            res += X->Print(shiftSize + 2);
+            res += X->Print(shiftSize + 4);
         }
         if (Index != nullptr) {
-            res += Index->Print(shiftSize + 2);
+            res += Index->Print(shiftSize + 4);
         }
         return res;
     }
@@ -541,15 +541,15 @@ struct IndexListExpr : Expr {
     pos_t Rbrack;
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "IndexListExpr <" + Pos().ToString() + " --- " +
                End().ToString() + ">\n";
         if (X != nullptr) {
-            res += X->Print(shiftSize + 2);
+            res += X->Print(shiftSize + 4);
         }
         if (!Indeces.empty()) {
             for (const auto& idx : Indeces) {
-                if (idx) res += idx->Print(shiftSize + 2);
+                if (idx) res += idx->Print(shiftSize + 4);
             }
         }
         return res;
@@ -577,20 +577,20 @@ struct SliceExpr : Expr {
     pos_t Rbrack;
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "SliceExpr <" + Pos().ToString() + " --- " + End().ToString() +
                ">\n";
         if (X != nullptr) {
-            res += X->Print(shiftSize + 2);
+            res += X->Print(shiftSize + 4);
         }
         if (Low != nullptr) {
-            res += Low->Print(shiftSize + 2);
+            res += Low->Print(shiftSize + 4);
         }
         if (High != nullptr) {
-            res += High->Print(shiftSize + 2);
+            res += High->Print(shiftSize + 4);
         }
         if (Max != nullptr) {
-            res += Max->Print(shiftSize + 2);
+            res += Max->Print(shiftSize + 4);
         }
         return res;
     }
@@ -621,14 +621,14 @@ struct TypeAssertExpr : Expr {
     pos_t Rparen;
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "TypeAssertExpr <" + Pos().ToString() + " --- " +
                End().ToString() + ">\n";
         if (X != nullptr) {
-            res += X->Print(shiftSize + 2);
+            res += X->Print(shiftSize + 4);
         }
         if (Type != nullptr) {
-            res += Type->Print(shiftSize + 2);
+            res += Type->Print(shiftSize + 4);
         }
         return res;
     }
@@ -649,21 +649,22 @@ struct CallExpr : Expr {
     SP<Expr> Fun;
     pos_t Lparen;
     V<SP<Expr>> Args;  // function arguments; or nullptr
-    pos_t Ellipsis;    // position of "..." (token.NoPos if there is no "...")
+    pos_t Ellipsis =
+        NoPos;  // position of "..." (token.NoPos if there is no "...")
     pos_t Rparen;
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "CallExpr <" + Pos().ToString() + " --- " + End().ToString() +
                (Ellipsis == NoPos
-                    ? ""
+                    ? ">\n"
                     : "Ellipsis pos: " + Ellipsis.ToString() + ">\n");
         if (Fun != nullptr) {
-            res += Fun->Print(shiftSize + 2);
+            res += Fun->Print(shiftSize + 4);
         }
         if (!Args.empty()) {
             for (const auto& arg : Args) {
-                if (arg) res += arg->Print(shiftSize + 2);
+                if (arg) res += arg->Print(shiftSize + 4);
             }
         }
         return res;
@@ -686,11 +687,11 @@ struct StarExpr : Expr {
     SP<Expr> X;  // operand (*ptr)
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "StarExpr <" + Pos().ToString() + " --- " + End().ToString() +
                ">\n";
         if (X != nullptr) {
-            res += X->Print(shiftSize + 2);
+            res += X->Print(shiftSize + 4);
         }
         return res;
     }
@@ -712,13 +713,13 @@ struct UnaryExpr : Expr {
     SP<Expr> X;     // operand
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "UnaryExpr <" + Pos().ToString() + " --- " + End().ToString() +
                ">\n";
-        res += std::string(shiftChar, shiftSize + 1) + type_string_map.at(Op) +
+        res += std::string(shiftSize + 2, shiftChar) + type_string_map.at(Op) +
                '\n';
         if (X != nullptr) {
-            res += X->Print(shiftSize + 2);
+            res += X->Print(shiftSize + 4);
         }
         return res;
     }
@@ -743,16 +744,16 @@ struct BinaryExpr : Expr {
     SP<Expr> Y;     // right operand
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "BinaryExpr <" + Pos().ToString() + " --- " + End().ToString() +
                ">\n";
         if (X != nullptr) {
-            res += X->Print(shiftSize + 2);
+            res += X->Print(shiftSize + 4);
         }
-        res += std::string(shiftChar, shiftSize + 1) + type_string_map.at(Op) +
+        res += std::string(shiftSize + 2, shiftChar) + type_string_map.at(Op) +
                '\n';
         if (Y != nullptr) {
-            res += Y->Print(shiftSize + 2);
+            res += Y->Print(shiftSize + 4);
         }
         return res;
     }
@@ -779,14 +780,14 @@ struct KeyValueExpr : Expr {
     SP<Expr> Value;
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "KeyValueExpr <" + Pos().ToString() + " --- " +
                End().ToString() + ">\n";
         if (Key != nullptr) {
-            res += Key->Print(shiftSize + 2);
+            res += Key->Print(shiftSize + 4);
         }
         if (Value != nullptr) {
-            res += Value->Print(shiftSize + 2);
+            res += Value->Print(shiftSize + 4);
         }
         return res;
     }
@@ -809,14 +810,14 @@ struct ArrayTypeExpr : Expr {
     SP<Expr> Elt;  // elem type
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "ArrayTypeExpr <" + Pos().ToString() + " --- " +
                End().ToString() + ">\n";
         if (Len != nullptr) {
-            res += Len->Print(shiftSize + 2);
+            res += Len->Print(shiftSize + 4);
         }
         if (Elt != nullptr) {
-            res += Elt->Print(shiftSize + 2);
+            res += Elt->Print(shiftSize + 4);
         }
         return res;
     }
@@ -841,11 +842,11 @@ struct StructTypeExpr : Expr {
                               // Fields list
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "StructTypeExpr <" + Pos().ToString() + " --- " +
                End().ToString() + ">\n";
         if (Fields != nullptr) {
-            res += Fields->Print(shiftSize + 2);
+            res += Fields->Print(shiftSize + 4);
         }
         return res;
     }
@@ -869,11 +870,11 @@ struct InterfaceTypeExpr : Expr {
     // the Methods list
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "InterfaceTypeExpr <" + Pos().ToString() + " --- " +
                End().ToString() + ">\n";
         if (Methods != nullptr) {
-            res += Methods->Print(shiftSize + 2);
+            res += Methods->Print(shiftSize + 4);
         }
         return res;
     }
@@ -896,14 +897,14 @@ struct MapTypeExpr : Expr {
     SP<Expr> Value;
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "MapTypeExpr <" + Pos().ToString() + " --- " + End().ToString() +
                ">\n";
         if (Key != nullptr) {
-            res += Key->Print(shiftSize + 2);
+            res += Key->Print(shiftSize + 4);
         }
         if (Value != nullptr) {
-            res += Value->Print(shiftSize + 2);
+            res += Value->Print(shiftSize + 4);
         }
         return res;
     }
@@ -927,7 +928,7 @@ struct BadStmt : Stmt {
     pos_t To;
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res +=
             "BadStmt <" + Pos().ToString() + " --- " + End().ToString() + ">\n";
         return res;
@@ -945,14 +946,16 @@ struct BadStmt : Stmt {
 };
 
 struct DeclStmt : Stmt {
-    SP<Decl> Decl;
+    SP<Decl> Decl_;
+
+    DeclStmt(SP<Decl> decl) : Decl_(decl) {}
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "DeclStmt <" + Pos().ToString() + " --- " + End().ToString() +
                ">\n";
-        if (Decl != nullptr) {
-            res += Decl->Print(shiftSize + 2);
+        if (Decl_ != nullptr) {
+            res += Decl_->Print(shiftSize + 4);
         }
         return res;
     }
@@ -961,9 +964,9 @@ struct DeclStmt : Stmt {
         return compare(*this, rhs);
     }
 
-    pos_t Pos() const override { return Decl->Pos(); }
+    pos_t Pos() const override { return Decl_->Pos(); }
 
-    pos_t End() const override { return Decl->End(); }
+    pos_t End() const override { return Decl_->End(); }
 };
 
 struct LabeledStmt : Stmt {
@@ -972,14 +975,14 @@ struct LabeledStmt : Stmt {
     SP<Stmt> Stmt_;
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "LabeledStmt <" + Pos().ToString() + " --- " + End().ToString() +
                ">\n";
         if (Label != nullptr) {
-            res += Label->Print(shiftSize + 2);
+            res += Label->Print(shiftSize + 4);
         }
         if (Stmt_ != nullptr) {
-            res += Stmt_->Print(shiftSize + 2);
+            res += Stmt_->Print(shiftSize + 4);
         }
         return res;
     }
@@ -1000,11 +1003,11 @@ struct ExprStmt : Stmt {
     SP<Expr> X;
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "ExprStmt <" + Pos().ToString() + " --- " + End().ToString() +
                ">\n";
         if (X != nullptr) {
-            res += X->Print(shiftSize + 2);
+            res += X->Print(shiftSize + 4);
         }
         return res;
     }
@@ -1028,13 +1031,13 @@ struct IncDecStmt : Stmt {
     token_type Tok;  // inc or dec
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "IncDecStmt <" + Pos().ToString() + " --- " + End().ToString() +
                ">\n";
-        res += std::string(shiftChar, shiftSize + 1) + type_string_map.at(Tok) +
+        res += std::string(shiftSize + 2, shiftChar) + type_string_map.at(Tok) +
                '\n';
         if (X != nullptr) {
-            res += X->Print(shiftSize + 2);
+            res += X->Print(shiftSize + 4);
         }
         return res;
     }
@@ -1058,19 +1061,19 @@ struct AssignStmt : Stmt {
     V<SP<Expr>> Rhs;
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "AssignStmt <" + Pos().ToString() + " --- " + End().ToString() +
                ">\n";
         if (!Lhs.empty()) {
             for (const auto& lh : Lhs) {
-                if (lh) res += lh->Print(shiftSize + 2);
+                if (lh) res += lh->Print(shiftSize + 4);
             }
         }
-        res += std::string(shiftChar, shiftSize + 1) + type_string_map.at(Tok) +
+        res += std::string(shiftSize + 2, shiftChar) + type_string_map.at(Tok) +
                '\n';
         if (!Rhs.empty()) {
             for (const auto& rh : Rhs) {
-                if (rh) res += rh->Print(shiftSize + 2);
+                if (rh) res += rh->Print(shiftSize + 4);
             }
         }
         return res;
@@ -1095,11 +1098,11 @@ struct DeferStmt : Stmt {
     SP<CallExpr> Call;
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "DeferStmt <" + Pos().ToString() + " --- " + End().ToString() +
                ">\n";
         if (Call != nullptr) {
-            res += Call->Print(shiftSize + 2);
+            res += Call->Print(shiftSize + 4);
         }
         return res;
     }
@@ -1120,12 +1123,12 @@ struct ReturnStmt : Stmt {
     V<SP<Expr>> Results;
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "ReturnStmt <" + Pos().ToString() + " --- " + End().ToString() +
                ">\n";
         if (!Results.empty()) {
             for (const auto& rs : Results) {
-                if (rs) res += rs->Print(shiftSize + 2);
+                if (rs) res += rs->Print(shiftSize + 4);
             }
         }
         return res;
@@ -1152,13 +1155,13 @@ struct BranchStmt : Stmt {
     SP<IdentExpr> Label;
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "BranchStmt <" + Pos().ToString() + " --- " + End().ToString() +
                ">\n";
-        res += std::string(shiftChar, shiftSize + 1) + type_string_map.at(Tok) +
+        res += std::string(shiftSize + 2, shiftChar) + type_string_map.at(Tok) +
                '\n';
         if (Label != nullptr) {
-            res += Label->Print(shiftSize + 2);
+            res += Label->Print(shiftSize + 4);
         }
         return res;
     }
@@ -1188,20 +1191,20 @@ struct IfStmt : Stmt {
     SP<Stmt> Else;
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res +=
             "IfStmt <" + Pos().ToString() + " --- " + End().ToString() + ">\n";
         if (Init != nullptr) {
-            res += Init->Print(shiftSize + 2);
+            res += Init->Print(shiftSize + 4);
         }
         if (Cond != nullptr) {
-            res += Cond->Print(shiftSize + 2);
+            res += Cond->Print(shiftSize + 4);
         }
         if (Body != nullptr) {
-            res += Body->Print(shiftSize + 2);
+            res += Body->Print(shiftSize + 4);
         }
         if (Else != nullptr) {
-            res += Else->Print(shiftSize + 2);
+            res += Else->Print(shiftSize + 4);
         }
         return res;
     }
@@ -1231,17 +1234,17 @@ struct CaseClauseStmt : Stmt {
     V<SP<Stmt>> Body;
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "CaseClauseStmt <" + Pos().ToString() + " --- " +
                End().ToString() + ">\n";
         if (!List.empty()) {
             for (const auto& l : List) {
-                if (l) res += l->Print(shiftSize + 2);
+                if (l) res += l->Print(shiftSize + 4);
             }
         }
         if (!Body.empty()) {
             for (const auto& b : Body) {
-                if (b) res += b->Print(shiftSize + 2);
+                if (b) res += b->Print(shiftSize + 4);
             }
         }
         return res;
@@ -1271,17 +1274,17 @@ struct SwitchStmt : Stmt {
     SP<BlockStmt> Body;
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "SwitchStmt <" + Pos().ToString() + " --- " + End().ToString() +
                ">\n";
         if (Init != nullptr) {
-            res += Init->Print(shiftSize + 2);
+            res += Init->Print(shiftSize + 4);
         }
         if (Tag != nullptr) {
-            res += Tag->Print(shiftSize + 2);
+            res += Tag->Print(shiftSize + 4);
         }
         if (Body != nullptr) {
-            res += Body->Print(shiftSize + 2);
+            res += Body->Print(shiftSize + 4);
         }
         return res;
     }
@@ -1305,17 +1308,17 @@ struct TypeSwitchStmt : Stmt {
     SP<BlockStmt> Body;  // CaseClauses only
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "TypeSwitchExpr <" + Pos().ToString() + " --- " +
                End().ToString() + ">\n";
         if (Init != nullptr) {
-            res += Init->Print(shiftSize + 2);
+            res += Init->Print(shiftSize + 4);
         }
         if (Assign != nullptr) {
-            res += Assign->Print(shiftSize + 2);
+            res += Assign->Print(shiftSize + 4);
         }
         if (Body != nullptr) {
-            res += Body->Print(shiftSize + 2);
+            res += Body->Print(shiftSize + 4);
         }
         return res;
     }
@@ -1345,20 +1348,20 @@ struct ForStmt : Stmt {
     SP<BlockStmt> Body;
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res +=
             "ForStmt <" + Pos().ToString() + " --- " + End().ToString() + ">\n";
         if (Init != nullptr) {
-            res += Init->Print(shiftSize + 2);
+            res += Init->Print(shiftSize + 4);
         }
         if (Cond != nullptr) {
-            res += Cond->Print(shiftSize + 2);
+            res += Cond->Print(shiftSize + 4);
         }
         if (Post != nullptr) {
-            res += Post->Print(shiftSize + 2);
+            res += Post->Print(shiftSize + 4);
         }
         if (Body != nullptr) {
-            res += Body->Print(shiftSize + 2);
+            res += Body->Print(shiftSize + 4);
         }
         return res;
     }
@@ -1387,24 +1390,24 @@ struct RangeStmt : Stmt {
     SP<BlockStmt> Body;
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "RangeStmt <" + Pos().ToString() + " --- " + End().ToString() +
                ">\n";
         if (Key != nullptr) {
-            res += Key->Print(shiftSize + 2);
+            res += Key->Print(shiftSize + 4);
         }
         if (Value != nullptr) {
-            res += Value->Print(shiftSize + 2);
+            res += Value->Print(shiftSize + 4);
         }
-        res += std::string(shiftChar, shiftSize + 1) + type_string_map.at(Tok) +
+        res += std::string(shiftSize + 2, shiftChar) + type_string_map.at(Tok) +
                '\n';
-        res += std::string(shiftChar, shiftSize + 1) + "Range pos " +
+        res += std::string(shiftSize + 2, shiftChar) + "Range pos " +
                Range.ToString() + '\n';
         if (X != nullptr) {
-            res += X->Print(shiftSize + 2);
+            res += X->Print(shiftSize + 4);
         }
         if (Body != nullptr) {
-            res += Body->Print(shiftSize + 2);
+            res += Body->Print(shiftSize + 4);
         }
         return res;
     }
@@ -1434,7 +1437,7 @@ struct EmptyStmt : Stmt {
     bool Implicit;
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "EmptyStmt <" + Pos().ToString() + " --- " + End().ToString() +
                ">\n";
         return res;
@@ -1469,14 +1472,14 @@ struct ImportSpec : Spec {
     pos_t EndPos;
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "ImportSpec <" + Pos().ToString() + " --- " + End().ToString() +
                ">\n";
         if (Name != nullptr) {
-            res += Name->Print(shiftSize + 2);
+            res += Name->Print(shiftSize + 4);
         }
         if (Path != nullptr) {
-            res += Path->Print(shiftSize + 2);
+            res += Path->Print(shiftSize + 4);
         }
         return res;
     }
@@ -1512,20 +1515,20 @@ struct ValueSpec : Spec {
     V<SP<Expr>> Values;      // initial values; or nullptr
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "ValueSpec <" + Pos().ToString() + " --- " + End().ToString() +
                ">\n";
         if (!Names.empty()) {
             for (const auto& name : Names) {
-                if (name) res += name->Print(shiftSize + 2);
+                if (name) res += name->Print(shiftSize + 4);
             }
         }
         if (Type != nullptr) {
-            res += Type->Print(shiftSize + 2);
+            res += Type->Print(shiftSize + 4);
         }
         if (!Values.empty()) {
             for (const auto& val : Values) {
-                if (val) res += val->Print(shiftSize + 2);
+                if (val) res += val->Print(shiftSize + 4);
             }
         }
         return res;
@@ -1560,17 +1563,17 @@ struct TypeSpec : Spec {
     // the XxxTypes
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "TypeSpec <" + Pos().ToString() + " --- " + End().ToString() +
                ">\n";
         if (Name != nullptr) {
-            res += Name->Print(shiftSize + 2);
+            res += Name->Print(shiftSize + 4);
         }
         if (TypeParams != nullptr) {
-            res += TypeParams->Print(shiftSize + 2);
+            res += TypeParams->Print(shiftSize + 4);
         }
         if (Type != nullptr) {
-            res += Type->Print(shiftSize + 2);
+            res += Type->Print(shiftSize + 4);
         }
         return res;
     }
@@ -1597,7 +1600,7 @@ struct BadDecl : Decl {
     pos_t To;
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res +=
             "BadDecl <" + Pos().ToString() + " --- " + End().ToString() + ">\n";
         return res;
@@ -1622,15 +1625,15 @@ struct GenDecl : Decl {
     V<SP<Spec>> Specs;
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res +=
             "GenDecl <" + Pos().ToString() + " --- " + End().ToString() + ">\n";
 
-        res += std::string(shiftChar, shiftSize + 1) + type_string_map.at(Tok) +
+        res += std::string(shiftSize + 2, shiftChar) + type_string_map.at(Tok) +
                '\n';
         if (!Specs.empty()) {
             for (const auto& sp : Specs) {
-                if (sp) res += sp->Print(shiftSize + 2);
+                if (sp) res += sp->Print(shiftSize + 4);
             }
         }
         return res;
@@ -1666,20 +1669,20 @@ struct FuncDecl : Decl {
     SP<BlockStmt> Body;
 
     virtual std::string Print(size_t shiftSize) const override {
-        std::string res(shiftChar, shiftSize);
+        std::string res(shiftSize, shiftChar);
         res += "FuncDecl <" + Pos().ToString() + " --- " + End().ToString() +
                ">\n";
         if (Recv != nullptr) {
-            res += Recv->Print(shiftSize + 2);
+            res += Recv->Print(shiftSize + 4);
         }
         if (Name != nullptr) {
-            res += Name->Print(shiftSize + 2);
+            res += Name->Print(shiftSize + 4);
         }
         if (Type != nullptr) {
-            res += Type->Print(shiftSize + 2);
+            res += Type->Print(shiftSize + 4);
         }
         if (Body != nullptr) {
-            res += Body->Print(shiftSize + 2);
+            res += Body->Print(shiftSize + 4);
         }
         return res;
     }
