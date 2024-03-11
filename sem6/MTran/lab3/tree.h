@@ -44,16 +44,14 @@ bool compare(const LHS& lhs, const RHS& rhs) {
     }
 }
 
-const char shiftChar = '-';
+const char shiftChar = ' ';
 
 struct Node {
     virtual pos_t Pos() const = 0;  // first node char
     virtual pos_t End() const = 0;  // after
     virtual std::string Print(size_t shift) const = 0;
 
-    virtual bool operator==(const Node& rhs) const {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const { return compare(*this, rhs); }
 };
 
 struct Expr : Node {
@@ -95,14 +93,11 @@ struct BadExpr : Expr {
 
     pos_t End() const override { return To; }
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += color::error + "BadExpr " + color::reset + "<" +
-               Pos().ToString() + " --- " + End().ToString() + ">\n";
+        res += color::error + "BadExpr " + color::reset + "\n";
         return res;
     }
 };
@@ -118,21 +113,18 @@ struct IdentExpr : Expr {
 
     pos_t End() const override { return NamePos + Name.size(); }
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "IdentExpr " + Name + " <" + Pos().ToString() + " --- " +
-               End().ToString() + ">\n";
+        res += "IdentExpr: " + Name + '\n';
         return res;
     }
 };
 
 struct EllipsisExpr : Expr {
     pos_t Ellipsis = NoPos;  // position of "..."
-    SP<Expr> Elt;  // ellipsis element type (parameter lists only); or nullptr
+    SP<Expr> Elt;            // ellipsis element type (parameter lists only); or nullptr
 
     EllipsisExpr() {}
     EllipsisExpr(pos_t pos) : EllipsisExpr(pos, nullptr) {}
@@ -147,16 +139,12 @@ struct EllipsisExpr : Expr {
         return Ellipsis + 3;
     }
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "Ellipsis <" + Pos().ToString() + " --- " + End().ToString() +
-               ">\n";
+        res += "Ellipsis:\n";
         if (Elt != nullptr) {
-            // res += std::string(shiftChar, shiftSize + 2) + "Element type\n";
             res += Elt->Print(shiftSize + 4);
         }
         return res;
@@ -176,15 +164,11 @@ struct BasicLitExpr : Expr {
 
     pos_t End() const override { return ValuePos + Value.size(); }
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "BasicLitExpr <" + Pos().ToString() + " --- " +
-               End().ToString() + ">\n";
-        res += std::string(shiftSize + 2, shiftChar) + "Kind and value";
+        res += "BasicLitExpr: ";
         res += type_string_map.at(Kind) + ' ' + Value + '\n';
         return res;
     }
@@ -203,16 +187,15 @@ struct Field : Node {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res +=
-            "Field <" + Pos().ToString() + " --- " + End().ToString() + ">\n";
+        res += "Field:\n";
         if (!Names.empty()) {
             for (const auto& name : Names) {
-                // res += std::string(shiftChar, shiftSize + 2) + "Name\n";
+                // res += std::string(shiftChar, shiftSize + 2) + "Name:\n";
                 if (name) res += name->Print(shiftSize + 4);
             }
         }
         if (Type != nullptr) {
-            // res += std::string(shiftChar, shiftSize + 2) + "Type\n";
+            // res += std::string(shiftChar, shiftSize + 2) + "Type:\n";
             res += Type->Print(shiftSize + 4);
         }
         if (Tag != nullptr) {
@@ -244,9 +227,7 @@ struct Field : Node {
         return NoPos;
     }
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 // A FieldList represents a list of Fields, enclosed by parentheses,
@@ -261,11 +242,9 @@ struct FieldList : Node {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "FieldList <" + Pos().ToString() + " --- " + End().ToString() +
-               ">\n";
+        res += "FieldList:\n";
         if (!List.empty()) {
             for (const auto& field : List) {
-                // res += std::string(shiftChar, shiftSize + 2) + "Field\n";
                 if (field) res += field->Print(shiftSize + 4);
             }
         }
@@ -298,35 +277,30 @@ struct FieldList : Node {
         return n;
     }
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct FuncTypeExpr : Expr {
-    pos_t Func;  // position of "func" keyword (token.NoPos if there is no
-                 // "func")
+    pos_t Func;                // position of "func" keyword (token.NoPos if there is no
+                               // "func")
     SP<FieldList> TypeParams;  // type parameters; or nullptr
     SP<FieldList> Params;      // (incoming) parameters; non-nullptr
     SP<FieldList> Results;     // (outgoing) results; or nullptr
 
-    FuncTypeExpr(pos_t pos, SP<FieldList> tps, SP<FieldList> ps,
-                 SP<FieldList> rs)
+    FuncTypeExpr(pos_t pos, SP<FieldList> tps, SP<FieldList> ps, SP<FieldList> rs)
         : Func(pos), TypeParams(tps), Params(ps), Results(rs) {}
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "FuncTypeExpr <" + Pos().ToString() + " --- " +
-               End().ToString() + ">\n";
+        res += "FuncTypeExpr:\n";
         if (TypeParams) {
-            res += std::string(shiftSize + 2, shiftChar);
-            res += TypeParams->Print(shiftSize + 2);
+            res += TypeParams->Print(shiftSize + 4);
         }
         if (Params) {
-            res += Params->Print(shiftSize + 2);
+            res += Params->Print(shiftSize + 4);
         }
         if (Results) {
-            res += Results->Print(shiftSize + 2);
+            res += Results->Print(shiftSize + 4);
         }
         return res;
     }
@@ -342,9 +316,7 @@ struct FuncTypeExpr : Expr {
         return Params->End();
     }
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct BlockStmt : Stmt {
@@ -354,8 +326,7 @@ struct BlockStmt : Stmt {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "BlockStmt <" + Pos().ToString() + " --- " + End().ToString() +
-               ">\n";
+        res += "BlockStmt:\n";
         if (!List.empty()) {
             for (const auto& stmt : List) {
                 if (stmt) res += stmt->Print(shiftSize + 4);
@@ -364,12 +335,9 @@ struct BlockStmt : Stmt {
         return res;
     }
 
-    BlockStmt(pos_t l, V<SP<Stmt>> list, pos_t r)
-        : Lbrace(l), List(list), Rbrace(r) {}
+    BlockStmt(pos_t l, V<SP<Stmt>> list, pos_t r) : Lbrace(l), List(list), Rbrace(r) {}
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override { return Lbrace; }
 
@@ -389,8 +357,7 @@ struct FuncLitExpr : Expr {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "FuncLitExpr <" + Pos().ToString() + " --- " + End().ToString() +
-               ">\n";
+        res += "FuncLitExpr:\n";
         if (Type != nullptr) {
             res += Type->Print(shiftSize + 4);
         }
@@ -406,9 +373,7 @@ struct FuncLitExpr : Expr {
 
     pos_t End() const override { return Body->End(); }
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct CompositeLitExpr : Expr {  // structs literals, slice literals, etc
@@ -421,8 +386,7 @@ struct CompositeLitExpr : Expr {  // structs literals, slice literals, etc
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "CompositeLitExpr <" + Pos().ToString() + " --- " +
-               End().ToString() + ">\n";
+        res += "CompositeLitExpr:\n";
         if (Type != nullptr) {
             res += Type->Print(shiftSize + 4);
         }
@@ -437,15 +401,11 @@ struct CompositeLitExpr : Expr {  // structs literals, slice literals, etc
     CompositeLitExpr(SP<Expr> typ, pos_t l, V<SP<Expr>> elts, pos_t r)
         : Type(typ), Lbrace(l), Elts(elts), Rbrace(r) {}
 
-    pos_t Pos() const override {
-        return Type != nullptr ? Type->Pos() : Lbrace;
-    }
+    pos_t Pos() const override { return Type != nullptr ? Type->Pos() : Lbrace; }
 
     pos_t End() const override { return Rbrace + 1; }
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct ParenExpr : Expr {
@@ -455,8 +415,7 @@ struct ParenExpr : Expr {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "ParenExpr <" + Pos().ToString() + " --- " + End().ToString() +
-               ">\n";
+        res += "ParenExpr:\n";
         if (X != nullptr) {
             res += X->Print(shiftSize + 4);
         }
@@ -469,9 +428,7 @@ struct ParenExpr : Expr {
 
     pos_t End() const override { return Rparen + 1; }
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct SelectorExpr : Expr {
@@ -480,8 +437,7 @@ struct SelectorExpr : Expr {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "SelectorExpr <" + Pos().ToString() + " --- " +
-               End().ToString() + ">\n";
+        res += "SelectorExpr:\n";
         if (X != nullptr) {
             res += X->Print(shiftSize + 4);
         }
@@ -498,9 +454,7 @@ struct SelectorExpr : Expr {
 
     pos_t End() const override { return Sel->End(); }
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct IndexExpr : Expr {
@@ -511,8 +465,7 @@ struct IndexExpr : Expr {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "IndexExpr <" + Pos().ToString() + " --- " + End().ToString() +
-               ">\n";
+        res += "IndexExpr:\n";
         if (X != nullptr) {
             res += X->Print(shiftSize + 4);
         }
@@ -529,9 +482,7 @@ struct IndexExpr : Expr {
 
     pos_t End() const override { return Rbrack + 1; }
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct IndexListExpr : Expr {
@@ -542,8 +493,7 @@ struct IndexListExpr : Expr {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "IndexListExpr <" + Pos().ToString() + " --- " +
-               End().ToString() + ">\n";
+        res += "IndexListExpr:\n";
         if (X != nullptr) {
             res += X->Print(shiftSize + 4);
         }
@@ -562,9 +512,7 @@ struct IndexListExpr : Expr {
 
     pos_t End() const override { return Rbrack + 1; }
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct SliceExpr : Expr {
@@ -578,8 +526,7 @@ struct SliceExpr : Expr {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "SliceExpr <" + Pos().ToString() + " --- " + End().ToString() +
-               ">\n";
+        res += "SliceExpr:\n";
         if (X != nullptr) {
             res += X->Print(shiftSize + 4);
         }
@@ -595,23 +542,15 @@ struct SliceExpr : Expr {
         return res;
     }
 
-    SliceExpr(SP<Expr> x, pos_t lb, SP<Expr> low, SP<Expr> high, SP<Expr> max,
-              bool slice3, pos_t rb)
-        : X(x),
-          Lbrack(lb),
-          Low(low),
-          High(high),
-          Max(max),
-          Slice3(slice3),
-          Rbrack(rb) {}
+    SliceExpr(SP<Expr> x, pos_t lb, SP<Expr> low, SP<Expr> high, SP<Expr> max, bool slice3,
+              pos_t rb)
+        : X(x), Lbrack(lb), Low(low), High(high), Max(max), Slice3(slice3), Rbrack(rb) {}
 
     pos_t Pos() const override { return X->Pos(); }
 
     pos_t End() const override { return Rbrack + 1; }
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct TypeAssertExpr : Expr {
@@ -622,8 +561,7 @@ struct TypeAssertExpr : Expr {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "TypeAssertExpr <" + Pos().ToString() + " --- " +
-               End().ToString() + ">\n";
+        res += "TypeAssertExpr:\n";
         if (X != nullptr) {
             res += X->Print(shiftSize + 4);
         }
@@ -640,25 +578,19 @@ struct TypeAssertExpr : Expr {
 
     pos_t End() const override { return Rparen + 1; }
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct CallExpr : Expr {
     SP<Expr> Fun;
     pos_t Lparen;
-    V<SP<Expr>> Args;  // function arguments; or nullptr
-    pos_t Ellipsis =
-        NoPos;  // position of "..." (token.NoPos if there is no "...")
+    V<SP<Expr>> Args;        // function arguments; or nullptr
+    pos_t Ellipsis = NoPos;  // position of "..." (token.NoPos if there is no "...")
     pos_t Rparen;
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "CallExpr <" + Pos().ToString() + " --- " + End().ToString() +
-               (Ellipsis == NoPos
-                    ? ">\n"
-                    : "Ellipsis pos: " + Ellipsis.ToString() + ">\n");
+        res += "CallExpr:\n";
         if (Fun != nullptr) {
             res += Fun->Print(shiftSize + 4);
         }
@@ -677,9 +609,7 @@ struct CallExpr : Expr {
 
     pos_t End() const override { return Rparen + 1; }
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct StarExpr : Expr {
@@ -688,8 +618,7 @@ struct StarExpr : Expr {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "StarExpr <" + Pos().ToString() + " --- " + End().ToString() +
-               ">\n";
+        res += "StarExpr:\n";
         if (X != nullptr) {
             res += X->Print(shiftSize + 4);
         }
@@ -702,9 +631,7 @@ struct StarExpr : Expr {
 
     pos_t End() const override { return X->End(); }
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct UnaryExpr : Expr {
@@ -714,10 +641,8 @@ struct UnaryExpr : Expr {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "UnaryExpr <" + Pos().ToString() + " --- " + End().ToString() +
-               ">\n";
-        res += std::string(shiftSize + 2, shiftChar) + type_string_map.at(Op) +
-               '\n';
+        res += "UnaryExpr:\n";
+        res += std::string(shiftSize + 2, shiftChar) + type_string_map.at(Op) + '\n';
         if (X != nullptr) {
             res += X->Print(shiftSize + 4);
         }
@@ -725,16 +650,13 @@ struct UnaryExpr : Expr {
     }
 
     UnaryExpr() {}
-    UnaryExpr(pos_t pos, token_type op, SP<Expr> x)
-        : OpPos(pos), Op(op), X(x) {}
+    UnaryExpr(pos_t pos, token_type op, SP<Expr> x) : OpPos(pos), Op(op), X(x) {}
 
     pos_t Pos() const override { return OpPos; }
 
     pos_t End() const override { return X->End(); }
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct BinaryExpr : Expr {
@@ -745,13 +667,11 @@ struct BinaryExpr : Expr {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "BinaryExpr <" + Pos().ToString() + " --- " + End().ToString() +
-               ">\n";
+        res += "BinaryExpr:\n";
         if (X != nullptr) {
             res += X->Print(shiftSize + 4);
         }
-        res += std::string(shiftSize + 2, shiftChar) + type_string_map.at(Op) +
-               '\n';
+        res += std::string(shiftSize + 2, shiftChar) + type_string_map.at(Op) + '\n';
         if (Y != nullptr) {
             res += Y->Print(shiftSize + 4);
         }
@@ -759,16 +679,13 @@ struct BinaryExpr : Expr {
     }
 
     BinaryExpr() {}
-    BinaryExpr(SP<Expr> x, pos_t pos, token_type op, SP<Expr> y)
-        : X(x), OpPos(pos), Op(op), Y(y) {}
+    BinaryExpr(SP<Expr> x, pos_t pos, token_type op, SP<Expr> y) : X(x), OpPos(pos), Op(op), Y(y) {}
 
     pos_t Pos() const override { return X->Pos(); }
 
     pos_t End() const override { return Y->End(); }
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 // A KeyValueExpr node represents (key : value) pairs
@@ -781,8 +698,7 @@ struct KeyValueExpr : Expr {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "KeyValueExpr <" + Pos().ToString() + " --- " +
-               End().ToString() + ">\n";
+        res += "KeyValueExpr:\n";
         if (Key != nullptr) {
             res += Key->Print(shiftSize + 4);
         }
@@ -792,16 +708,13 @@ struct KeyValueExpr : Expr {
         return res;
     }
 
-    KeyValueExpr(SP<Expr> k, pos_t colon, SP<Expr> v)
-        : Key(k), Colon(colon), Value(v) {}
+    KeyValueExpr(SP<Expr> k, pos_t colon, SP<Expr> v) : Key(k), Colon(colon), Value(v) {}
 
     pos_t Pos() const override { return Key->Pos(); }
 
     pos_t End() const override { return Value->End(); }
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct ArrayTypeExpr : Expr {
@@ -811,8 +724,7 @@ struct ArrayTypeExpr : Expr {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "ArrayTypeExpr <" + Pos().ToString() + " --- " +
-               End().ToString() + ">\n";
+        res += "ArrayTypeExpr:\n";
         if (Len != nullptr) {
             res += Len->Print(shiftSize + 4);
         }
@@ -823,16 +735,13 @@ struct ArrayTypeExpr : Expr {
     }
 
     ArrayTypeExpr() {}
-    ArrayTypeExpr(pos_t lbrack, SP<Expr> len, SP<Expr> elt)
-        : Lbrack(lbrack), Len(len), Elt(elt) {}
+    ArrayTypeExpr(pos_t lbrack, SP<Expr> len, SP<Expr> elt) : Lbrack(lbrack), Len(len), Elt(elt) {}
 
     pos_t Pos() const override { return Lbrack; }
 
     pos_t End() const override { return Elt->End(); }
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct StructTypeExpr : Expr {
@@ -843,24 +752,20 @@ struct StructTypeExpr : Expr {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "StructTypeExpr <" + Pos().ToString() + " --- " +
-               End().ToString() + ">\n";
+        res += "StructTypeExpr:\n";
         if (Fields != nullptr) {
             res += Fields->Print(shiftSize + 4);
         }
         return res;
     }
 
-    StructTypeExpr(pos_t pos, SP<FieldList> fields)
-        : Struct(pos), Fields(fields) {}
+    StructTypeExpr(pos_t pos, SP<FieldList> fields) : Struct(pos), Fields(fields) {}
 
     pos_t Pos() const override { return Struct; }
 
     pos_t End() const override { return Fields->End(); }
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct InterfaceTypeExpr : Expr {
@@ -871,24 +776,20 @@ struct InterfaceTypeExpr : Expr {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "InterfaceTypeExpr <" + Pos().ToString() + " --- " +
-               End().ToString() + ">\n";
+        res += "InterfaceTypeExpr:\n";
         if (Methods != nullptr) {
             res += Methods->Print(shiftSize + 4);
         }
         return res;
     }
 
-    InterfaceTypeExpr(pos_t pos, SP<FieldList> ms)
-        : Interface(pos), Methods(ms) {}
+    InterfaceTypeExpr(pos_t pos, SP<FieldList> ms) : Interface(pos), Methods(ms) {}
 
     pos_t Pos() const override { return Interface; }
 
     pos_t End() const override { return Methods->End(); }
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct MapTypeExpr : Expr {
@@ -898,8 +799,7 @@ struct MapTypeExpr : Expr {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "MapTypeExpr <" + Pos().ToString() + " --- " + End().ToString() +
-               ">\n";
+        res += "MapTypeExpr:\n";
         if (Key != nullptr) {
             res += Key->Print(shiftSize + 4);
         }
@@ -909,16 +809,13 @@ struct MapTypeExpr : Expr {
         return res;
     }
 
-    MapTypeExpr(pos_t pos, SP<Expr> key, SP<Expr> value)
-        : Map(pos), Key(key), Value(value) {}
+    MapTypeExpr(pos_t pos, SP<Expr> key, SP<Expr> value) : Map(pos), Key(key), Value(value) {}
 
     pos_t Pos() const override { return Map; }
 
     pos_t End() const override { return Value->End(); }
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 // end Expressions
 
@@ -929,8 +826,7 @@ struct BadStmt : Stmt {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res +=
-            "BadStmt <" + Pos().ToString() + " --- " + End().ToString() + ">\n";
+        res += "BadStmt:\n";
         return res;
     }
 
@@ -940,9 +836,7 @@ struct BadStmt : Stmt {
 
     pos_t End() const override { return To; }
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct DeclStmt : Stmt {
@@ -952,17 +846,14 @@ struct DeclStmt : Stmt {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "DeclStmt <" + Pos().ToString() + " --- " + End().ToString() +
-               ">\n";
+        res += "DeclStmt:\n";
         if (Decl_ != nullptr) {
             res += Decl_->Print(shiftSize + 4);
         }
         return res;
     }
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override { return Decl_->Pos(); }
 
@@ -976,8 +867,7 @@ struct LabeledStmt : Stmt {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "LabeledStmt <" + Pos().ToString() + " --- " + End().ToString() +
-               ">\n";
+        res += "LabeledStmt:\n";
         if (Label != nullptr) {
             res += Label->Print(shiftSize + 4);
         }
@@ -990,9 +880,7 @@ struct LabeledStmt : Stmt {
     LabeledStmt(SP<IdentExpr> lbl, pos_t pos, SP<Stmt> stmt)
         : Label(lbl), Colon(pos), Stmt_(stmt) {}
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override { return Label->Pos(); }
 
@@ -1004,8 +892,7 @@ struct ExprStmt : Stmt {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "ExprStmt <" + Pos().ToString() + " --- " + End().ToString() +
-               ">\n";
+        res += "ExprStmt:\n";
         if (X != nullptr) {
             res += X->Print(shiftSize + 4);
         }
@@ -1014,9 +901,7 @@ struct ExprStmt : Stmt {
 
     ExprStmt(SP<Expr> x) : X(x) {}
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override { return X->Pos(); }
 
@@ -1032,22 +917,17 @@ struct IncDecStmt : Stmt {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "IncDecStmt <" + Pos().ToString() + " --- " + End().ToString() +
-               ">\n";
-        res += std::string(shiftSize + 2, shiftChar) + type_string_map.at(Tok) +
-               '\n';
+        res += "IncDecStmt:\n";
+        res += std::string(shiftSize + 2, shiftChar) + type_string_map.at(Tok) + '\n';
         if (X != nullptr) {
             res += X->Print(shiftSize + 4);
         }
         return res;
     }
 
-    IncDecStmt(SP<Expr> x, pos_t pos, token_type tok)
-        : X(x), TokPos(pos), Tok(tok) {}
+    IncDecStmt(SP<Expr> x, pos_t pos, token_type tok) : X(x), TokPos(pos), Tok(tok) {}
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override { return X->Pos(); }
 
@@ -1062,15 +942,13 @@ struct AssignStmt : Stmt {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "AssignStmt <" + Pos().ToString() + " --- " + End().ToString() +
-               ">\n";
+        res += "AssignStmt:\n";
         if (!Lhs.empty()) {
             for (const auto& lh : Lhs) {
                 if (lh) res += lh->Print(shiftSize + 4);
             }
         }
-        res += std::string(shiftSize + 2, shiftChar) + type_string_map.at(Tok) +
-               '\n';
+        res += std::string(shiftSize + 2, shiftChar) + type_string_map.at(Tok) + '\n';
         if (!Rhs.empty()) {
             for (const auto& rh : Rhs) {
                 if (rh) res += rh->Print(shiftSize + 4);
@@ -1082,9 +960,7 @@ struct AssignStmt : Stmt {
     AssignStmt(V<SP<Expr>> lhs, pos_t pos, token_type tok, V<SP<Expr>> rhs)
         : Lhs(lhs), TokPos(pos), Tok(tok), Rhs(rhs) {}
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override { return Lhs[0]->Pos(); }
 
@@ -1099,8 +975,7 @@ struct DeferStmt : Stmt {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "DeferStmt <" + Pos().ToString() + " --- " + End().ToString() +
-               ">\n";
+        res += "DeferStmt:\n";
         if (Call != nullptr) {
             res += Call->Print(shiftSize + 4);
         }
@@ -1109,9 +984,7 @@ struct DeferStmt : Stmt {
 
     DeferStmt(pos_t pos, SP<CallExpr> call) : Defer(pos), Call(call) {}
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override { return Defer; }
 
@@ -1124,8 +997,7 @@ struct ReturnStmt : Stmt {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "ReturnStmt <" + Pos().ToString() + " --- " + End().ToString() +
-               ">\n";
+        res += "ReturnStmt:\n";
         if (!Results.empty()) {
             for (const auto& rs : Results) {
                 if (rs) res += rs->Print(shiftSize + 4);
@@ -1135,9 +1007,7 @@ struct ReturnStmt : Stmt {
     }
 
     ReturnStmt(pos_t pos, V<SP<Expr>> res) : Return(pos), Results(res) {}
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override { return Return; }
 
@@ -1156,22 +1026,17 @@ struct BranchStmt : Stmt {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "BranchStmt <" + Pos().ToString() + " --- " + End().ToString() +
-               ">\n";
-        res += std::string(shiftSize + 2, shiftChar) + type_string_map.at(Tok) +
-               '\n';
+        res += "BranchStmt:\n";
+        res += std::string(shiftSize + 2, shiftChar) + type_string_map.at(Tok) + '\n';
         if (Label != nullptr) {
             res += Label->Print(shiftSize + 4);
         }
         return res;
     }
 
-    BranchStmt(pos_t pos, token_type tok, SP<IdentExpr> lbl)
-        : TokPos(pos), Tok(tok), Label(lbl) {}
+    BranchStmt(pos_t pos, token_type tok, SP<IdentExpr> lbl) : TokPos(pos), Tok(tok), Label(lbl) {}
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override { return TokPos; }
 
@@ -1192,8 +1057,7 @@ struct IfStmt : Stmt {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res +=
-            "IfStmt <" + Pos().ToString() + " --- " + End().ToString() + ">\n";
+        res += "IfStmt:\n";
         if (Init != nullptr) {
             res += Init->Print(shiftSize + 4);
         }
@@ -1209,12 +1073,9 @@ struct IfStmt : Stmt {
         return res;
     }
 
-    IfStmt(pos_t pos, SP<Stmt> init, SP<Expr> cond, SP<BlockStmt> body,
-           SP<Stmt> els)
+    IfStmt(pos_t pos, SP<Stmt> init, SP<Expr> cond, SP<BlockStmt> body, SP<Stmt> els)
         : If(pos), Init(init), Cond(cond), Body(body), Else(els) {}
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override { return If; }
 
@@ -1227,16 +1088,14 @@ struct IfStmt : Stmt {
 };
 
 struct CaseClauseStmt : Stmt {
-    pos_t Case;  // position of "case" or "default" keyword
-    V<SP<Expr>>
-        List;  // list of expressions or types; nullptr means default case
+    pos_t Case;        // position of "case" or "default" keyword
+    V<SP<Expr>> List;  // list of expressions or types; nullptr means default case
     pos_t Colon;
     V<SP<Stmt>> Body;
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "CaseClauseStmt <" + Pos().ToString() + " --- " +
-               End().ToString() + ">\n";
+        res += "CaseClauseStmt:\n";
         if (!List.empty()) {
             for (const auto& l : List) {
                 if (l) res += l->Print(shiftSize + 4);
@@ -1253,9 +1112,7 @@ struct CaseClauseStmt : Stmt {
     CaseClauseStmt(pos_t pos, V<SP<Expr>> list, pos_t colon, V<SP<Stmt>> body)
         : Case(pos), List(list), Colon(colon), Body(body) {}
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override { return Case; }
 
@@ -1275,8 +1132,7 @@ struct SwitchStmt : Stmt {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "SwitchStmt <" + Pos().ToString() + " --- " + End().ToString() +
-               ">\n";
+        res += "SwitchStmt:\n";
         if (Init != nullptr) {
             res += Init->Print(shiftSize + 4);
         }
@@ -1292,9 +1148,7 @@ struct SwitchStmt : Stmt {
     SwitchStmt(pos_t pos, SP<Stmt> init, SP<Expr> tag, SP<BlockStmt> body)
         : Switch(pos), Init(init), Tag(tag), Body(body) {}
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override { return Switch; }
 
@@ -1309,8 +1163,7 @@ struct TypeSwitchStmt : Stmt {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "TypeSwitchExpr <" + Pos().ToString() + " --- " +
-               End().ToString() + ">\n";
+        res += "TypeSwitchExpr:\n";
         if (Init != nullptr) {
             res += Init->Print(shiftSize + 4);
         }
@@ -1323,13 +1176,10 @@ struct TypeSwitchStmt : Stmt {
         return res;
     }
 
-    TypeSwitchStmt(pos_t pos, SP<Stmt> init, SP<Stmt> assign,
-                   SP<BlockStmt> body)
+    TypeSwitchStmt(pos_t pos, SP<Stmt> init, SP<Stmt> assign, SP<BlockStmt> body)
         : Switch(pos), Init(init), Assign(assign), Body(body) {}
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override { return Switch; }
 
@@ -1349,8 +1199,7 @@ struct ForStmt : Stmt {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res +=
-            "ForStmt <" + Pos().ToString() + " --- " + End().ToString() + ">\n";
+        res += "ForStmt:\n";
         if (Init != nullptr) {
             res += Init->Print(shiftSize + 4);
         }
@@ -1366,13 +1215,10 @@ struct ForStmt : Stmt {
         return res;
     }
 
-    ForStmt(pos_t forPos, SP<Stmt> init, SP<Expr> cond, SP<Stmt> post,
-            SP<BlockStmt> body)
+    ForStmt(pos_t forPos, SP<Stmt> init, SP<Expr> cond, SP<Stmt> post, SP<BlockStmt> body)
         : For(forPos), Init(init), Cond(cond), Post(post), Body(body) {}
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override { return For; }
 
@@ -1391,18 +1237,16 @@ struct RangeStmt : Stmt {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "RangeStmt <" + Pos().ToString() + " --- " + End().ToString() +
-               ">\n";
+        res += "RangeStmt:\n";
         if (Key != nullptr) {
             res += Key->Print(shiftSize + 4);
         }
         if (Value != nullptr) {
             res += Value->Print(shiftSize + 4);
         }
-        res += std::string(shiftSize + 2, shiftChar) + type_string_map.at(Tok) +
-               '\n';
-        res += std::string(shiftSize + 2, shiftChar) + "Range pos " +
-               Range.ToString() + '\n';
+        res += std::string(shiftSize + 2, shiftChar) + type_string_map.at(Tok) + '\n';
+        // res += std::string(shiftSize + 2, shiftChar) + "Range pos " +
+        // Range.ToString() + '\n';
         if (X != nullptr) {
             res += X->Print(shiftSize + 4);
         }
@@ -1412,8 +1256,8 @@ struct RangeStmt : Stmt {
         return res;
     }
 
-    RangeStmt(pos_t forPos, SP<Expr> key, SP<Expr> value, pos_t tokPos,
-              token_type tok, pos_t rangePos, SP<Expr> x, SP<BlockStmt> body)
+    RangeStmt(pos_t forPos, SP<Expr> key, SP<Expr> value, pos_t tokPos, token_type tok,
+              pos_t rangePos, SP<Expr> x, SP<BlockStmt> body)
         : For(forPos),
           Key(key),
           Value(value),
@@ -1423,9 +1267,7 @@ struct RangeStmt : Stmt {
           X(x),
           Body(body) {}
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override { return For; }
 
@@ -1438,16 +1280,13 @@ struct EmptyStmt : Stmt {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "EmptyStmt <" + Pos().ToString() + " --- " + End().ToString() +
-               ">\n";
+        res += "EmptyStmt:\n";
         return res;
     }
 
     EmptyStmt(pos_t sc, bool implicit) : Semicolon(sc), Implicit(implicit) {}
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override { return Semicolon; }
 
@@ -1473,8 +1312,7 @@ struct ImportSpec : Spec {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "ImportSpec <" + Pos().ToString() + " --- " + End().ToString() +
-               ">\n";
+        res += "ImportSpec:\n";
         if (Name != nullptr) {
             res += Name->Print(shiftSize + 4);
         }
@@ -1487,9 +1325,7 @@ struct ImportSpec : Spec {
     ImportSpec(SP<IdentExpr> name, SP<BasicLitExpr> path, pos_t endPos)
         : Name(name), Path(path), EndPos(endPos) {}
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override {
         if (Name != nullptr) {
@@ -1516,8 +1352,7 @@ struct ValueSpec : Spec {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "ValueSpec <" + Pos().ToString() + " --- " + End().ToString() +
-               ">\n";
+        res += "ValueSpec:\n";
         if (!Names.empty()) {
             for (const auto& name : Names) {
                 if (name) res += name->Print(shiftSize + 4);
@@ -1537,9 +1372,7 @@ struct ValueSpec : Spec {
     ValueSpec(V<SP<IdentExpr>> names, SP<Expr> type, V<SP<Expr>> values)
         : Names(names), Type(type), Values(values) {}
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override { return Names[0]->Pos(); }
 
@@ -1564,8 +1397,7 @@ struct TypeSpec : Spec {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "TypeSpec <" + Pos().ToString() + " --- " + End().ToString() +
-               ">\n";
+        res += "TypeSpec:\n";
         if (Name != nullptr) {
             res += Name->Print(shiftSize + 4);
         }
@@ -1578,13 +1410,10 @@ struct TypeSpec : Spec {
         return res;
     }
 
-    TypeSpec(SP<IdentExpr> name, SP<FieldList> typeParams, pos_t assign,
-             SP<Expr> type)
+    TypeSpec(SP<IdentExpr> name, SP<FieldList> typeParams, pos_t assign, SP<Expr> type)
         : Name(name), TypeParams(typeParams), Assign(assign), Type(type) {}
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override { return Name->Pos(); }
 
@@ -1601,16 +1430,13 @@ struct BadDecl : Decl {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res +=
-            "BadDecl <" + Pos().ToString() + " --- " + End().ToString() + ">\n";
+        res += "BadDecl:\n";
         return res;
     }
 
     BadDecl(pos_t from, pos_t to) : From(from), To(to) {}
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override { return From; }
 
@@ -1626,11 +1452,7 @@ struct GenDecl : Decl {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res +=
-            "GenDecl <" + Pos().ToString() + " --- " + End().ToString() + ">\n";
-
-        res += std::string(shiftSize + 2, shiftChar) + type_string_map.at(Tok) +
-               '\n';
+        res += "GenDecl: " + type_string_map.at(Tok) + '\n';
         if (!Specs.empty()) {
             for (const auto& sp : Specs) {
                 if (sp) res += sp->Print(shiftSize + 4);
@@ -1639,17 +1461,10 @@ struct GenDecl : Decl {
         return res;
     }
 
-    GenDecl(pos_t tokPos, token_type tok, pos_t lparen, V<SP<Spec>> specs,
-            pos_t rparen)
-        : TokPos(tokPos),
-          Tok(tok),
-          Lparen(lparen),
-          Rparen(rparen),
-          Specs(specs) {}
+    GenDecl(pos_t tokPos, token_type tok, pos_t lparen, V<SP<Spec>> specs, pos_t rparen)
+        : TokPos(tokPos), Tok(tok), Lparen(lparen), Rparen(rparen), Specs(specs) {}
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override { return TokPos; }
 
@@ -1670,8 +1485,7 @@ struct FuncDecl : Decl {
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
-        res += "FuncDecl <" + Pos().ToString() + " --- " + End().ToString() +
-               ">\n";
+        res += "FuncDecl:\n";
         if (Recv != nullptr) {
             res += Recv->Print(shiftSize + 4);
         }
@@ -1687,13 +1501,10 @@ struct FuncDecl : Decl {
         return res;
     }
 
-    FuncDecl(SP<FieldList> recv, SP<IdentExpr> name, SP<FuncTypeExpr> type,
-             SP<BlockStmt> body)
+    FuncDecl(SP<FieldList> recv, SP<IdentExpr> name, SP<FuncTypeExpr> type, SP<BlockStmt> body)
         : Recv(recv), Name(name), Type(type), Body(body) {}
 
-    virtual bool operator==(const Node& rhs) const override {
-        return compare(*this, rhs);
-    }
+    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override { return Type->Pos(); }
 

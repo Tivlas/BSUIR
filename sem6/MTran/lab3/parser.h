@@ -385,7 +385,7 @@ SP<ArrayTypeExpr> parser::parseArrayType(pos_t lbrack, SP<Expr> len) {
         if (tok_ == token_type::ELLIPSIS) {
             len = std::make_shared<EllipsisExpr>(pos_);
             next();
-        } else if (tok_ == token_type::RBRACK) {
+        } else if (tok_ != token_type::RBRACK) {
             len = parseRhs();
         }
         exprLev_--;
