@@ -4,8 +4,28 @@ func max(a int) {
 
 }
 
+func min(a int, b int) int {
+    return a + b
+}
+
+func mul(a float, b string) (ret1 int, ret2 int) {
+    return 3 + 456
+}
+
 func main() {
     a := 4
     a := 5
     b := max(a, a)
+
+    for i := 10; i < 20; i++ {
+        a++
+    }
+
+    for {
+        a = a + 3
+    }
+
+    for b < 3 {
+        b = 5
+    }
 }

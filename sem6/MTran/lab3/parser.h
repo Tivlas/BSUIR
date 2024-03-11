@@ -13,9 +13,9 @@
 using parseSpecFunction = std::function<SP<Spec>(token_type keyword, int iota)>;
 
 template <typename T>
-std::pair<std::shared_ptr<T>, bool> isOfType(Node* ptr) {
+inline std::pair<T*, bool> isOfType(Node* ptr) {
     T* casted = dynamic_cast<T*>(ptr);
-    return {std::shared_ptr<T>(casted), casted != nullptr};
+    return {(casted), casted != nullptr};
 }
 
 std::unordered_map<token_type, bool> stmtStart = {
@@ -275,7 +275,7 @@ bool parser::atComma(std::string context, token_type follow) {
 
 void parser::assert(bool cond, std::string msg) {
     if (!cond) {
-        throw std::runtime_error("internal parser error...");
+        throw std::runtime_error("internal parser error: " + msg);
     }
 }
 
@@ -700,7 +700,7 @@ V<SP<Field>> parser::parseParameterList(SP<IdentExpr> name0, SP<Expr> typ0,
         bool ok = true;
         SP<Expr> typ;
         pos_t missingName = pos;
-        for (size_t i = list.size() - 1; i >= 0; i--) {
+        for (int i = list.size() - 1; i >= 0; i--) {
             if (auto par = list[i]; par.typ != nullptr) {
                 typ = par.typ;
                 if (par.name == nullptr) {
@@ -748,7 +748,9 @@ V<SP<Field>> parser::parseParameterList(SP<IdentExpr> name0, SP<Expr> typ0,
         names.clear();
     };
     for (const auto& par : list) {
-        if (*par.typ != *typ) {
+        if (/* (typ == nullptr && par.typ != nullptr) || (typ != nullptr &&
+               par.typ != nullptr) ||  */
+            *par.typ != *typ) {
             if (names.size() > 0) {
                 addParams();
             }
@@ -1493,8 +1495,8 @@ std::pair<SP<Stmt>, bool> parser::parseSimpleStmt(int mode) {
             next();
             if (auto [label, isIdent] = isOfType<IdentExpr>(x[0].get());
                 mode == labelOk && isIdent) {
-                auto stmt =
-                    std::make_shared<LabeledStmt>(label, colon, parseStmt());
+                auto stmt = std::make_shared<LabeledStmt>(
+                    std::shared_ptr<IdentExpr>(label), colon, parseStmt());
                 return {stmt, false};
             }
             // TODO error()
@@ -1518,7 +1520,7 @@ SP<CallExpr> parser::parseCallExpr(std::string callType) {
         x = t;
     }
     if (auto [call, isCall] = isOfType<CallExpr>(x.get()); isCall) {
-        return call;
+        return std::shared_ptr<CallExpr>(call);
     }
     if (auto [_, isBad] = isOfType<BadExpr>(x.get()); !isBad) {
         // TODO error()
@@ -1819,8 +1821,8 @@ SP<Stmt> parser::parseForStmt() {
                                            as->Rhs[0]->Pos(), x, body);
     }
 
-    return std::make_shared<ForStmt>(
-        pos, s1, makeExpr(s2, "boolean or range expression"), s3, body);
+    auto madeExpr = makeExpr(s2, "boolean or range expression");
+    return std::make_shared<ForStmt>(pos, s1, madeExpr, s3, body);
 }
 
 SP<Stmt> parser::parseStmt() {
@@ -2007,13 +2009,13 @@ bool isTypeElem(SP<Expr> x) {
 
 std::pair<SP<IdentExpr>, SP<Expr>> extractName(SP<Expr> x, bool force) {
     if (auto [ptr, is] = isOfType<IdentExpr>(x.get()); is) {
-        return {ptr, nullptr};
+        return {std::shared_ptr<IdentExpr>(ptr), nullptr};
     } else if (auto [ptr, is] = isOfType<BinaryExpr>(x.get()); is) {
         switch (ptr->Op) {
             case token_type::MUL:
                 if (auto [name, _] = isOfType<IdentExpr>(ptr->X.get());
                     name != nullptr && (force || isTypeElem(ptr->Y))) {
-                    return {name,
+                    return {std::shared_ptr<IdentExpr>(name),
                             std::make_shared<StarExpr>(ptr->OpPos, ptr->Y)};
                 }
                 break;
@@ -2032,7 +2034,7 @@ std::pair<SP<IdentExpr>, SP<Expr>> extractName(SP<Expr> x, bool force) {
             name != nullptr) {
             if (ptr->Args.size() == 1 && ptr->Ellipsis == NoPos &&
                 (force || isTypeElem(ptr->Args[0]))) {
-                return {name, ptr->Args[0]};
+                return {std::shared_ptr<IdentExpr>(name), ptr->Args[0]};
             }
         }
     }
