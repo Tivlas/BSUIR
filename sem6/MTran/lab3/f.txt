@@ -1,15 +1,9 @@
 package main
 
-func max(a int) {
 
-}
 
 func min(a, b int) int {
     return a + b
-}
-
-func mul(a float, b string) (ret1 int, ret2 int) {
-    return 3 + 456
 }
 
 func main() {

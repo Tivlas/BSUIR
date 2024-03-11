@@ -19,12 +19,10 @@ inline std::pair<T*, bool> isOfType(Node* ptr) {
 }
 
 std::unordered_map<token_type, bool> stmtStart = {
-    {token_type::BREAK, true},       {token_type::CONST, true},
-    {token_type::CONTINUE, true},    {token_type::DEFER, true},
-    {token_type::FALLTHROUGH, true}, {token_type::FOR, true},
-    {token_type::GOTO, true},        {token_type::IF, true},
-    {token_type::RETURN, true},      {token_type::SWITCH, true},
-    {token_type::TYPE, true},        {token_type::VAR, true},
+    {token_type::BREAK, true},  {token_type::CONST, true},       {token_type::CONTINUE, true},
+    {token_type::DEFER, true},  {token_type::FALLTHROUGH, true}, {token_type::FOR, true},
+    {token_type::GOTO, true},   {token_type::IF, true},          {token_type::RETURN, true},
+    {token_type::SWITCH, true}, {token_type::TYPE, true},        {token_type::VAR, true},
 };
 
 std::unordered_map<token_type, bool> declStart = {
@@ -35,9 +33,8 @@ std::unordered_map<token_type, bool> declStart = {
 };
 
 std::unordered_map<token_type, bool> exprEnd = {
-    {token_type::COMMA, true},     {token_type::COLON, true},
-    {token_type::SEMICOLON, true}, {token_type::RPAREN, true},
-    {token_type::RBRACE, true},    {token_type::RBRACK, true},
+    {token_type::COMMA, true},  {token_type::COLON, true},  {token_type::SEMICOLON, true},
+    {token_type::RPAREN, true}, {token_type::RBRACE, true}, {token_type::RBRACK, true},
 };
 
 struct field {
@@ -84,15 +81,13 @@ class parser {
     SP<Expr> parseQualifiedIdent(SP<IdentExpr> ident);
     SP<Expr> parseTypeName(SP<IdentExpr> ident);
     SP<ArrayTypeExpr> parseArrayType(pos_t lbrack, SP<Expr> len);
-    std::pair<SP<IdentExpr>, SP<Expr>> parseArrayFieldOrTypeInstance(
-        SP<IdentExpr> x);
+    std::pair<SP<IdentExpr>, SP<Expr>> parseArrayFieldOrTypeInstance(SP<IdentExpr> x);
     SP<Field> parseFieldDecl();
     SP<StructTypeExpr> parseStructType();
     SP<StarExpr> parsePointerType();
     SP<EllipsisExpr> parseDotsType();
     field parseParamDecl(SP<IdentExpr> name, bool typeSetsOk);
-    V<SP<Field>> parseParameterList(SP<IdentExpr> name0, SP<Expr> typ0,
-                                    token_type closing);
+    V<SP<Field>> parseParameterList(SP<IdentExpr> name0, SP<Expr> typ0, token_type closing);
     std::pair<SP<FieldList>, SP<FieldList>> parseParameters(bool acceptTParams);
     SP<FieldList> parseResult();
     SP<FuncTypeExpr> parseFuncType();
@@ -143,13 +138,11 @@ class parser {
     SP<Spec> parseTypeSpec(token_type,
                            int);  // do not need parameters, but match
     // parseSpecFunction interface
-    void parseGenericType(SP<TypeSpec> spec, pos_t openPos, SP<IdentExpr> name0,
-                          SP<Expr> typ0);
+    void parseGenericType(SP<TypeSpec> spec, pos_t openPos, SP<IdentExpr> name0, SP<Expr> typ0);
     SP<GenDecl> parseGenDecl(token_type keyword, parseSpecFunction f);
     SP<FuncDecl> parseFuncDecl();
     SP<Decl> parseDecl(std::unordered_map<token_type, bool> sync);
-    SP<Expr> packIndexExpr(SP<Expr> x, pos_t lbrack, V<SP<Expr>> exprs,
-                           pos_t rbrack);
+    SP<Expr> packIndexExpr(SP<Expr> x, pos_t lbrack, V<SP<Expr>> exprs, pos_t rbrack);
 
     // Error methods
     void errorExpected(pos_t pos, std::string msg);
@@ -169,12 +162,10 @@ class parser {
     }
 };
 
-SP<Expr> parser::packIndexExpr(SP<Expr> x, pos_t lbrack, V<SP<Expr>> exprs,
-                               pos_t rbrack) {
+SP<Expr> parser::packIndexExpr(SP<Expr> x, pos_t lbrack, V<SP<Expr>> exprs, pos_t rbrack) {
     switch (exprs.size()) {
         case 0:
-            throw std::runtime_error(
-                "internal error: PackIndexExpr with empty expr slice");
+            throw std::runtime_error("internal error: PackIndexExpr with empty expr slice");
         case 1:
             return std::make_shared<IndexExpr>(x, lbrack, exprs[0], rbrack);
         default:
@@ -402,8 +393,7 @@ SP<ArrayTypeExpr> parser::parseArrayType(pos_t lbrack, SP<Expr> len) {
     return std::make_shared<ArrayTypeExpr>(lbrack, len, elt);
 }
 
-std::pair<SP<IdentExpr>, SP<Expr>> parser::parseArrayFieldOrTypeInstance(
-    SP<IdentExpr> x) {
+std::pair<SP<IdentExpr>, SP<Expr>> parser::parseArrayFieldOrTypeInstance(SP<IdentExpr> x) {
     auto lbrack = expect(token_type::LBRACK);
     auto trailingComma = NoPos;
     V<SP<Expr>> args;
@@ -505,8 +495,7 @@ SP<Field> parser::parseFieldDecl() {
                 // (*T)
                 star = pos_;
                 next();
-                typ = std::make_shared<StarExpr>(star,
-                                                 parseQualifiedIdent(nullptr));
+                typ = std::make_shared<StarExpr>(star, parseQualifiedIdent(nullptr));
             } else {
                 // (T)
                 typ = parseQualifiedIdent(nullptr);
@@ -537,8 +526,7 @@ SP<StructTypeExpr> parser::parseStructType() {
     auto pos = expect(token_type::STRUCT);
     auto lbrace = expect(token_type::LBRACE);
     V<SP<Field>> list;
-    while (tok_ == token_type::IDENT || tok_ == token_type::MUL ||
-           tok_ == token_type::LPAREN) {
+    while (tok_ == token_type::IDENT || tok_ == token_type::MUL || tok_ == token_type::LPAREN) {
         // a field declaration cannot start with a '(' but we accept
         // it here for more robust parsing and better error messages
         // (parseFieldDecl will check and complain if necessary)
@@ -546,8 +534,7 @@ SP<StructTypeExpr> parser::parseStructType() {
     }
     auto rbrace = expect(token_type::RBRACE);
 
-    return std::make_shared<StructTypeExpr>(
-        pos, std::make_shared<FieldList>(lbrace, list, rbrace));
+    return std::make_shared<StructTypeExpr>(pos, std::make_shared<FieldList>(lbrace, list, rbrace));
 }
 
 SP<StarExpr> parser::parsePointerType() {
@@ -593,8 +580,7 @@ field parser::parseParamDecl(SP<IdentExpr> name, bool typeSetsOk) {
                     f.typ = parseType();
                     break;
                 case token_type::LBRACK:
-                    std::tie(f.name, f.typ) =
-                        parseArrayFieldOrTypeInstance(f.name);
+                    std::tie(f.name, f.typ) = parseArrayFieldOrTypeInstance(f.name);
                     break;
                 case token_type::ELLIPSIS:
                     f.typ = parseDotsType();
@@ -646,8 +632,7 @@ field parser::parseParamDecl(SP<IdentExpr> name, bool typeSetsOk) {
     return f;
 }
 
-V<SP<Field>> parser::parseParameterList(SP<IdentExpr> name0, SP<Expr> typ0,
-                                        token_type closing) {
+V<SP<Field>> parser::parseParameterList(SP<IdentExpr> name0, SP<Expr> typ0, token_type closing) {
     V<SP<Field>> params;
     bool tparams = closing == token_type::RBRACK;
     bool typeSetOk = tparams;
@@ -704,7 +689,7 @@ V<SP<Field>> parser::parseParameterList(SP<IdentExpr> name0, SP<Expr> typ0,
         SP<Expr> typ;
         pos_t missingName = pos;
         for (int i = list.size() - 1; i >= 0; i--) {
-            if (auto par = list[i]; par.typ != nullptr) {
+            if (auto& par = list[i]; par.typ != nullptr) {
                 typ = par.typ;
                 if (par.name == nullptr) {
                     ok = false;
@@ -734,10 +719,8 @@ V<SP<Field>> parser::parseParameterList(SP<IdentExpr> name0, SP<Expr> typ0,
 
     if (named == 0) {
         for (const auto& par : list) {
-            assert(par.typ != nullptr,
-                   "nullptr type in unnamed parameter list");
-            params.push_back(
-                std::make_shared<Field>(V<SP<IdentExpr>>{}, par.typ, nullptr));
+            assert(par.typ != nullptr, "nullptr type in unnamed parameter list");
+            params.push_back(std::make_shared<Field>(V<SP<IdentExpr>>{}, par.typ, nullptr));
         }
         return params;
     }
@@ -751,9 +734,7 @@ V<SP<Field>> parser::parseParameterList(SP<IdentExpr> name0, SP<Expr> typ0,
         names.clear();
     };
     for (const auto& par : list) {
-        if (/* (typ == nullptr && par.typ != nullptr) || (typ != nullptr &&
-               par.typ != nullptr) ||  */
-            *par.typ != *typ) {
+        if ((!par.typ && typ) || !(!par.typ && !typ) && *par.typ != *typ) {
             if (names.size() > 0) {
                 addParams();
             }
@@ -767,8 +748,7 @@ V<SP<Field>> parser::parseParameterList(SP<IdentExpr> name0, SP<Expr> typ0,
     return params;
 }
 
-std::pair<SP<FieldList>, SP<FieldList>> parser::parseParameters(
-    bool acceptTParams) {
+std::pair<SP<FieldList>, SP<FieldList>> parser::parseParameters(bool acceptTParams) {
     SP<FieldList> tparams, params;
 
     if (acceptTParams && tok_ == token_type::LBRACK) {
@@ -804,8 +784,7 @@ SP<FieldList> parser::parseResult() {
     auto typ = tryIdentOrType();
     if (typ == nullptr) {
         V<SP<Field>> list;
-        list.push_back(
-            std::make_shared<Field>(V<SP<IdentExpr>>{}, typ, nullptr));
+        list.push_back(std::make_shared<Field>(V<SP<IdentExpr>>{}, typ, nullptr));
         return std::make_shared<FieldList>(NoPos, list, NoPos);
     }
     return nullptr;
@@ -834,43 +813,37 @@ SP<Field> parser::parseMethodSpec() {
                 auto x = parseExpr();
                 exprLev_--;
                 if (auto name0 = dynamic_cast<IdentExpr*>(x.get());
-                    name0 != nullptr && tok_ != token_type::COMMA &&
-                    tok_ != token_type::RBRACK) {
+                    name0 != nullptr && tok_ != token_type::COMMA && tok_ != token_type::RBRACK) {
                     // generic method m[T any]
                     //
                     // Interface methods do not have type parameters. We parse
                     // them for a better error message and improved error
                     // recovery.
-                    parseParameterList(std::shared_ptr<IdentExpr>(name0),
-                                       nullptr, token_type::RBRACK);
+                    parseParameterList(std::shared_ptr<IdentExpr>(name0), nullptr,
+                                       token_type::RBRACK);
                     expect(token_type::RBRACK);
                     // TODO error()
 
                     auto [_, params] = parseParameters(false);
                     auto results = parseResult();
                     idents = {std::shared_ptr<IdentExpr>(ident)};
-                    typ = std::make_shared<FuncTypeExpr>(NoPos, nullptr, params,
-                                                         results);
+                    typ = std::make_shared<FuncTypeExpr>(NoPos, nullptr, params, results);
                 } else {
                     V<SP<Expr>> list = {x};
                     if (atComma("type argument list", token_type::RBRACK)) {
                         exprLev_++;
                         next();
-                        while (tok_ != token_type::RBRACK &&
-                               tok_ != token_type::EOF_) {
+                        while (tok_ != token_type::RBRACK && tok_ != token_type::EOF_) {
                             list.push_back(parseType());
-                            if (!atComma("type argument list",
-                                         token_type::RBRACK)) {
+                            if (!atComma("type argument list", token_type::RBRACK)) {
                                 break;
                             }
                             next();
                         }
                         exprLev_--;
                     }
-                    auto rbrack =
-                        expectClosing(token_type::RBRACK, "type argument list");
-                    typ = packIndexExpr(std::shared_ptr<IdentExpr>(ident),
-                                        lbrack, list, rbrack);
+                    auto rbrack = expectClosing(token_type::RBRACK, "type argument list");
+                    typ = packIndexExpr(std::shared_ptr<IdentExpr>(ident), lbrack, list, rbrack);
                 }
                 break;
             }
@@ -878,8 +851,7 @@ SP<Field> parser::parseMethodSpec() {
                 auto [_, params] = parseParameters(false);
                 auto results = parseResult();
                 idents = {std::shared_ptr<IdentExpr>(ident)};
-                typ = std::make_shared<FuncTypeExpr>(NoPos, nullptr, params,
-                                                     results);
+                typ = std::make_shared<FuncTypeExpr>(NoPos, nullptr, params, results);
                 break;
             }
             default:
@@ -951,16 +923,14 @@ SP<InterfaceTypeExpr> parser::parseInterfaceType() {
             case token_type::TILDE: {
                 auto typ = embeddedElem(nullptr);
                 expectSemi();
-                list.push_back(
-                    std::make_shared<Field>(V<SP<IdentExpr>>{}, typ, nullptr));
+                list.push_back(std::make_shared<Field>(V<SP<IdentExpr>>{}, typ, nullptr));
                 break;
             }
             default: {
                 if (auto t = tryIdentOrType(); t != nullptr) {
                     auto typ = embeddedElem(t);
                     expectSemi();
-                    list.push_back(std::make_shared<Field>(V<SP<IdentExpr>>{},
-                                                           typ, nullptr));
+                    list.push_back(std::make_shared<Field>(V<SP<IdentExpr>>{}, typ, nullptr));
                 } else {
                     goto finish;
                 }
@@ -969,8 +939,8 @@ SP<InterfaceTypeExpr> parser::parseInterfaceType() {
     }
 finish:
     pos_t rbrace = expect(token_type::RBRACE);
-    return std::make_shared<InterfaceTypeExpr>(
-        pos, std::make_shared<FieldList>(lbrace, list, rbrace));
+    return std::make_shared<InterfaceTypeExpr>(pos,
+                                               std::make_shared<FieldList>(lbrace, list, rbrace));
 }
 
 SP<MapTypeExpr> parser::parseMapType() {
@@ -1000,8 +970,7 @@ SP<Expr> parser::parseTypeInstance(SP<Expr> typ) {
     if (list.empty()) {
         // TODO errorEcpected()
         return std::make_shared<IndexExpr>(
-            typ, opening, std::make_shared<BadExpr>(opening + 1, closing),
-            closing);
+            typ, opening, std::make_shared<BadExpr>(opening + 1, closing), closing);
     }
 
     return packIndexExpr(typ, opening, list, closing);
@@ -1055,8 +1024,8 @@ SP<Expr> parser::tryIdentOrType() {
 
 V<SP<Stmt>> parser::parseStmtList() {
     V<SP<Stmt>> list;
-    while (tok_ != token_type::CASE && tok_ != token_type::DEFAULT &&
-           tok_ != token_type::RBRACE && tok_ != token_type::EOF_) {
+    while (tok_ != token_type::CASE && tok_ != token_type::DEFAULT && tok_ != token_type::RBRACE &&
+           tok_ != token_type::EOF_) {
         auto stmt = parseStmt();
         list.push_back(stmt);
     }
@@ -1157,8 +1126,8 @@ SP<Expr> parser::parseIndexOrSliceOrInstance(SP<Expr> x) {
         // TODO errorExpected()
         pos_t rbrack = pos_;
         next();
-        return std::make_shared<IndexExpr>(
-            x, lbrack, std::make_shared<BadExpr>(rbrack, rbrack), rbrack);
+        return std::make_shared<IndexExpr>(x, lbrack, std::make_shared<BadExpr>(rbrack, rbrack),
+                                           rbrack);
     }
     exprLev_++;
 
@@ -1214,8 +1183,7 @@ SP<Expr> parser::parseIndexOrSliceOrInstance(SP<Expr> x) {
                 index[1] = std::make_shared<BadExpr>(colons[1], rbrack);
             }
         }
-        return std::make_shared<SliceExpr>(x, lbrack, index[0], index[1],
-                                           index[2], slice3, rbrack);
+        return std::make_shared<SliceExpr>(x, lbrack, index[0], index[1], index[2], slice3, rbrack);
     }
 
     if (args.size() == 0) {
@@ -1230,8 +1198,7 @@ SP<CallExpr> parser::parseCallOrConversion(SP<Expr> fun) {
     exprLev_++;
     V<SP<Expr>> list;
     pos_t ellipsis;
-    while (tok_ != token_type::RPAREN && tok_ != token_type::EOF_ &&
-           !ellipsis.IsValid()) {
+    while (tok_ != token_type::RPAREN && tok_ != token_type::EOF_ && !ellipsis.IsValid()) {
         list.push_back(parseRhs());
         if (tok_ == token_type::ELLIPSIS) {
             ellipsis = pos_;
@@ -1327,8 +1294,7 @@ SP<Expr> parser::parsePrimaryExpr(SP<Expr> x) {
                             next();
                         }
                         auto sel = IdentExpr(pos, "_");
-                        x = std::make_shared<SelectorExpr>(
-                            x, std::make_shared<IdentExpr>(sel));
+                        x = std::make_shared<SelectorExpr>(x, std::make_shared<IdentExpr>(sel));
                         break;
                     }
                 }
@@ -1344,8 +1310,7 @@ SP<Expr> parser::parsePrimaryExpr(SP<Expr> x) {
             }
             case token_type::LBRACE: {
                 auto t = unparen(x);
-                if (isOfType<BadExpr>(x.get()).second ||
-                    isOfType<IdentExpr>(x.get()).second ||
+                if (isOfType<BadExpr>(x.get()).second || isOfType<IdentExpr>(x.get()).second ||
                     isOfType<SelectorExpr>(x.get()).second) {
                     if (exprLev_ < 0) {
                         nestLev_ -= n;
@@ -1437,9 +1402,7 @@ SP<Expr> parser::parseBinaryExpr(SP<Expr> x, int prec1) {
     }
 }
 
-SP<Expr> parser::parseExpr() {
-    return parseBinaryExpr(nullptr, LowestPrec + 1);
-}
+SP<Expr> parser::parseExpr() { return parseBinaryExpr(nullptr, LowestPrec + 1); }
 
 SP<Expr> parser::parseRhs() {
     bool old = inRhs_;
@@ -1478,8 +1441,7 @@ std::pair<SP<Stmt>, bool> parser::parseSimpleStmt(int mode) {
                 (tok == token_type::DEFINE || tok == token_type::ASSIGN)) {
                 pos_t pos = pos_;
                 next();
-                y = {std::make_shared<UnaryExpr>(pos, token_type::RANGE,
-                                                 parseRhs())};
+                y = {std::make_shared<UnaryExpr>(pos, token_type::RANGE, parseRhs())};
                 isRange = true;
             } else {
                 y = parseList(true);
@@ -1498,8 +1460,8 @@ std::pair<SP<Stmt>, bool> parser::parseSimpleStmt(int mode) {
             next();
             if (auto [label, isIdent] = isOfType<IdentExpr>(x[0].get());
                 mode == labelOk && isIdent) {
-                auto stmt = std::make_shared<LabeledStmt>(
-                    std::shared_ptr<IdentExpr>(label), colon, parseStmt());
+                auto stmt = std::make_shared<LabeledStmt>(std::shared_ptr<IdentExpr>(label), colon,
+                                                          parseStmt());
                 return {stmt, false};
             }
             // TODO error()
@@ -1695,8 +1657,7 @@ bool parser::isTypeSwitchGuard(SP<Stmt> s) {
     if (auto [t, ok] = isOfType<ExprStmt>(s.get()); ok) {
         return isTypeSwitchAssert(t->X);
     } else if (auto [t, ok] = isOfType<AssignStmt>(s.get()); ok) {
-        if (t->Lhs.size() == 1 && t->Rhs.size() == 1 &&
-            isTypeSwitchAssert(t->Rhs[0])) {
+        if (t->Lhs.size() == 1 && t->Rhs.size() == 1 && isTypeSwitchAssert(t->Rhs[0])) {
             switch (tok_) {
                 case token_type::ASSIGN:
                 // TODO error()
@@ -1755,8 +1716,7 @@ SP<Stmt> parser::parseSwitchStmt() {
         return std::make_shared<TypeSwitchStmt>(pos, s1, s2, body);
     }
 
-    return std::make_shared<SwitchStmt>(
-        pos, s1, makeExpr(s2, "switch expression"), body);
+    return std::make_shared<SwitchStmt>(pos, s1, makeExpr(s2, "switch expression"), body);
 }
 
 SP<Stmt> parser::parseForStmt() {
@@ -1772,10 +1732,8 @@ SP<Stmt> parser::parseForStmt() {
             if (tok_ == token_type::RANGE) {
                 pos_t pos = pos_;
                 next();
-                V<SP<Expr>> y = {std::make_shared<UnaryExpr>(
-                    pos, token_type::RANGE, parseRhs())};
-                s2 = std::make_shared<AssignStmt>(V<SP<Expr>>{}, NoPos,
-                                                  token_type(), y);
+                V<SP<Expr>> y = {std::make_shared<UnaryExpr>(pos, token_type::RANGE, parseRhs())};
+                s2 = std::make_shared<AssignStmt>(V<SP<Expr>>{}, NoPos, token_type(), y);
                 isRange = true;
             } else {
                 std::tie(s2, isRange) = parseSimpleStmt(rangeOk);
@@ -1820,8 +1778,8 @@ SP<Stmt> parser::parseForStmt() {
         }
 
         auto x = isOfType<UnaryExpr>(as->Rhs[0].get()).first->X;
-        return std::make_shared<RangeStmt>(pos, key, value, as->TokPos, as->Tok,
-                                           as->Rhs[0]->Pos(), x, body);
+        return std::make_shared<RangeStmt>(pos, key, value, as->TokPos, as->Tok, as->Rhs[0]->Pos(),
+                                           x, body);
     }
 
     auto madeExpr = makeExpr(s2, "boolean or range expression");
@@ -1858,8 +1816,7 @@ SP<Stmt> parser::parseStmt() {
         case token_type::XOR:
         case token_type::NOT: {
             s = parseSimpleStmt(labelOk).first;
-            if (auto [_, isLabeledStmt] = isOfType<LabeledStmt>(s.get());
-                !isLabeledStmt) {
+            if (auto [_, isLabeledStmt] = isOfType<LabeledStmt>(s.get()); !isLabeledStmt) {
                 expectSemi();
             }
             break;
@@ -1938,8 +1895,7 @@ SP<Spec> parser::parseImportSpec(token_type _, int __) {
     expectSemi();
 
     auto spec = std::make_shared<ImportSpec>(
-        ident, std::make_shared<BasicLitExpr>(pos, token_type::STRING, path),
-        NoPos);
+        ident, std::make_shared<BasicLitExpr>(pos, token_type::STRING, path), NoPos);
 
     // TODO imports append
     return spec;
@@ -1980,8 +1936,8 @@ SP<Spec> parser::parseValueSpec(token_type keyword, int iota) {
     return spec;
 }
 
-void parser::parseGenericType(SP<TypeSpec> spec, pos_t openPos,
-                              SP<IdentExpr> name0, SP<Expr> typ0) {
+void parser::parseGenericType(SP<TypeSpec> spec, pos_t openPos, SP<IdentExpr> name0,
+                              SP<Expr> typ0) {
     auto list = parseParameterList(name0, typ0, token_type::RBRACK);
     pos_t closePos = expect(token_type::RBRACK);
     spec->TypeParams = std::make_shared<FieldList>(openPos, list, closePos);
@@ -1994,10 +1950,8 @@ void parser::parseGenericType(SP<TypeSpec> spec, pos_t openPos,
 }
 
 bool isTypeElem(SP<Expr> x) {
-    if (isOfType<ArrayTypeExpr>(x.get()).second ||
-        isOfType<StructTypeExpr>(x.get()).second ||
-        isOfType<FuncTypeExpr>(x.get()).second ||
-        isOfType<InterfaceTypeExpr>(x.get()).second ||
+    if (isOfType<ArrayTypeExpr>(x.get()).second || isOfType<StructTypeExpr>(x.get()).second ||
+        isOfType<FuncTypeExpr>(x.get()).second || isOfType<InterfaceTypeExpr>(x.get()).second ||
         isOfType<MapTypeExpr>(x.get()).second) {
         return true;
     } else if (auto [ptr, is] = isOfType<BinaryExpr>(x.get()); is) {
@@ -2023,8 +1977,7 @@ std::pair<SP<IdentExpr>, SP<Expr>> extractName(SP<Expr> x, bool force) {
                 }
                 break;
             case token_type::OR:
-                if (auto [name, lhs] =
-                        extractName(ptr->X, force || isTypeElem(ptr->Y));
+                if (auto [name, lhs] = extractName(ptr->X, force || isTypeElem(ptr->Y));
                     name != nullptr && lhs != nullptr) {
                     auto op = *ptr;
                     op.X = lhs;
@@ -2033,8 +1986,7 @@ std::pair<SP<IdentExpr>, SP<Expr>> extractName(SP<Expr> x, bool force) {
                 break;
         }
     } else if (auto [ptr, is] = isOfType<CallExpr>(x.get()); is) {
-        if (auto [name, _] = isOfType<IdentExpr>(ptr->Fun.get());
-            name != nullptr) {
+        if (auto [name, _] = isOfType<IdentExpr>(ptr->Fun.get()); name != nullptr) {
             if (ptr->Args.size() == 1 && ptr->Ellipsis == NoPos &&
                 (force || isTypeElem(ptr->Args[0]))) {
                 return {std::shared_ptr<IdentExpr>(name), ptr->Args[0]};
@@ -2060,8 +2012,7 @@ SP<Spec> parser::parseTypeSpec(token_type _, int __) {
                 exprLev_--;
             }
             if (auto [pname, ptype] = extractName(x, tok_ == token_type::COMMA);
-                pname != nullptr &&
-                (ptype != nullptr || tok_ != token_type::RBRACK)) {
+                pname != nullptr && (ptype != nullptr || tok_ != token_type::RBRACK)) {
                 parseGenericType(spec, lbrack, pname, ptype);
             } else {
                 spec->Type = parseArrayType(lbrack, x);
@@ -2089,8 +2040,7 @@ SP<GenDecl> parser::parseGenDecl(token_type keyword, parseSpecFunction f) {
     if (tok_ == token_type::LPAREN) {
         lparen = pos_;
         next();
-        for (int iota = 0;
-             tok_ != token_type::RPAREN && tok_ != token_type::EOF_; iota++) {
+        for (int iota = 0; tok_ != token_type::RPAREN && tok_ != token_type::EOF_; iota++) {
             list.push_back(f(keyword, iota));
         }
         rparen = expect(token_type::RPAREN);
@@ -2141,8 +2091,7 @@ SP<FuncDecl> parser::parseFuncDecl() {
     }
 
     auto decl = std::make_shared<FuncDecl>(
-        recv, ident,
-        std::make_shared<FuncTypeExpr>(pos, tparams, params, results), body);
+        recv, ident, std::make_shared<FuncTypeExpr>(pos, tparams, params, results), body);
     return decl;
 }
 
@@ -2196,9 +2145,8 @@ void parser::parseFile() {
 
     while (tok_ == token_type::IMPORT) {
         decls_.push_back(parseGenDecl(
-            token_type::IMPORT,
-            std::bind(&parser::parseImportSpec, this, std::placeholders::_1,
-                      std::placeholders::_2)));
+            token_type::IMPORT, std::bind(&parser::parseImportSpec, this, std::placeholders::_1,
+                                          std::placeholders::_2)));
     }
 
     auto prev = token_type::IMPORT;
