@@ -851,7 +851,7 @@ SP<Field> parser::parseMethodSpec() {
                 auto [_, params] = parseParameters(false);
                 auto results = parseResult();
                 idents.clear();
-                idents.push_back(std::shared_ptr<IdentExpr>(ident));
+                idents.push_back(std::make_shared<IdentExpr>(*ident));
                 typ = std::make_shared<FuncTypeExpr>(NoPos, nullptr, params, results);
                 break;
             }
