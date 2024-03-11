@@ -11,5 +11,5 @@ int main() {
     std::filesystem::path path = "f.txt";
     parser parser(path);
     parser.parseFile();
-    std::cout << "Done...\n";
+    std::cout << parser.getTreeStr();
 }

@@ -159,6 +159,14 @@ class parser {
     parser(const std::filesystem::path&);
     ~parser() {}
     void parseFile();
+    
+    std::string getTreeStr() const {
+        std::string tree;
+        for (const auto& decl : decls_) {
+            tree += decl->Print(0);
+        }
+        return tree;
+    }
 };
 
 SP<Expr> parser::packIndexExpr(SP<Expr> x, pos_t lbrack, V<SP<Expr>> exprs,
@@ -1350,8 +1358,7 @@ SP<Expr> parser::parsePrimaryExpr(SP<Expr> x) {
                     nestLev_ -= n;
                     return x;
                 }
-
-                if (*t != *x) {
+                if (*t != *x) {  // TODO !=
                     // TODO error()
                 }
                 x = parseLiteralValue(x);
@@ -1505,7 +1512,7 @@ std::pair<SP<Stmt>, bool> parser::parseSimpleStmt(int mode) {
 
 SP<CallExpr> parser::parseCallExpr(std::string callType) {
     auto x = parseRhs();
-    if (auto t = unparen(x); *t != *x) {
+    if (auto t = unparen(x); *t != *x) {  // TODO !=
         // TODO error()
         x = t;
     }

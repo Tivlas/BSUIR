@@ -255,6 +255,10 @@ struct Token {
             const auto tmp = token_position();
             return *this != tmp;
         }
+
+        std::string ToString() const {
+            return std::to_string(line) + ":" + std::to_string(col);
+        }
     };
 
     token_type type;
