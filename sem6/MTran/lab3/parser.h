@@ -204,6 +204,9 @@ void parser::incNestLev() {
 void parser::decNestLev() { nestLev_--; }
 
 void parser::next() {
+    if (cur_ >= tokens_.size() - 1) {
+        return;
+    }
     auto token = tokens_[++cur_];
     pos_ = token.pos;
     tok_ = token.type;
