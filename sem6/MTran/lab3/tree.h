@@ -1,4 +1,5 @@
 #pragma once
+#include <concepts>
 #include <memory>
 #include <vector>
 
@@ -34,10 +35,9 @@ const pos_t NoPos = pos_t();
 // TODO implement Pos method for each type
 
 template <class LHS, class RHS>
-bool compare(const LHS& lhs, const RHS& rhs) {
+bool sameType(const LHS& lhs, const RHS& rhs) {
     try {
         auto& casted = dynamic_cast<const LHS&>(rhs);
-        // return lhs == casted; // TODO comparison (function ???)
         return true;
     } catch (std::bad_cast& error) {
         return false;
@@ -51,36 +51,40 @@ struct Node {
     virtual pos_t End() const = 0;  // after
     virtual std::string Print(size_t shift) const = 0;
 
-    virtual bool operator==(const Node& rhs) const { return compare(*this, rhs); }
+    virtual bool operator==(const Node& rhs) const = 0;
 };
 
-struct Expr : Node {
-    // virtual void exprNode() const = 0;
-    /*     virtual bool operator==(const Node& rhs) const {
-            return compare(*this, rhs);
-        } */
-};
+bool onlyOneNull(SP<Node> a, SP<Node> b) {
+    return (a == nullptr && b != nullptr) || (a != nullptr && b == nullptr);
+}
 
-struct Stmt : Node {
-    // virtual void stmtNode() const = 0;
-    /* virtual bool operator==(const Node& rhs) const {
-        return compare(*this, rhs);
-    } */
-};
+bool bothNull(SP<Node> a, SP<Node> b) { return a == nullptr && b == nullptr; }
 
-struct Spec : Node {
-    // virtual void specNode() const = 0;
-    /* virtual bool operator==(const Node& rhs) const {
-        return compare(*this, rhs);
-    } */
-};
+bool equal(SP<Node> a, SP<Node> b) { return !onlyOneNull(a, b) && (bothNull(a, b) || *a == *b); }
 
-struct Decl : Node {
-    // virtual void declNode() const = 0;
-    /* virtual bool operator==(const Node& rhs) const {
-        return compare(*this, rhs);
-    } */
-};
+template <typename T>
+concept DerivedFromNode = std::derived_from<T, Node>;
+
+template <DerivedFromNode T>
+bool equal(V<SP<T>> a, V<SP<T>> b) {
+    if (a.size() != b.size()) {
+        return false;
+    }
+    for (size_t i = 0; i < a.size(); i++) {
+        if (!equal(a[i], b[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+struct Expr : Node {};
+
+struct Stmt : Node {};
+
+struct Spec : Node {};
+
+struct Decl : Node {};
 
 // Expressions
 struct BadExpr : Expr {
@@ -93,7 +97,13 @@ struct BadExpr : Expr {
 
     pos_t End() const override { return To; }
 
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const BadExpr&>(rhs);
+            return From == casted.From && To == casted.To;
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -113,7 +123,13 @@ struct IdentExpr : Expr {
 
     pos_t End() const override { return NamePos + Name.size(); }
 
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const IdentExpr&>(rhs);
+            return NamePos == casted.NamePos && Name == casted.Name;
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -139,7 +155,13 @@ struct EllipsisExpr : Expr {
         return Ellipsis + 3;
     }
 
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const EllipsisExpr&>(rhs);
+            return Ellipsis == casted.Ellipsis && equal(Elt, casted.Elt);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -164,7 +186,13 @@ struct BasicLitExpr : Expr {
 
     pos_t End() const override { return ValuePos + Value.size(); }
 
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const BasicLitExpr&>(rhs);
+            return ValuePos == casted.ValuePos && Kind == casted.Kind && Value == casted.Value;
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -184,6 +212,14 @@ struct Field : Node {
     V<SP<IdentExpr>> Names;  // field/method/(type) parameter names; or nullptr
     SP<Expr> Type;           // field/method/parameter type; or nullptr
     SP<BasicLitExpr> Tag;    // field tag; or nullptr
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const Field&>(rhs);
+            return equal(Names, casted.Names) && equal(Type, casted.Type) && equal(Tag, casted.Tag);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -226,8 +262,6 @@ struct Field : Node {
         }
         return NoPos;
     }
-
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 // A FieldList represents a list of Fields, enclosed by parentheses,
@@ -236,6 +270,15 @@ struct FieldList : Node {
     pos_t Opening;      // position of opening parenthesis/brace/bracket, if any
     V<SP<Field>> List;  // field list; or nullptr
     pos_t Closing;      // position of closing parenthesis/brace/bracket, if any
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const FieldList&>(rhs);
+            return Opening == casted.Opening && Closing == casted.Closing &&
+                   equal(List, casted.List);
+        }
+        return false;
+    }
 
     FieldList(pos_t opening, V<SP<Field>> list, pos_t closing)
         : Opening(opening), List(list), Closing(closing) {}
@@ -276,8 +319,6 @@ struct FieldList : Node {
         }
         return n;
     }
-
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct FuncTypeExpr : Expr {
@@ -286,6 +327,15 @@ struct FuncTypeExpr : Expr {
     SP<FieldList> TypeParams;  // type parameters; or nullptr
     SP<FieldList> Params;      // (incoming) parameters; non-nullptr
     SP<FieldList> Results;     // (outgoing) results; or nullptr
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const FuncTypeExpr&>(rhs);
+            return Func == casted.Func && equal(TypeParams, casted.TypeParams) &&
+                   equal(Params, casted.Params) && equal(Results, casted.Results);
+        }
+        return false;
+    }
 
     FuncTypeExpr(pos_t pos, SP<FieldList> tps, SP<FieldList> ps, SP<FieldList> rs)
         : Func(pos), TypeParams(tps), Params(ps), Results(rs) {}
@@ -315,8 +365,6 @@ struct FuncTypeExpr : Expr {
         }
         return Params->End();
     }
-
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct BlockStmt : Stmt {
@@ -337,7 +385,13 @@ struct BlockStmt : Stmt {
 
     BlockStmt(pos_t l, V<SP<Stmt>> list, pos_t r) : Lbrace(l), List(list), Rbrace(r) {}
 
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const BlockStmt&>(rhs);
+            return Lbrace == casted.Lbrace && Rbrace == casted.Lbrace && equal(List, casted.List);
+        }
+        return false;
+    }
 
     pos_t Pos() const override { return Lbrace; }
 
@@ -354,6 +408,14 @@ struct BlockStmt : Stmt {
 struct FuncLitExpr : Expr {
     SP<FuncTypeExpr> Type;
     SP<BlockStmt> Body;
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const FuncLitExpr&>(rhs);
+            return equal(Type, casted.Type) && equal(Body, casted.Body);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -372,8 +434,6 @@ struct FuncLitExpr : Expr {
     pos_t Pos() const override { return Type->Pos(); }
 
     pos_t End() const override { return Body->End(); }
-
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct CompositeLitExpr : Expr {  // structs literals, slice literals, etc
@@ -383,6 +443,15 @@ struct CompositeLitExpr : Expr {  // structs literals, slice literals, etc
     pos_t Rbrace;
     bool Incomplete;  // true if (source) expressions are missing in the
                       // Elts list
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const CompositeLitExpr&>(rhs);
+            return Lbrace == casted.Lbrace && Incomplete == casted.Incomplete &&
+                   Rbrace == casted.Rbrace && equal(Type, casted.Type) && equal(Elts, casted.Elts);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -404,14 +473,20 @@ struct CompositeLitExpr : Expr {  // structs literals, slice literals, etc
     pos_t Pos() const override { return Type != nullptr ? Type->Pos() : Lbrace; }
 
     pos_t End() const override { return Rbrace + 1; }
-
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct ParenExpr : Expr {
     pos_t Lparen;
     SP<Expr> X;
     pos_t Rparen;
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const ParenExpr&>(rhs);
+            return Lparen == casted.Lparen && Rparen == casted.Rparen && equal(X, casted.X);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -427,13 +502,19 @@ struct ParenExpr : Expr {
     pos_t Pos() const override { return Lparen; }
 
     pos_t End() const override { return Rparen + 1; }
-
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct SelectorExpr : Expr {
     SP<Expr> X;
     SP<IdentExpr> Sel;  // field selector
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const SelectorExpr&>(rhs);
+            return equal(X, casted.X) && equal(Sel, casted.Sel);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -453,8 +534,6 @@ struct SelectorExpr : Expr {
     pos_t Pos() const override { return X->Pos(); }
 
     pos_t End() const override { return Sel->End(); }
-
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct IndexExpr : Expr {
@@ -462,6 +541,15 @@ struct IndexExpr : Expr {
     pos_t Lbrack;
     SP<Expr> Index;
     pos_t Rbrack;
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const IndexExpr&>(rhs);
+            return Lbrack == casted.Lbrack && Rbrack == casted.Rbrack && equal(X, casted.X) &&
+                   equal(Index, casted.Index);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -481,8 +569,6 @@ struct IndexExpr : Expr {
     pos_t Pos() const override { return X->Pos(); }
 
     pos_t End() const override { return Rbrack + 1; }
-
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct IndexListExpr : Expr {
@@ -490,6 +576,15 @@ struct IndexListExpr : Expr {
     pos_t Lbrack;
     V<SP<Expr>> Indeces;
     pos_t Rbrack;
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const IndexListExpr&>(rhs);
+            return Lbrack == casted.Lbrack && Rbrack == casted.Rbrack && equal(X, casted.X) &&
+                   equal(Indeces, casted.Indeces);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -511,8 +606,6 @@ struct IndexListExpr : Expr {
     pos_t Pos() const override { return X->Pos(); }
 
     pos_t End() const override { return Rbrack + 1; }
-
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct SliceExpr : Expr {
@@ -523,6 +616,16 @@ struct SliceExpr : Expr {
     SP<Expr> Max;   // maximum capacity of slice; or nullptr
     bool Slice3;    // true if 3-index slice (2 colons present)
     pos_t Rbrack;
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const SliceExpr&>(rhs);
+            return Lbrack == casted.Lbrack && Rbrack == casted.Rbrack && Slice3 == casted.Slice3 &&
+                   equal(X, casted.X) && equal(Low, casted.Low) && equal(High, casted.High) &&
+                   equal(Max, casted.Max);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -549,8 +652,6 @@ struct SliceExpr : Expr {
     pos_t Pos() const override { return X->Pos(); }
 
     pos_t End() const override { return Rbrack + 1; }
-
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct TypeAssertExpr : Expr {
@@ -558,6 +659,15 @@ struct TypeAssertExpr : Expr {
     SP<Expr> Type;  // asserted type; nullptr means type switch X.(type)
     pos_t Lparen;
     pos_t Rparen;
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const TypeAssertExpr&>(rhs);
+            return Lparen == casted.Lparen && Rparen == casted.Rparen && equal(X, casted.X) &&
+                   equal(Type, casted.Type);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -577,8 +687,6 @@ struct TypeAssertExpr : Expr {
     pos_t Pos() const override { return X->Pos(); }
 
     pos_t End() const override { return Rparen + 1; }
-
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct CallExpr : Expr {
@@ -587,6 +695,15 @@ struct CallExpr : Expr {
     V<SP<Expr>> Args;        // function arguments; or nullptr
     pos_t Ellipsis = NoPos;  // position of "..." (token.NoPos if there is no "...")
     pos_t Rparen;
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const CallExpr&>(rhs);
+            return Lparen == casted.Lparen && Ellipsis == casted.Ellipsis &&
+                   Rparen == casted.Rparen && equal(Args, casted.Args) && equal(Fun, casted.Fun);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -608,13 +725,19 @@ struct CallExpr : Expr {
     pos_t Pos() const override { return Fun->Pos(); }
 
     pos_t End() const override { return Rparen + 1; }
-
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct StarExpr : Expr {
     pos_t Star;
     SP<Expr> X;  // operand (*ptr)
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const StarExpr&>(rhs);
+            return Star == casted.Star && equal(X, casted.X);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -630,14 +753,20 @@ struct StarExpr : Expr {
     pos_t Pos() const override { return Star; }
 
     pos_t End() const override { return X->End(); }
-
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct UnaryExpr : Expr {
     pos_t OpPos;    // position of Op
     token_type Op;  // operator
     SP<Expr> X;     // operand
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const UnaryExpr&>(rhs);
+            return OpPos == casted.OpPos && Op == casted.Op && equal(X, casted.X);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -655,8 +784,6 @@ struct UnaryExpr : Expr {
     pos_t Pos() const override { return OpPos; }
 
     pos_t End() const override { return X->End(); }
-
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct BinaryExpr : Expr {
@@ -664,6 +791,15 @@ struct BinaryExpr : Expr {
     pos_t OpPos;    // position of Op
     token_type Op;  // operator
     SP<Expr> Y;     // right operand
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const BinaryExpr&>(rhs);
+            return OpPos == casted.OpPos && Op == casted.Op && equal(X, casted.X) &&
+                   equal(Y, casted.Y);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -684,8 +820,6 @@ struct BinaryExpr : Expr {
     pos_t Pos() const override { return X->Pos(); }
 
     pos_t End() const override { return Y->End(); }
-
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 // A KeyValueExpr node represents (key : value) pairs
@@ -695,6 +829,14 @@ struct KeyValueExpr : Expr {
     SP<Expr> Key;
     pos_t Colon;  // position of ':'
     SP<Expr> Value;
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const KeyValueExpr&>(rhs);
+            return Colon == casted.Colon && equal(Key, casted.Key) && equal(Value, casted.Value);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -713,14 +855,20 @@ struct KeyValueExpr : Expr {
     pos_t Pos() const override { return Key->Pos(); }
 
     pos_t End() const override { return Value->End(); }
-
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct ArrayTypeExpr : Expr {
     pos_t Lbrack;
     SP<Expr> Len;  // ellipsis node for [...]T arrays, nullptr for slice
     SP<Expr> Elt;  // elem type
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const ArrayTypeExpr&>(rhs);
+            return Lbrack == casted.Lbrack && equal(Len, casted.Len) && equal(Elt, casted.Elt);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -740,15 +888,22 @@ struct ArrayTypeExpr : Expr {
     pos_t Pos() const override { return Lbrack; }
 
     pos_t End() const override { return Elt->End(); }
-
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct StructTypeExpr : Expr {
     pos_t Struct;             // pos of struct keyword
     SP<FieldList> Fields;     // list of field declarations
     bool Incomplete = false;  // true if (source) fields are missing in the
-                              // Fields list
+    // Fields list
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const StructTypeExpr&>(rhs);
+            return Struct == casted.Struct && Incomplete == casted.Incomplete &&
+                   equal(Fields, casted.Fields);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -764,8 +919,6 @@ struct StructTypeExpr : Expr {
     pos_t Pos() const override { return Struct; }
 
     pos_t End() const override { return Fields->End(); }
-
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct InterfaceTypeExpr : Expr {
@@ -773,6 +926,15 @@ struct InterfaceTypeExpr : Expr {
     SP<FieldList> Methods;  // list of embedded interfaces, methods, or types
     bool Incomplete;        // true if (source) methods or types are missing in
     // the Methods list
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const InterfaceTypeExpr&>(rhs);
+            return Interface == casted.Interface && Incomplete == casted.Incomplete &&
+                   equal(Methods, casted.Methods);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -788,14 +950,20 @@ struct InterfaceTypeExpr : Expr {
     pos_t Pos() const override { return Interface; }
 
     pos_t End() const override { return Methods->End(); }
-
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct MapTypeExpr : Expr {
     pos_t Map;  // pos of map keyword
     SP<Expr> Key;
     SP<Expr> Value;
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const MapTypeExpr&>(rhs);
+            return Map == casted.Map && equal(Key, casted.Key) && equal(Value, casted.Value);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -814,8 +982,6 @@ struct MapTypeExpr : Expr {
     pos_t Pos() const override { return Map; }
 
     pos_t End() const override { return Value->End(); }
-
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 // end Expressions
 
@@ -823,6 +989,14 @@ struct MapTypeExpr : Expr {
 struct BadStmt : Stmt {
     pos_t From;
     pos_t To;
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const BadStmt&>(rhs);
+            return From == casted.From && To == casted.To;
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -835,12 +1009,18 @@ struct BadStmt : Stmt {
     pos_t Pos() const override { return From; }
 
     pos_t End() const override { return To; }
-
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 };
 
 struct DeclStmt : Stmt {
     SP<Decl> Decl_;
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const DeclStmt&>(rhs);
+            return equal(Decl_, casted.Decl_);
+        }
+        return false;
+    }
 
     DeclStmt(SP<Decl> decl) : Decl_(decl) {}
 
@@ -853,8 +1033,6 @@ struct DeclStmt : Stmt {
         return res;
     }
 
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
-
     pos_t Pos() const override { return Decl_->Pos(); }
 
     pos_t End() const override { return Decl_->End(); }
@@ -864,6 +1042,15 @@ struct LabeledStmt : Stmt {
     SP<IdentExpr> Label;
     pos_t Colon;
     SP<Stmt> Stmt_;
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const LabeledStmt&>(rhs);
+            return Colon == casted.Colon && equal(Label, casted.Label) &&
+                   equal(Stmt_, casted.Stmt_);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -880,8 +1067,6 @@ struct LabeledStmt : Stmt {
     LabeledStmt(SP<IdentExpr> lbl, pos_t pos, SP<Stmt> stmt)
         : Label(lbl), Colon(pos), Stmt_(stmt) {}
 
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
-
     pos_t Pos() const override { return Label->Pos(); }
 
     pos_t End() const override { return Stmt_->End(); }
@@ -889,6 +1074,14 @@ struct LabeledStmt : Stmt {
 
 struct ExprStmt : Stmt {
     SP<Expr> X;
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const ExprStmt&>(rhs);
+            return equal(X, casted.X);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -900,8 +1093,6 @@ struct ExprStmt : Stmt {
     }
 
     ExprStmt(SP<Expr> x) : X(x) {}
-
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override { return X->Pos(); }
 
@@ -915,6 +1106,14 @@ struct IncDecStmt : Stmt {
     pos_t TokPos;
     token_type Tok;  // inc or dec
 
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const IncDecStmt&>(rhs);
+            return TokPos == casted.TokPos && Tok == casted.Tok && equal(X, casted.X);
+        }
+        return false;
+    }
+
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
         res += "IncDecStmt:\n";
@@ -927,8 +1126,6 @@ struct IncDecStmt : Stmt {
 
     IncDecStmt(SP<Expr> x, pos_t pos, token_type tok) : X(x), TokPos(pos), Tok(tok) {}
 
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
-
     pos_t Pos() const override { return X->Pos(); }
 
     pos_t End() const override { return TokPos + 2; }
@@ -939,6 +1136,15 @@ struct AssignStmt : Stmt {
     pos_t TokPos;
     token_type Tok;  // assignment token, DEFINE token
     V<SP<Expr>> Rhs;
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const AssignStmt&>(rhs);
+            return TokPos == casted.TokPos && Tok == casted.Tok && equal(Lhs, casted.Lhs) &&
+                   equal(Rhs, casted.Rhs);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -960,8 +1166,6 @@ struct AssignStmt : Stmt {
     AssignStmt(V<SP<Expr>> lhs, pos_t pos, token_type tok, V<SP<Expr>> rhs)
         : Lhs(lhs), TokPos(pos), Tok(tok), Rhs(rhs) {}
 
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
-
     pos_t Pos() const override { return Lhs[0]->Pos(); }
 
     pos_t End() const override { return Rhs.back()->End(); }
@@ -972,6 +1176,14 @@ struct AssignStmt : Stmt {
 struct DeferStmt : Stmt {
     pos_t Defer;  // pos of defer keyword
     SP<CallExpr> Call;
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const DeferStmt&>(rhs);
+            return Defer == casted.Defer && equal(Call, casted.Call);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -984,8 +1196,6 @@ struct DeferStmt : Stmt {
 
     DeferStmt(pos_t pos, SP<CallExpr> call) : Defer(pos), Call(call) {}
 
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
-
     pos_t Pos() const override { return Defer; }
 
     pos_t End() const override { return Call->End(); }
@@ -994,6 +1204,14 @@ struct DeferStmt : Stmt {
 struct ReturnStmt : Stmt {
     pos_t Return;
     V<SP<Expr>> Results;
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const ReturnStmt&>(rhs);
+            return Return == casted.Return && equal(Results, casted.Results);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -1007,7 +1225,6 @@ struct ReturnStmt : Stmt {
     }
 
     ReturnStmt(pos_t pos, V<SP<Expr>> res) : Return(pos), Results(res) {}
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override { return Return; }
 
@@ -1024,6 +1241,14 @@ struct BranchStmt : Stmt {
     token_type Tok;  // keyword token (BREAK, CONTINUE, GOTO, FALLTHROUGH)
     SP<IdentExpr> Label;
 
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const BranchStmt&>(rhs);
+            return TokPos == casted.TokPos && Tok == casted.Tok && equal(Label, casted.Label);
+        }
+        return false;
+    }
+
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
         res += "BranchStmt:\n";
@@ -1035,8 +1260,6 @@ struct BranchStmt : Stmt {
     }
 
     BranchStmt(pos_t pos, token_type tok, SP<IdentExpr> lbl) : TokPos(pos), Tok(tok), Label(lbl) {}
-
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override { return TokPos; }
 
@@ -1054,6 +1277,15 @@ struct IfStmt : Stmt {
     SP<Expr> Cond;  // condition
     SP<BlockStmt> Body;
     SP<Stmt> Else;
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const IfStmt&>(rhs);
+            return If == casted.If && equal(Init, casted.Init) && equal(Cond, casted.Cond) &&
+                   equal(Body, casted.Body) && equal(Else, casted.Else);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -1075,7 +1307,6 @@ struct IfStmt : Stmt {
 
     IfStmt(pos_t pos, SP<Stmt> init, SP<Expr> cond, SP<BlockStmt> body, SP<Stmt> els)
         : If(pos), Init(init), Cond(cond), Body(body), Else(els) {}
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override { return If; }
 
@@ -1092,6 +1323,15 @@ struct CaseClauseStmt : Stmt {
     V<SP<Expr>> List;  // list of expressions or types; nullptr means default case
     pos_t Colon;
     V<SP<Stmt>> Body;
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const CaseClauseStmt&>(rhs);
+            return Case == casted.Case && Colon == casted.Colon && equal(List, casted.List) &&
+                   equal(Body, casted.Body);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -1112,8 +1352,6 @@ struct CaseClauseStmt : Stmt {
     CaseClauseStmt(pos_t pos, V<SP<Expr>> list, pos_t colon, V<SP<Stmt>> body)
         : Case(pos), List(list), Colon(colon), Body(body) {}
 
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
-
     pos_t Pos() const override { return Case; }
 
     pos_t End() const override {
@@ -1129,6 +1367,15 @@ struct SwitchStmt : Stmt {
     SP<Stmt> Init;  // initialization statement; or nullptr
     SP<Expr> Tag;
     SP<BlockStmt> Body;
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const SwitchStmt&>(rhs);
+            return Switch == casted.Switch && equal(Init, casted.Init) && equal(Tag, casted.Tag) &&
+                   equal(Body, casted.Body);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -1148,8 +1395,6 @@ struct SwitchStmt : Stmt {
     SwitchStmt(pos_t pos, SP<Stmt> init, SP<Expr> tag, SP<BlockStmt> body)
         : Switch(pos), Init(init), Tag(tag), Body(body) {}
 
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
-
     pos_t Pos() const override { return Switch; }
 
     pos_t End() const override { return Body->End(); }
@@ -1160,6 +1405,15 @@ struct TypeSwitchStmt : Stmt {
     SP<Stmt> Init;       // initialization statement; or nullptr
     SP<Stmt> Assign;     // x := y.(type) or y.(type)
     SP<BlockStmt> Body;  // CaseClauses only
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const TypeSwitchStmt&>(rhs);
+            return Switch == casted.Switch && equal(Init, casted.Init) &&
+                   equal(Assign, casted.Assign) && equal(Body, casted.Body);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -1179,8 +1433,6 @@ struct TypeSwitchStmt : Stmt {
     TypeSwitchStmt(pos_t pos, SP<Stmt> init, SP<Stmt> assign, SP<BlockStmt> body)
         : Switch(pos), Init(init), Assign(assign), Body(body) {}
 
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
-
     pos_t Pos() const override { return Switch; }
 
     pos_t End() const override { return Body->End(); }
@@ -1196,6 +1448,15 @@ struct ForStmt : Stmt {
     SP<Expr> Cond;
     SP<Stmt> Post;  // post iteration statement; or nullptr
     SP<BlockStmt> Body;
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const ForStmt&>(rhs);
+            return For == casted.For && equal(Init, casted.Init) && equal(Cond, casted.Cond) &&
+                   equal(Post, casted.Post) && equal(Body, casted.Body);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -1218,8 +1479,6 @@ struct ForStmt : Stmt {
     ForStmt(pos_t forPos, SP<Stmt> init, SP<Expr> cond, SP<Stmt> post, SP<BlockStmt> body)
         : For(forPos), Init(init), Cond(cond), Post(post), Body(body) {}
 
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
-
     pos_t Pos() const override { return For; }
 
     pos_t End() const override { return Body->End(); }
@@ -1234,6 +1493,16 @@ struct RangeStmt : Stmt {
     pos_t Range;
     SP<Expr> X;
     SP<BlockStmt> Body;
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const RangeStmt&>(rhs);
+            return For == casted.For && TokPos == casted.TokPos && Tok == casted.Tok &&
+                   Range == casted.Range && equal(Key, casted.Key) && equal(Value, casted.Value) &&
+                   equal(X, casted.X) && equal(Body, casted.Body);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -1267,8 +1536,6 @@ struct RangeStmt : Stmt {
           X(x),
           Body(body) {}
 
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
-
     pos_t Pos() const override { return For; }
 
     pos_t End() const override { return Body->End(); }
@@ -1278,6 +1545,14 @@ struct EmptyStmt : Stmt {
     pos_t Semicolon;
     bool Implicit;
 
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const EmptyStmt&>(rhs);
+            return Semicolon == casted.Semicolon && Implicit == casted.Implicit;
+        }
+        return false;
+    }
+
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
         res += "EmptyStmt:\n";
@@ -1285,8 +1560,6 @@ struct EmptyStmt : Stmt {
     }
 
     EmptyStmt(pos_t sc, bool implicit) : Semicolon(sc), Implicit(implicit) {}
-
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override { return Semicolon; }
 
@@ -1310,6 +1583,14 @@ struct ImportSpec : Spec {
     SP<BasicLitExpr> Path;  // import path
     pos_t EndPos;
 
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const ImportSpec&>(rhs);
+            return EndPos == casted.EndPos && equal(Name, casted.Name) && equal(Path, casted.Path);
+        }
+        return false;
+    }
+
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
         res += "ImportSpec:\n";
@@ -1324,8 +1605,6 @@ struct ImportSpec : Spec {
 
     ImportSpec(SP<IdentExpr> name, SP<BasicLitExpr> path, pos_t endPos)
         : Name(name), Path(path), EndPos(endPos) {}
-
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override {
         if (Name != nullptr) {
@@ -1350,6 +1629,15 @@ struct ValueSpec : Spec {
     SP<Expr> Type;           // value type; or nullptr
     V<SP<Expr>> Values;      // initial values; or nullptr
 
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const ValueSpec&>(rhs);
+            return equal(Names, casted.Names) && equal(Type, casted.Type) &&
+                   equal(Values, casted.Values);
+        }
+        return false;
+    }
+
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
         res += "ValueSpec:\n";
@@ -1372,8 +1660,6 @@ struct ValueSpec : Spec {
     ValueSpec(V<SP<IdentExpr>> names, SP<Expr> type, V<SP<Expr>> values)
         : Names(names), Type(type), Values(values) {}
 
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
-
     pos_t Pos() const override { return Names[0]->Pos(); }
 
     pos_t End() const override {
@@ -1393,7 +1679,16 @@ struct TypeSpec : Spec {
     SP<FieldList> TypeParams;
     pos_t Assign;   // position of '=', if any
     SP<Expr> Type;  // IdentExpr, ParenExpr, SelectorExpr, StarExpr, or any of
-    // the XxxTypes
+                    // the XxxTypes
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const TypeSpec&>(rhs);
+            return Assign == casted.Assign && equal(Name, casted.Name) &&
+                   equal(TypeParams, casted.TypeParams) && equal(Type, casted.Type);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -1413,8 +1708,6 @@ struct TypeSpec : Spec {
     TypeSpec(SP<IdentExpr> name, SP<FieldList> typeParams, pos_t assign, SP<Expr> type)
         : Name(name), TypeParams(typeParams), Assign(assign), Type(type) {}
 
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
-
     pos_t Pos() const override { return Name->Pos(); }
 
     pos_t End() const override { return Type->End(); }
@@ -1428,6 +1721,14 @@ struct BadDecl : Decl {
     pos_t From;
     pos_t To;
 
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const BadDecl&>(rhs);
+            return From == casted.From && To == casted.To;
+        }
+        return false;
+    }
+
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
         res += "BadDecl:\n";
@@ -1435,8 +1736,6 @@ struct BadDecl : Decl {
     }
 
     BadDecl(pos_t from, pos_t to) : From(from), To(to) {}
-
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override { return From; }
 
@@ -1449,6 +1748,15 @@ struct GenDecl : Decl {
     pos_t Lparen;
     pos_t Rparen;
     V<SP<Spec>> Specs;
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const GenDecl&>(rhs);
+            return TokPos == casted.TokPos && Tok == casted.Tok && Lparen == casted.Lparen &&
+                   Rparen == casted.Rparen && equal(Specs, casted.Specs);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -1463,8 +1771,6 @@ struct GenDecl : Decl {
 
     GenDecl(pos_t tokPos, token_type tok, pos_t lparen, V<SP<Spec>> specs, pos_t rparen)
         : TokPos(tokPos), Tok(tok), Lparen(lparen), Rparen(rparen), Specs(specs) {}
-
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override { return TokPos; }
 
@@ -1482,6 +1788,15 @@ struct FuncDecl : Decl {
     SP<FuncTypeExpr> Type;  // function signature: type and value parameters,
                             // results, and position of "func" keyword
     SP<BlockStmt> Body;
+
+    virtual bool operator==(const Node& rhs) const override {
+        if (sameType(*this, rhs)) {
+            auto& casted = dynamic_cast<const FuncDecl&>(rhs);
+            return equal(Recv, casted.Recv) && equal(Name, casted.Name) &&
+                   equal(Type, casted.Type) && equal(Body, casted.Body);
+        }
+        return false;
+    }
 
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
@@ -1503,8 +1818,6 @@ struct FuncDecl : Decl {
 
     FuncDecl(SP<FieldList> recv, SP<IdentExpr> name, SP<FuncTypeExpr> type, SP<BlockStmt> body)
         : Recv(recv), Name(name), Type(type), Body(body) {}
-
-    virtual bool operator==(const Node& rhs) const override { return compare(*this, rhs); }
 
     pos_t Pos() const override { return Type->Pos(); }
 
