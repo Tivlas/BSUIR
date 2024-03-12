@@ -4,8 +4,16 @@ type summer interface {
     sum(nums []int) int;
 }
 
-type calculator struct {
+type Emb struct {
+    a, b int
+    str string
+}
 
+type MyFunc func(int) int
+
+type calculator struct {
+    Emb
+    Function MyFunc
 }
 
 func (c *calculator) sum(sl []int) (s int) {
@@ -36,7 +44,7 @@ func main() {
         b = 5
     }
 
-    var sl []int = []int{1,2,3}
+    var sl []int = []int{1,2,      3}
     for i, val := range sl {
         val++
     }  
@@ -45,7 +53,33 @@ func main() {
     if val, ok := mp[10]; ok {
         a += val
         if val > a {
-            b = val
+            b++
         }
+    }
+
+    grade := 'B'
+
+    switch grade {
+    case 'A':
+        fmt.Println("Excellent!")
+    case 'B':
+        fmt.Println("Very good!")
+    case 'C':
+        fmt.Println("Good!")
+    default:
+        fmt.Println("Keep trying!")
+    }
+
+    var value interface{} = 42
+
+    switch v := value.(type) {
+    case int:
+        fmt.Println("value is an int:", v)
+    case string:
+        fmt.Println("value is a string:", v)
+    case bool:
+        fmt.Println("value is a bool:", v)
+    default:
+        fmt.Println("unknown type:", v)
     }
 }

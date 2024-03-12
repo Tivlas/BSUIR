@@ -1659,7 +1659,7 @@ bool parser::isTypeSwitchGuard(SP<Stmt> s) {
         return isTypeSwitchAssert(t->X);
     } else if (auto [t, ok] = isOfType<AssignStmt>(s.get()); ok) {
         if (t->Lhs.size() == 1 && t->Rhs.size() == 1 && isTypeSwitchAssert(t->Rhs[0])) {
-            switch (tok_) {
+            switch (t->Tok) {
                 case token_type::ASSIGN:
                 // TODO error()
                 // no break intentionally
