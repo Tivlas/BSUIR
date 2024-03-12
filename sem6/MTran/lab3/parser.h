@@ -7,10 +7,6 @@
 #include "lexer.h"
 #include "tree.h"
 
-// TODO check all switch case var decls (use {} instead of outer declaration)
-// TODO != check
-// TODO IMPORTANT interface comparison (check all == usage)
-// TODO shared_ptr -> make_shared
 using parseSpecFunction = std::function<SP<Spec>(token_type keyword, int iota)>;
 
 template <typename T>
@@ -449,12 +445,9 @@ std::pair<SP<IdentExpr>, SP<Expr>> parser::parseArrayFieldOrTypeInstance(SP<Iden
 SP<Field> parser::parseFieldDecl() {
     V<SP<IdentExpr>> names;
     SP<Expr> typ;
-    SP<IdentExpr> name = nullptr;
-    pos_t star = NoPos;
-    pos_t pos = NoPos;
     switch (tok_) {
-        case token_type::IDENT:
-            name = parseIdent();
+        case token_type::IDENT: {
+            auto name = parseIdent();
             if (tok_ == token_type::PERIOD || tok_ == token_type::STRING ||
                 tok_ == token_type::SEMICOLON || tok_ == token_type::RBRACE) {
                 // embedded type
@@ -484,8 +477,9 @@ SP<Field> parser::parseFieldDecl() {
                 }
             }
             break;
-        case token_type::MUL:
-            star = pos_;
+        }
+        case token_type::MUL: {
+            auto star = pos_;
             next();
             if (tok_ == token_type::LPAREN) {
                 // *(T)
@@ -502,12 +496,13 @@ SP<Field> parser::parseFieldDecl() {
             }
             typ = std::make_shared<StarExpr>(star, typ);
             break;
-        case token_type::LPAREN:
+        }
+        case token_type::LPAREN: {
             error(pos_, "cannot parenthesize embedded type");
             next();
             if (tok_ == token_type::MUL) {
                 // (*T)
-                star = pos_;
+                auto star = pos_;
                 next();
                 typ = std::make_shared<StarExpr>(star, parseQualifiedIdent(nullptr));
             } else {
@@ -519,12 +514,14 @@ SP<Field> parser::parseFieldDecl() {
                 next();
             }
             break;
-        default:
-            pos = pos_;
+        }
+        default: {
+            auto pos = pos_;
             errorExpected(pos, "field name or embedded type");
             advance(exprEnd);
             typ = std::make_shared<BadExpr>(pos, pos_);
             break;
+        }
     }
 
     SP<BasicLitExpr> tag;
@@ -833,14 +830,14 @@ SP<Field> parser::parseMethodSpec() {
                     // Interface methods do not have type parameters. We parse
                     // them for a better error message and improved error
                     // recovery.
-                    parseParameterList(std::shared_ptr<IdentExpr>(name0), nullptr,
+                    parseParameterList(std::make_shared<IdentExpr>(*name0), nullptr,
                                        token_type::RBRACK);
                     expect(token_type::RBRACK);
                     error(lbrack, "interface method must have no type parameters");
 
                     auto [_, params] = parseParameters(false);
                     auto results = parseResult();
-                    idents = {std::shared_ptr<IdentExpr>(ident)};
+                    idents = {std::make_shared<IdentExpr>(*ident)};
                     typ = std::make_shared<FuncTypeExpr>(NoPos, nullptr, params, results);
                 } else {
                     V<SP<Expr>> list = {x};
@@ -857,7 +854,7 @@ SP<Field> parser::parseMethodSpec() {
                         exprLev_--;
                     }
                     auto rbrack = expectClosing(token_type::RBRACK, "type argument list");
-                    typ = packIndexExpr(std::shared_ptr<IdentExpr>(ident), lbrack, list, rbrack);
+                    typ = packIndexExpr(std::make_shared<IdentExpr>(*ident), lbrack, list, rbrack);
                 }
                 break;
             }
@@ -1344,7 +1341,7 @@ SP<Expr> parser::parsePrimaryExpr(SP<Expr> x) {
                     nestLev_ -= n;
                     return x;
                 }
-                if (*t != *x) {  // TODO !=
+                if ((!t && x) || !(!t && !x) && *t != *x) {  
                     error(t->Pos(), "cannot parenthesize type in composite literal");
                 }
                 x = parseLiteralValue(x);
@@ -1475,8 +1472,8 @@ std::pair<SP<Stmt>, bool> parser::parseSimpleStmt(int mode) {
             next();
             if (auto [label, isIdent] = isOfType<IdentExpr>(x[0].get());
                 mode == labelOk && isIdent) {
-                auto stmt = std::make_shared<LabeledStmt>(std::shared_ptr<IdentExpr>(label), colon,
-                                                          parseStmt());
+                auto stmt = std::make_shared<LabeledStmt>(std::make_shared<IdentExpr>(*label),
+                                                          colon, parseStmt());
                 return {stmt, false};
             }
             error(colon, "illegal label declaration");
@@ -1495,12 +1492,12 @@ std::pair<SP<Stmt>, bool> parser::parseSimpleStmt(int mode) {
 
 SP<CallExpr> parser::parseCallExpr(std::string callType) {
     auto x = parseRhs();
-    if (auto t = unparen(x); *t != *x) {  // TODO !=
+    if (auto t = unparen(x); (!t && x) || !(!t && !x) && *t != *x) { 
         error(x->Pos(), "expression in" + callType + "must not be parenthesized");
         x = t;
     }
     if (auto [call, isCall] = isOfType<CallExpr>(x.get()); isCall) {
-        return std::shared_ptr<CallExpr>(call);
+        return std::make_shared<CallExpr>(*call);
     }
     if (auto [_, isBad] = isOfType<BadExpr>(x.get()); !isBad) {
         error(x->Pos(), "expression in" + callType + "must be function call");
@@ -1700,18 +1697,6 @@ SP<Stmt> parser::parseSwitchStmt() {
             s1 = s2;
             s2 = nullptr;
             if (tok_ != token_type::LBRACE) {
-                // A TypeSwitchGuard may declare a variable in addition
-                // to the variable declared in the initial SimpleStmt.
-                // Introduce extra scope to avoid redeclaration errors:
-                //
-                //	switch t := 0; t := x.(T) { ... }
-                //
-                // (this code is not valid Go because the first t
-                // cannot be accessed and thus is never used, the extra
-                // scope is needed for the correct error message).
-                //
-                // If we don't have a type switch, s2 must be an expression.
-                // Having the extra nested but empty scope won't affect it.
                 s2 = parseSimpleStmt(basic).first;
             }
         }
@@ -1982,13 +1967,13 @@ bool isTypeElem(SP<Expr> x) {
 
 std::pair<SP<IdentExpr>, SP<Expr>> extractName(SP<Expr> x, bool force) {
     if (auto [ptr, is] = isOfType<IdentExpr>(x.get()); is) {
-        return {std::shared_ptr<IdentExpr>(ptr), nullptr};
+        return {std::make_shared<IdentExpr>(*ptr), nullptr};
     } else if (auto [ptr, is] = isOfType<BinaryExpr>(x.get()); is) {
         switch (ptr->Op) {
             case token_type::MUL:
                 if (auto [name, _] = isOfType<IdentExpr>(ptr->X.get());
                     name != nullptr && (force || isTypeElem(ptr->Y))) {
-                    return {std::shared_ptr<IdentExpr>(name),
+                    return {std::make_shared<IdentExpr>(*name),
                             std::make_shared<StarExpr>(ptr->OpPos, ptr->Y)};
                 }
                 break;
@@ -2005,7 +1990,7 @@ std::pair<SP<IdentExpr>, SP<Expr>> extractName(SP<Expr> x, bool force) {
         if (auto [name, _] = isOfType<IdentExpr>(ptr->Fun.get()); name != nullptr) {
             if (ptr->Args.size() == 1 && ptr->Ellipsis == NoPos &&
                 (force || isTypeElem(ptr->Args[0]))) {
-                return {std::shared_ptr<IdentExpr>(name), ptr->Args[0]};
+                return {std::make_shared<IdentExpr>(*name), ptr->Args[0]};
             }
         }
     }
