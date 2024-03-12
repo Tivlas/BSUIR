@@ -52,7 +52,7 @@ class parser {
 
     // next token
     pos_t pos_;
-    token_type tok_;   
+    token_type tok_;
     std::string lit_;  // token literal
 
     int nestLev_ = 0;
@@ -151,8 +151,12 @@ class parser {
     parser(const std::filesystem::path&);
     ~parser() {}
     void parseFile();
+    void printErrors() const;
 
     std::string getTreeStr() const {
+        if (!errors_.empty()) {
+            return "";
+        }
         std::string tree;
         for (const auto& decl : decls_) {
             tree += decl->Print(0);
@@ -229,11 +233,11 @@ pos_t parser::expect(token_type tok) {
 }
 
 pos_t parser::expect2(token_type tok) {
-    pos_t pos;
+    pos_t pos = NoPos;
     if (tok_ == tok) {
         pos = pos_;
     } else {
-        errorExpected(pos, "'" + type_string_map.at(tok) + "'");
+        errorExpected(pos_, "'" + type_string_map.at(tok) + "'");
     }
     next();
     return pos;
@@ -302,7 +306,6 @@ void parser::advance(std::unordered_map<token_type, bool> to) {
     }
 }
 
-
 SP<IdentExpr> parser::parseIdent() {
     auto pos = pos_;
     std::string name = "_";
@@ -324,7 +327,6 @@ V<SP<IdentExpr>> parser::parseIdentList() {
     }
     return list;
 }
-
 
 V<SP<Expr>> parser::parseExprList() {
     V<SP<Expr>> list;
@@ -647,8 +649,8 @@ V<SP<Field>> parser::parseParameterList(SP<IdentExpr> name0, SP<Expr> typ0, toke
         } else {
             par = parseParamDecl(name0, typeSetOk);
         }
-        name0 = nullptr;  
-        typ0 = nullptr;   
+        name0 = nullptr;
+        typ0 = nullptr;
         if (par.name != nullptr || par.typ != nullptr) {
             list.push_back(par);
             if (par.name != nullptr && par.typ != nullptr) {
@@ -1315,7 +1317,7 @@ SP<Expr> parser::parsePrimaryExpr(SP<Expr> x) {
                     nestLev_ -= n;
                     return x;
                 }
-                if ((!t && x) || !(!t && !x) && *t != *x) {  
+                if ((!t && x) || !(!t && !x) && *t != *x) {
                     error(t->Pos(), "cannot parenthesize type in composite literal");
                 }
                 x = parseLiteralValue(x);
@@ -1466,7 +1468,7 @@ std::pair<SP<Stmt>, bool> parser::parseSimpleStmt(int mode) {
 
 SP<CallExpr> parser::parseCallExpr(std::string callType) {
     auto x = parseRhs();
-    if (auto t = unparen(x); (!t && x) || !(!t && !x) && *t != *x) { 
+    if (auto t = unparen(x); (!t && x) || !(!t && !x) && *t != *x) {
         error(x->Pos(), "expression in" + callType + "must not be parenthesized");
         x = t;
     }
@@ -1841,7 +1843,6 @@ SP<Stmt> parser::parseStmt() {
     return s;
 }
 
-
 SP<Spec> parser::parseImportSpec(token_type _, int __) {
     SP<IdentExpr> ident;
     switch (tok_) {
@@ -2098,6 +2099,15 @@ SP<Decl> parser::parseDecl(std::unordered_map<token_type, bool> sync) {
     return parseGenDecl(tok_, f);
 }
 
+void parser::printErrors() const {
+    std::cout << '\n';
+    for (const auto& e : errors_) {
+        std::cout << color::error << "Error at " << color::reset << e.pos.line << ':' << e.pos.col
+                  << " --- " << e.msg << '\n';
+    }
+    std::cout << '\n';
+}
+
 void parser::parseFile() {
     if (!errors_.empty()) {
         return;
@@ -2129,4 +2139,6 @@ void parser::parseFile() {
         prev = tok_;
         decls_.push_back(parseDecl(declStart));
     }
+
+    printErrors();
 }

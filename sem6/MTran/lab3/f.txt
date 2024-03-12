@@ -156,6 +156,6 @@ func main() {
     
     const cnt := 123
 
-	const a int = 3
+	const a int := 3
 }
 

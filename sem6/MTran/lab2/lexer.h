@@ -231,7 +231,9 @@ const Tokens& lexer::tokenize() {
         start_ = cur_;
         scan_token();
     }
-    tokens_.push_back({token_type::EOF_, "", {file_path_, 0, 0}});
+    auto eofPos = tokens_.back().pos;
+    eofPos.col++;
+    tokens_.push_back({token_type::EOF_, "", eofPos});
     return tokens_;
 }
 
