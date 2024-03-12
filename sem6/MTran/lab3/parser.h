@@ -146,7 +146,7 @@ class parser {
 
     // Error methods
     void errorExpected(pos_t pos, std::string msg);
-    // TODO error()
+    void error(pos_t pos, std::string msg);
 
    public:
     parser(const std::filesystem::path&);
@@ -161,6 +161,10 @@ class parser {
         return tree;
     }
 };
+
+void parser::errorExpected(pos_t pos, std::string msg) {
+    
+}
 
 SP<Expr> parser::packIndexExpr(SP<Expr> x, pos_t lbrack, V<SP<Expr>> exprs, pos_t rbrack) {
     switch (exprs.size()) {

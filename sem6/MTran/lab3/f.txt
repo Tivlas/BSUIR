@@ -1,5 +1,34 @@
 package main
 
+
+func printValue[T ~int16](value T) {
+	fmt.Printf("Value %d", value)
+}
+
+func printValue[T int16](value T) {
+	fmt.Printf("Value %d", value)
+}
+
+type Number interface {
+  int | float32 | float64
+  IsEven() bool 
+}
+
+func GMin[T constraints.Ordered](x, y T) T {
+    if x < y {
+        return x
+    }
+    return y
+}  
+
+func Scale[S ~[]E, E constraints.Integer](s S, c E) S {
+    r := make(S, len(s))
+    for i, v := range s {
+        r[i] = v * c
+    }
+    return r
+}
+
 type summer interface {
     sum(nums []int) int;
 }
@@ -26,6 +55,25 @@ func (c *calculator) sum(sl []int) (s int) {
 func min(a, b int) int {
     return a + b
 }
+
+const Pi = 3.14159
+
+const (
+    E       = 2.71828
+    MaxInt  = int64(^uint64(0) >> 1)
+    MinInt  = -MaxInt - 1
+    MaxUint = ^uint64(0)
+)
+
+const (
+    Sunday = iota
+    Monday
+    Tuesday
+    Wednesday
+    Thursday
+    Friday
+    Saturday
+)
 
 func main() {
     a := 4
@@ -82,4 +130,32 @@ func main() {
     default:
         fmt.Println("unknown type:", v)
     }
+
+    type Person struct {
+        Name string
+        Age  int
+    }
+
+	var value interface{} = Person{"Alice", 30}
+
+    if person, ok := value.(Person); ok {
+        fmt.Println("Name:", person.Name)
+        fmt.Println("Age:", person.Age)
+    } else {
+        fmt.Println("value is not a Person")
+    }
+
+    var person Person = Person{
+        Name: "Alice",
+        Age:  30,
+    }
+
+    a = b
+    a++
+    a == b
+    
+    const cnt := 123
+
+	const a int = 3
 }
+

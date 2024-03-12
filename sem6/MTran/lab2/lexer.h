@@ -636,6 +636,9 @@ void lexer::scan_token() {
         case '\'':
             scan_char_literal();
             break;
+        case '~':
+            add_token(token_type::TILDE);
+            break;
         default:
             if (std::isdigit(c)) {
                 scan_number();
