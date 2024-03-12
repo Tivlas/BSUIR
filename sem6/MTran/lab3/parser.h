@@ -7,9 +7,10 @@
 #include "lexer.h"
 #include "tree.h"
 
-// TODO IMPORTANT interface comparison (check all == usage)
 // TODO check all switch case var decls (use {} instead of outer declaration)
-
+// TODO != check
+// TODO IMPORTANT interface comparison (check all == usage)
+// TODO shared_ptr -> make_shared
 using parseSpecFunction = std::function<SP<Spec>(token_type keyword, int iota)>;
 
 template <typename T>
@@ -163,8 +164,20 @@ class parser {
 };
 
 void parser::errorExpected(pos_t pos, std::string msg) {
-    
+    msg = "expected " + msg;
+    if (pos == pos_) {
+        if (tok_ == token_type::SEMICOLON && lit_ == "\n") {
+            msg += ", found newline";
+        } else if (is_literal(tok_)) {
+            msg += ", found " + lit_;
+        } else {
+            msg += ", found '" + type_string_map.at(tok_) + "'";
+        }
+    }
+    error(pos, msg);
 }
+
+void parser::error(pos_t pos, std::string msg) { errors_.push_back({pos, msg}); }
 
 SP<Expr> parser::packIndexExpr(SP<Expr> x, pos_t lbrack, V<SP<Expr>> exprs, pos_t rbrack) {
     switch (exprs.size()) {
@@ -214,7 +227,7 @@ void parser::next() {
 pos_t parser::expect(token_type tok) {
     auto pos = pos_;
     if (tok_ != tok) {
-        // TODO error expected
+        errorExpected(pos, "'" + type_string_map.at(tok) + "'");
     }
     next();
     return pos;
@@ -225,7 +238,7 @@ pos_t parser::expect2(token_type tok) {
     if (tok_ == tok) {
         pos = pos_;
     } else {
-        // TODO error expected
+        errorExpected(pos, "'" + type_string_map.at(tok) + "'");
     }
     next();
     return pos;
@@ -233,7 +246,7 @@ pos_t parser::expect2(token_type tok) {
 
 pos_t parser::expectClosing(token_type tok, std::string context) {
     if (tok_ != tok && tok_ == token_type::SEMICOLON && lit_ == "\n") {
-        // TODO error()
+        error(pos_, "missing ',' before newline in " + context);
         next();
     }
     return expect(tok);
@@ -243,13 +256,13 @@ void parser::expectSemi() {
     if (tok_ != token_type::RPAREN && tok_ != token_type::RBRACE) {
         switch (tok_) {
             case token_type::COMMA:
-                // TODO errorExpected()
+                errorExpected(pos_, "';'");
                 // no break intentionally
             case token_type::SEMICOLON:
                 next();
                 break;
             default:
-                // TODO errorExpected()
+                errorExpected(pos_, "';'");
                 advance(stmtStart);
                 break;
         }
@@ -265,7 +278,7 @@ bool parser::atComma(std::string context, token_type follow) {
         if (tok_ == token_type::SEMICOLON && lit_ == "\n") {
             msg += " begore newline";
         }
-        // TODO error()
+        error(pos_, msg + " in " + context);
         return true;  // found error, report and continue parsing
     }
     return false;
@@ -344,7 +357,7 @@ SP<Expr> parser::parseType() {
     auto typ = tryIdentOrType();
     if (typ == nullptr) {
         auto pos = pos_;
-        // TODO errorExpected()
+        errorExpected(pos, "type");
         advance(exprEnd);
         return std::make_shared<BadExpr>(pos, pos_);
     }
@@ -386,10 +399,7 @@ SP<ArrayTypeExpr> parser::parseArrayType(pos_t lbrack, SP<Expr> len) {
         exprLev_--;
     }
     if (tok_ == token_type::COMMA) {
-        // Trailing commas are accepted in type parameter
-        // lists but not in array type declarations.
-        // Accept for better error handling but complain.
-        // TODO error()
+        error(pos_, "unexpected comma; expecting ]");
         next();
     }
     expect(token_type::RBRACK);
@@ -427,7 +437,7 @@ std::pair<SP<IdentExpr>, SP<Expr>> parser::parseArrayFieldOrTypeInstance(SP<Iden
         auto elt = tryIdentOrType();
         if (elt == nullptr) {
             if (trailingComma.IsValid()) {
-                // TODO error()
+                error(trailingComma, "unexpected comma; expecting ]");
             }
             return {x, std::make_shared<ArrayTypeExpr>(lbrack, args[0], elt)};
         }
@@ -479,7 +489,7 @@ SP<Field> parser::parseFieldDecl() {
             next();
             if (tok_ == token_type::LPAREN) {
                 // *(T)
-                // TODO error()
+                error(pos_, "cannot parenthesize embedded type");
                 next();
                 typ = parseQualifiedIdent(nullptr);
                 // expect closing ')' but no need to complain if missing
@@ -493,7 +503,7 @@ SP<Field> parser::parseFieldDecl() {
             typ = std::make_shared<StarExpr>(star, typ);
             break;
         case token_type::LPAREN:
-            // TODO error()
+            error(pos_, "cannot parenthesize embedded type");
             next();
             if (tok_ == token_type::MUL) {
                 // (*T)
@@ -511,7 +521,7 @@ SP<Field> parser::parseFieldDecl() {
             break;
         default:
             pos = pos_;
-            // TODO errorExpected()
+            errorExpected(pos, "field name or embedded type");
             advance(exprEnd);
             typ = std::make_shared<BadExpr>(pos, pos_);
             break;
@@ -624,7 +634,7 @@ field parser::parseParamDecl(SP<IdentExpr> name, bool typeSetsOk) {
             f.typ = parseDotsType();
             return f;
         default:
-            // TODO errorExpected()
+            errorExpected(pos_, "')");
             advance(exprEnd);
             break;
     }
@@ -685,7 +695,7 @@ V<SP<Field>> parser::parseParameterList(SP<IdentExpr> name0, SP<Expr> typ0, toke
             }
         }
         if (tparams) {
-            // TODO error()
+            error(pos, "type parameters must be named");
         }
     } else if (named != list.size()) {
         // some named => all must be named
@@ -714,9 +724,9 @@ V<SP<Field>> parser::parseParameterList(SP<IdentExpr> name0, SP<Expr> typ0, toke
         }
         if (!ok) {
             if (tparams) {
-                // TODO error()
+                error(missingName, "type parameters must be named");
             } else {
-                // TODO error()
+                error(pos, "mixed named and unnamed parameters");
             }
         }
     }
@@ -762,7 +772,7 @@ std::pair<SP<FieldList>, SP<FieldList>> parser::parseParameters(bool acceptTPara
         pos_t rbrack = expect(token_type::RBRACK);
         tparams = std::make_shared<FieldList>(opening, list, rbrack);
         if (tparams->NumFields() == 0) {
-            // TODO error
+            error(tparams->Closing, "empty type parameter list");
             tparams = nullptr;
         }
     }
@@ -798,7 +808,7 @@ SP<FuncTypeExpr> parser::parseFuncType() {
     auto pos = expect(token_type::FUNC);
     auto [tparams, params] = parseParameters(true);
     if (tparams != nullptr) {
-        // TODO error()
+        error(tparams->Pos(), "function type must have no type parameters");
     }
     auto results = parseResult();
     return std::make_shared<FuncTypeExpr>(pos, nullptr, params, results);
@@ -826,7 +836,7 @@ SP<Field> parser::parseMethodSpec() {
                     parseParameterList(std::shared_ptr<IdentExpr>(name0), nullptr,
                                        token_type::RBRACK);
                     expect(token_type::RBRACK);
-                    // TODO error()
+                    error(lbrack, "interface method must have no type parameters");
 
                     auto [_, params] = parseParameters(false);
                     auto results = parseResult();
@@ -901,7 +911,7 @@ SP<Expr> parser::embeddedTerm() {
     auto t = tryIdentOrType();
     if (t == nullptr) {
         pos_t pos = pos_;
-        // TODO errorExpected()
+        errorExpected(pos, "~ term or type");
         advance(exprEnd);
         return std::make_shared<BadExpr>(pos, pos_);
     }
@@ -973,7 +983,7 @@ SP<Expr> parser::parseTypeInstance(SP<Expr> typ) {
     pos_t closing = expectClosing(token_type::RBRACK, "type argument list");
 
     if (list.empty()) {
-        // TODO errorEcpected()
+        errorExpected(closing, "type argument list");
         return std::make_shared<IndexExpr>(
             typ, opening, std::make_shared<BadExpr>(opening + 1, closing), closing);
     }
@@ -1102,7 +1112,7 @@ SP<Expr> parser::parseOperand() {
     }
 
     pos_t pos = pos_;
-    // TODO errorExpected()
+    errorExpected(pos, "operand");
     advance(stmtStart);
     return std::make_shared<BadExpr>(pos, pos_);
 }
@@ -1128,7 +1138,7 @@ SP<Expr> parser::parseTypeAssertion(SP<Expr> x) {
 SP<Expr> parser::parseIndexOrSliceOrInstance(SP<Expr> x) {
     pos_t lbrack = expect(token_type::LBRACK);
     if (tok_ == token_type::RBRACK) {
-        // TODO errorExpected()
+        errorExpected(pos_, "operand");
         pos_t rbrack = pos_;
         next();
         return std::make_shared<IndexExpr>(x, lbrack, std::make_shared<BadExpr>(rbrack, rbrack),
@@ -1180,11 +1190,11 @@ SP<Expr> parser::parseIndexOrSliceOrInstance(SP<Expr> x) {
         if (ncolons == 2) {
             slice3 = true;
             if (index[1] == nullptr) {
-                // TODO error()
+                error(colons[0], "middle index required in 3-index slice");
                 index[1] = std::make_shared<BadExpr>(colons[0], colons[1]);
             }
             if (index[2] == nullptr) {
-                // TODO error()
+                error(colons[1], "final index required in 3-index slice");
                 index[1] = std::make_shared<BadExpr>(colons[1], rbrack);
             }
         }
@@ -1294,7 +1304,7 @@ SP<Expr> parser::parsePrimaryExpr(SP<Expr> x) {
                     }
                     default: {
                         pos_t pos = pos_;
-                        // TODO errorExpected()
+                        errorExpected(pos, "selector or type assertion");
                         if (tok_ != token_type::RBRACE) {
                             next();
                         }
@@ -1335,7 +1345,7 @@ SP<Expr> parser::parsePrimaryExpr(SP<Expr> x) {
                     return x;
                 }
                 if (*t != *x) {  // TODO !=
-                    // TODO error()
+                    error(t->Pos(), "cannot parenthesize type in composite literal");
                 }
                 x = parseLiteralValue(x);
                 break;
@@ -1456,7 +1466,7 @@ std::pair<SP<Stmt>, bool> parser::parseSimpleStmt(int mode) {
     }
 
     if (x.size() > 1) {
-        // TODO errorExpected()
+        errorExpected(x[0]->Pos(), "1 expression");
     }
 
     switch (tok_) {
@@ -1469,7 +1479,7 @@ std::pair<SP<Stmt>, bool> parser::parseSimpleStmt(int mode) {
                                                           parseStmt());
                 return {stmt, false};
             }
-            // TODO error()
+            error(colon, "illegal label declaration");
             return {std::make_shared<BadStmt>(x[0]->Pos(), colon), false};
         }
         case token_type::INC:
@@ -1486,14 +1496,14 @@ std::pair<SP<Stmt>, bool> parser::parseSimpleStmt(int mode) {
 SP<CallExpr> parser::parseCallExpr(std::string callType) {
     auto x = parseRhs();
     if (auto t = unparen(x); *t != *x) {  // TODO !=
-        // TODO error()
+        error(x->Pos(), "expression in" + callType + "must not be parenthesized");
         x = t;
     }
     if (auto [call, isCall] = isOfType<CallExpr>(x.get()); isCall) {
         return std::shared_ptr<CallExpr>(call);
     }
     if (auto [_, isBad] = isOfType<BadExpr>(x.get()); !isBad) {
-        // TODO error()
+        error(x->Pos(), "expression in" + callType + "must be function call");
     }
     return nullptr;
 }
@@ -1543,7 +1553,8 @@ SP<Expr> parser::makeExpr(SP<Stmt> s, std::string want) {
     if (auto [_, isAss] = isOfType<AssignStmt>(s.get()); isAss) {
         found = "assignment";
     }
-    // TODO error()
+    error(s->Pos(), "expected " + want + ", found " + found +
+                        " (missing parentheses around composite literal?)");
     return std::make_shared<BadExpr>(s->Pos(), s->End());
 }
 
@@ -1551,7 +1562,7 @@ std::pair<SP<Stmt>, SP<Expr>> parser::parseIfHeader() {
     SP<Stmt> init;
     SP<Expr> cond;
     if (tok_ == token_type::LBRACE) {
-        // TODO error()
+        error(pos_, "missing condition in if statement");
         cond = std::make_shared<BadExpr>(pos_, pos_);
         return {init, cond};
     }
@@ -1562,7 +1573,7 @@ std::pair<SP<Stmt>, SP<Expr>> parser::parseIfHeader() {
     if (tok_ != token_type::SEMICOLON) {
         if (tok_ == token_type::VAR) {
             next();
-            // TODO error()
+            error(pos_, "var declaration not allowed in if initializer");
         }
         init = parseSimpleStmt(basic).first;
     }
@@ -1593,9 +1604,9 @@ std::pair<SP<Stmt>, SP<Expr>> parser::parseIfHeader() {
         cond = makeExpr(condStmt, "boolean expression");
     } else if (semi.pos.IsValid()) {
         if (semi.lit == "\n") {
-            // TODO error()
+            error(semi.pos, "unexpected newline, expecting { after if clause");
         } else {
-            // TODO error()
+            error(semi.pos, "missing condition in if statement");
         }
     }
 
@@ -1625,7 +1636,7 @@ SP<IfStmt> parser::parseIfStmt() {
                 expectSemi();
                 break;
             default:
-                // TODO errorExpected()
+                errorExpected(pos_, "if statement or block");
                 else_ = std::make_shared<BadStmt>(pos_, pos_);
                 break;
         }
@@ -1665,7 +1676,7 @@ bool parser::isTypeSwitchGuard(SP<Stmt> s) {
         if (t->Lhs.size() == 1 && t->Rhs.size() == 1 && isTypeSwitchAssert(t->Rhs[0])) {
             switch (t->Tok) {
                 case token_type::ASSIGN:
-                // TODO error()
+                    error(t->TokPos, "expected ':=', found '='");
                 // no break intentionally
                 case token_type::DEFINE:
                     return true;
@@ -1778,7 +1789,7 @@ SP<Stmt> parser::parseForStmt() {
                 break;
             }
             default:
-                // TODO errorExpected()
+                errorExpected(as->Lhs[as->Lhs.size() - 1]->Pos(), "at most 2 expressions");
                 return std::make_shared<BadStmt>(pos, body->End());
         }
 
@@ -1861,7 +1872,7 @@ SP<Stmt> parser::parseStmt() {
             break;
         default:
             pos_t pos = pos_;
-            // TODO errorExpected()
+            errorExpected(pos, "statement");
             advance(stmtStart);
             s = std::make_shared<BadStmt>(pos, pos_);
             break;
@@ -1891,10 +1902,10 @@ SP<Spec> parser::parseImportSpec(token_type _, int __) {
         path = lit_;
         next();
     } else if (is_literal(tok_)) {
-        // TODO error()
+        error(pos, "import path must be a string");
         next();
     } else {
-        // TODO error()
+        error(pos, "missing import path");
         advance(exprEnd);
     }
     expectSemi();
@@ -2069,7 +2080,7 @@ SP<FuncDecl> parser::parseFuncDecl() {
 
     auto [tparams, params] = parseParameters(true);
     if (recv != nullptr && tparams != nullptr) {
-        // TODO error
+        error(tparams->Opening, "method must have no type parameters");
         tparams = nullptr;
     }
     auto results = parseResult();
@@ -2084,7 +2095,7 @@ SP<FuncDecl> parser::parseFuncDecl() {
         case token_type::SEMICOLON:
             next();
             if (tok_ == token_type::LBRACE) {
-                // TODO error
+                error(pos_, "unexpected semicolon or newline before {");
                 body = parseBody();
                 expectSemi();
             }
@@ -2123,7 +2134,7 @@ SP<Decl> parser::parseDecl(std::unordered_map<token_type, bool> sync) {
             return parseFuncDecl();
         default:
             pos_t pos = pos_;
-            // TODO error()
+            errorExpected(pos, "declaration");
             advance(sync);
             return std::make_shared<BadDecl>(pos, pos_);
     }
@@ -2139,7 +2150,7 @@ void parser::parseFile() {
     pos_t pos = expect(token_type::PACKAGE);
     auto ident = parseIdent();
     if (ident->Name == "_") {
-        // TODO error()
+        error(pos_, "invalid package name _");
     }
 
     expectSemi();
@@ -2157,7 +2168,7 @@ void parser::parseFile() {
     auto prev = token_type::IMPORT;
     while (tok_ != token_type::EOF_) {
         if (tok_ == token_type::IMPORT && prev != token_type::IMPORT) {
-            // TODO error
+            error(pos_, "imports must appear before other declarations");
         }
         prev = tok_;
         decls_.push_back(parseDecl(declStart));
