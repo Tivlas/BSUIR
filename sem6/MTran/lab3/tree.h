@@ -32,7 +32,6 @@ pos_t operator+(const pos_t& pos, int n) {
 
 const pos_t NoPos = pos_t();
 
-// TODO implement Pos method for each type
 
 template <class LHS, class RHS>
 bool sameType(const LHS& lhs, const RHS& rhs) {
@@ -115,7 +114,7 @@ struct BadExpr : Expr {
 struct IdentExpr : Expr {
     pos_t NamePos;  // identifier position
     std::string Name;
-    // TODO Obj *Object
+    // TODO *Object ??? to store additional info
 
     IdentExpr(pos_t pos, std::string name) : NamePos(pos), Name(name) {}
 

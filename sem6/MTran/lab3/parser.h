@@ -7,6 +7,8 @@
 #include "lexer.h"
 #include "tree.h"
 
+// TODO store imports ???
+
 using parseSpecFunction = std::function<SP<Spec>(token_type keyword, int iota)>;
 
 template <typename T>
@@ -50,7 +52,7 @@ class parser {
 
     // next token
     pos_t pos_;
-    token_type tok_;   // one token look-ahead
+    token_type tok_;   
     std::string lit_;  // token literal
 
     int nestLev_ = 0;
@@ -217,9 +219,6 @@ void parser::next() {
     lit_ = token.lexeme;
 }
 
-// TODO error()
-// TODO errorExpected()
-
 pos_t parser::expect(token_type tok) {
     auto pos = pos_;
     if (tok_ != tok) {
@@ -303,8 +302,6 @@ void parser::advance(std::unordered_map<token_type, bool> to) {
     }
 }
 
-// ----------------------------------------------------------------------------
-// Identifiers
 
 SP<IdentExpr> parser::parseIdent() {
     auto pos = pos_;
@@ -328,8 +325,6 @@ V<SP<IdentExpr>> parser::parseIdentList() {
     return list;
 }
 
-// ----------------------------------------------------------------------------
-// Common productions
 
 V<SP<Expr>> parser::parseExprList() {
     V<SP<Expr>> list;
@@ -373,7 +368,6 @@ SP<Expr> parser::parseTypeName(SP<IdentExpr> ident) {
         ident = parseIdent();
     }
     if (tok_ == token_type::PERIOD) {
-        // ident is a package name (package.method)
         next();
         auto sel = parseIdent();
         return std::make_shared<SelectorExpr>(ident, sel);
@@ -382,7 +376,7 @@ SP<Expr> parser::parseTypeName(SP<IdentExpr> ident) {
 }
 
 // "[" has already been consumed, and lbrack is its position.
-// If len != nil it is the already consumed array length.
+// If len != nullptr it is the already consumed array length.
 SP<ArrayTypeExpr> parser::parseArrayType(pos_t lbrack, SP<Expr> len) {
     if (len == nullptr) {
         exprLev_++;
@@ -450,29 +444,23 @@ SP<Field> parser::parseFieldDecl() {
             auto name = parseIdent();
             if (tok_ == token_type::PERIOD || tok_ == token_type::STRING ||
                 tok_ == token_type::SEMICOLON || tok_ == token_type::RBRACE) {
-                // embedded type
                 typ = name;
                 if (tok_ == token_type::PERIOD) {
                     typ = parseQualifiedIdent(name);
                 }
             } else {
-                // name1, name2, ... T
                 names = {name};
                 while (tok_ == token_type::COMMA) {
                     next();
                     names.push_back(parseIdent());
                 }
 
-                // Careful dance: We don't know if we have an embedded
-                // instantiated type T[P1, P2, ...] or a field T of array type
-                // []E or [P]E.
                 if (names.size() == 1 && tok_ == token_type::LBRACK) {
                     std::tie(name, typ) = parseArrayFieldOrTypeInstance(name);
                     if (name == nullptr) {
                         names.clear();
                     }
                 } else {
-                    // T P
                     typ = parseType();
                 }
             }
@@ -486,7 +474,6 @@ SP<Field> parser::parseFieldDecl() {
                 error(pos_, "cannot parenthesize embedded type");
                 next();
                 typ = parseQualifiedIdent(nullptr);
-                // expect closing ')' but no need to complain if missing
                 if (tok_ == token_type::RPAREN) {
                     next();
                 }
@@ -509,7 +496,6 @@ SP<Field> parser::parseFieldDecl() {
                 // (T)
                 typ = parseQualifiedIdent(nullptr);
             }
-            // expect closing ')' but no need to complain if missing
             if (tok_ == token_type::RPAREN) {
                 next();
             }
@@ -538,9 +524,6 @@ SP<StructTypeExpr> parser::parseStructType() {
     auto lbrace = expect(token_type::LBRACE);
     V<SP<Field>> list;
     while (tok_ == token_type::IDENT || tok_ == token_type::MUL || tok_ == token_type::LPAREN) {
-        // a field declaration cannot start with a '(' but we accept
-        // it here for more robust parsing and better error messages
-        // (parseFieldDecl will check and complain if necessary)
         list.push_back(parseFieldDecl());
     }
     auto rbrace = expect(token_type::RBRACE);
@@ -664,8 +647,8 @@ V<SP<Field>> parser::parseParameterList(SP<IdentExpr> name0, SP<Expr> typ0, toke
         } else {
             par = parseParamDecl(name0, typeSetOk);
         }
-        name0 = nullptr;  // 1st name was consumed if present
-        typ0 = nullptr;   // 1st typ was consumed if present
+        name0 = nullptr;  
+        typ0 = nullptr;   
         if (par.name != nullptr || par.typ != nullptr) {
             list.push_back(par);
             if (par.name != nullptr && par.typ != nullptr) {
@@ -683,7 +666,6 @@ V<SP<Field>> parser::parseParameterList(SP<IdentExpr> name0, SP<Expr> typ0, toke
     }
 
     if (named == 0) {
-        // all unnamed => found names are type names
         for (size_t i = 0; i < list.size(); i++) {
             auto& par = list[i];
             if (auto typ = par.name; typ != nullptr) {
@@ -695,7 +677,6 @@ V<SP<Field>> parser::parseParameterList(SP<IdentExpr> name0, SP<Expr> typ0, toke
             error(pos, "type parameters must be named");
         }
     } else if (named != list.size()) {
-        // some named => all must be named
         bool ok = true;
         SP<Expr> typ;
         pos_t missingName = pos;
@@ -712,8 +693,6 @@ V<SP<Field>> parser::parseParameterList(SP<IdentExpr> name0, SP<Expr> typ0, toke
             } else if (typ != nullptr) {
                 par.typ = typ;
             } else {
-                // par.typ == nulltpr && typ == nullptr => we only have a
-                // par.name
                 ok = false;
                 missingName = par.name->Pos();
                 par.typ = std::make_shared<BadExpr>(par.name->Pos(), pos_);
@@ -825,11 +804,6 @@ SP<Field> parser::parseMethodSpec() {
                 exprLev_--;
                 if (auto name0 = dynamic_cast<IdentExpr*>(x.get());
                     name0 != nullptr && tok_ != token_type::COMMA && tok_ != token_type::RBRACK) {
-                    // generic method m[T any]
-                    //
-                    // Interface methods do not have type parameters. We parse
-                    // them for a better error message and improved error
-                    // recovery.
                     parseParameterList(std::make_shared<IdentExpr>(*name0), nullptr,
                                        token_type::RBRACK);
                     expect(token_type::RBRACK);
@@ -1867,8 +1841,6 @@ SP<Stmt> parser::parseStmt() {
     return s;
 }
 
-// ----------------------------------------------------------------------------
-// Declarations
 
 SP<Spec> parser::parseImportSpec(token_type _, int __) {
     SP<IdentExpr> ident;
@@ -1898,7 +1870,6 @@ SP<Spec> parser::parseImportSpec(token_type _, int __) {
     auto spec = std::make_shared<ImportSpec>(
         ident, std::make_shared<BasicLitExpr>(pos, token_type::STRING, path), NoPos);
 
-    // TODO imports append
     return spec;
 }
 
