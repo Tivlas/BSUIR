@@ -77,6 +77,7 @@ const (
 
 func main() {
     a := 4
+    a++
     a := 5
     b := max(a, a)
 
@@ -149,13 +150,26 @@ func main() {
         Name: "Alice",
         Age:  30,
     }
-
     a = b
     a++
     a == b
     
-    const cnt := 123
+    const cnt = 123
 
-	const a int := 3
+	const a int = 3
+
+   // AA int = 2
+
+   {
+    {
+        {
+            a *= b
+            a /= b
+            a = a ^ b
+            a = a + b * 2
+            a = (a + b) * 2
+        }
+    }
+   }
 }
 

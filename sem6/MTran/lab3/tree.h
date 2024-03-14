@@ -5,17 +5,6 @@
 
 #include "token.h"
 
-/* namespace color {
-
-const std::string error = "\033[1;91m";    // red
-const std::string warning = "\033[1;95m";  // purple
-const std::string keyword = "\033[1;93m";  // yellow
-const std::string ident = "\033[1;94m";    // blue
-const std::string oper = "\033[1;92m";     // green
-const std::string reset = "\033[0m";       // no color
-
-} */  // namespace color
-
 template <typename T>
 using V = std::vector<T>;
 
@@ -31,7 +20,6 @@ pos_t operator+(const pos_t& pos, int n) {
 }
 
 const pos_t NoPos = pos_t();
-
 
 template <class LHS, class RHS>
 bool sameType(const LHS& lhs, const RHS& rhs) {
@@ -53,19 +41,21 @@ struct Node {
     virtual bool operator==(const Node& rhs) const = 0;
 };
 
-bool onlyOneNull(SP<Node> a, SP<Node> b) {
+bool onlyOneNull(const SP<Node>& a, const SP<Node>& b) {
     return (a == nullptr && b != nullptr) || (a != nullptr && b == nullptr);
 }
 
-bool bothNull(SP<Node> a, SP<Node> b) { return a == nullptr && b == nullptr; }
+bool bothNull(const SP<Node>& a, const SP<Node>& b) { return a == nullptr && b == nullptr; }
 
-bool equal(SP<Node> a, SP<Node> b) { return !onlyOneNull(a, b) && (bothNull(a, b) || *a == *b); }
+bool equal(const SP<Node>& a, const SP<Node>& b) {
+    return !onlyOneNull(a, b) && (bothNull(a, b) || *a == *b);
+}
 
 template <typename T>
 concept DerivedFromNode = std::derived_from<T, Node>;
 
 template <DerivedFromNode T>
-bool equal(V<SP<T>> a, V<SP<T>> b) {
+bool equal(const V<SP<T>>& a, const V<SP<T>>& b) {
     if (a.size() != b.size()) {
         return false;
     }
@@ -196,7 +186,7 @@ struct BasicLitExpr : Expr {
     virtual std::string Print(size_t shiftSize) const override {
         std::string res(shiftSize, shiftChar);
         res += "BasicLitExpr: ";
-        res += type_string_map.at(Kind) + ' ' + Value + '\n';
+        res += Value + '\n';
         return res;
     }
 };
@@ -237,7 +227,7 @@ struct Field : Node {
         return res;
     }
 
-    Field(V<SP<IdentExpr>> names, SP<Expr> typ, SP<BasicLitExpr> tag)
+    Field(const V<SP<IdentExpr>>& names, SP<Expr> typ, SP<BasicLitExpr> tag)
         : Names(names), Type(typ), Tag(tag) {}
 
     pos_t Pos() const override {
@@ -276,7 +266,7 @@ struct FieldList : Node {
         return false;
     }
 
-    FieldList(pos_t opening, V<SP<Field>> list, pos_t closing)
+    FieldList(pos_t opening, const V<SP<Field>>& list, pos_t closing)
         : Opening(opening), List(list), Closing(closing) {}
 
     virtual std::string Print(size_t shiftSize) const override {
@@ -379,7 +369,7 @@ struct BlockStmt : Stmt {
         return res;
     }
 
-    BlockStmt(pos_t l, V<SP<Stmt>> list, pos_t r) : Lbrace(l), List(list), Rbrace(r) {}
+    BlockStmt(pos_t l, const V<SP<Stmt>>& list, pos_t r) : Lbrace(l), List(list), Rbrace(r) {}
 
     virtual bool operator==(const Node& rhs) const override {
         if (sameType(*this, rhs)) {
@@ -463,7 +453,7 @@ struct CompositeLitExpr : Expr {  // structs literals, slice literals, etc
         return res;
     }
 
-    CompositeLitExpr(SP<Expr> typ, pos_t l, V<SP<Expr>> elts, pos_t r)
+    CompositeLitExpr(SP<Expr> typ, pos_t l, const V<SP<Expr>>& elts, pos_t r)
         : Type(typ), Lbrace(l), Elts(elts), Rbrace(r) {}
 
     pos_t Pos() const override { return Type != nullptr ? Type->Pos() : Lbrace; }
@@ -596,7 +586,7 @@ struct IndexListExpr : Expr {
         return res;
     }
 
-    IndexListExpr(SP<Expr> x, pos_t lbrack, V<SP<Expr>> indeces, pos_t rbrack)
+    IndexListExpr(SP<Expr> x, pos_t lbrack, const V<SP<Expr>>& indeces, pos_t rbrack)
         : X(x), Lbrack(lbrack), Indeces(indeces), Rbrack(rbrack) {}
 
     pos_t Pos() const override { return X->Pos(); }
@@ -715,7 +705,7 @@ struct CallExpr : Expr {
         return res;
     }
 
-    CallExpr(SP<Expr> fun, pos_t l, V<SP<Expr>> args, pos_t ellipsis, pos_t r)
+    CallExpr(SP<Expr> fun, pos_t l, const V<SP<Expr>>& args, pos_t ellipsis, pos_t r)
         : Fun(fun), Lparen(l), Args(args), Ellipsis(ellipsis), Rparen(r) {}
 
     pos_t Pos() const override { return Fun->Pos(); }
@@ -1159,7 +1149,7 @@ struct AssignStmt : Stmt {
         return res;
     }
 
-    AssignStmt(V<SP<Expr>> lhs, pos_t pos, token_type tok, V<SP<Expr>> rhs)
+    AssignStmt(const V<SP<Expr>>& lhs, pos_t pos, token_type tok, const V<SP<Expr>>& rhs)
         : Lhs(lhs), TokPos(pos), Tok(tok), Rhs(rhs) {}
 
     pos_t Pos() const override { return Lhs[0]->Pos(); }
@@ -1220,7 +1210,7 @@ struct ReturnStmt : Stmt {
         return res;
     }
 
-    ReturnStmt(pos_t pos, V<SP<Expr>> res) : Return(pos), Results(res) {}
+    ReturnStmt(pos_t pos, const V<SP<Expr>>& res) : Return(pos), Results(res) {}
 
     pos_t Pos() const override { return Return; }
 
@@ -1345,7 +1335,7 @@ struct CaseClauseStmt : Stmt {
         return res;
     }
 
-    CaseClauseStmt(pos_t pos, V<SP<Expr>> list, pos_t colon, V<SP<Stmt>> body)
+    CaseClauseStmt(pos_t pos, const V<SP<Expr>>& list, pos_t colon, const V<SP<Stmt>>& body)
         : Case(pos), List(list), Colon(colon), Body(body) {}
 
     pos_t Pos() const override { return Case; }
@@ -1653,7 +1643,7 @@ struct ValueSpec : Spec {
         return res;
     }
 
-    ValueSpec(V<SP<IdentExpr>> names, SP<Expr> type, V<SP<Expr>> values)
+    ValueSpec(const V<SP<IdentExpr>>& names, SP<Expr> type, const V<SP<Expr>>& values)
         : Names(names), Type(type), Values(values) {}
 
     pos_t Pos() const override { return Names[0]->Pos(); }
@@ -1765,7 +1755,7 @@ struct GenDecl : Decl {
         return res;
     }
 
-    GenDecl(pos_t tokPos, token_type tok, pos_t lparen, V<SP<Spec>> specs, pos_t rparen)
+    GenDecl(pos_t tokPos, token_type tok, pos_t lparen, const V<SP<Spec>>& specs, pos_t rparen)
         : TokPos(tokPos), Tok(tok), Lparen(lparen), Rparen(rparen), Specs(specs) {}
 
     pos_t Pos() const override { return TokPos; }
