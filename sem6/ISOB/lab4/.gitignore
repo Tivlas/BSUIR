@@ -1,0 +1,3 @@
+build/
+src/DB_connection_data.h
+*.txt
