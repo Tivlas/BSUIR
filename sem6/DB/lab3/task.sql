@@ -361,7 +361,7 @@ BEGIN
     dbms_output.put_line(chr(10) || 'Only DEV functions =========================');
     ddl_script        := '';
     FOR i IN 1..dev_only_funcs.count LOOP
-        ddl_script := ddl_script || dbms_metadata.get_ddl('FUNCTION', different_funcs(i), dev_schema_name);
+        ddl_script := ddl_script || dbms_metadata.get_ddl('FUNCTION', dev_only_funcs(i), dev_schema_name);
     END LOOP;
 
     ddl_script        := replace(ddl_script, dev_schema_name, prod_schema_name);
@@ -369,7 +369,7 @@ BEGIN
     dbms_output.put_line(chr(10) || 'Only PROD functions =========================');
     ddl_script        := '';
     FOR i IN 1..prod_only_funcs.count LOOP
-        ddl_script := ddl_script || dbms_metadata.get_ddl('FUNCTION', different_funcs(i), prod_schema_name);
+        ddl_script := ddl_script || dbms_metadata.get_ddl('FUNCTION', prod_only_funcs(i), prod_schema_name);
     END LOOP;
 
     ddl_script        := replace(ddl_script, dev_schema_name, prod_schema_name);
