@@ -33,7 +33,6 @@ void login::on_pushButton_clicked()
     auto lvl = DB::authenticate(login, password).value_or(-1);
 
     if (lvl != -1) {
-        qDebug() << "lvl: " << lvl;
         emit sign_in(lvl);
     } else {
         QMessageBox::critical(this, "Error", "Incorrect login or password");

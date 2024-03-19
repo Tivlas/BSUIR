@@ -13,7 +13,6 @@ bool DB::connect(QString sql_name, QString host_name, QString db_name, QString u
 
 std::optional<int> DB::authenticate(QString login, QString password) {
     QSqlQuery query;
-    qDebug() << login << password;
     query.prepare("select role_id from users where username=:login and password=:password;");
     query.bindValue(":login", login);
     query.bindValue(":password", password);
@@ -22,7 +21,6 @@ std::optional<int> DB::authenticate(QString login, QString password) {
 
     if (query.first()) {
         size_t role_id = query.value(0).toInt();
-        qDebug() << "role id:" << role_id;
         query.prepare("select privilege_lvl from roles where role_id=:id;");
         query.bindValue(":id", role_id);
         query.exec();

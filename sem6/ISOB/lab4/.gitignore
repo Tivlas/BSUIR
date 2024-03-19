@@ -1,3 +1,4 @@
 build/
+build-release/
 src/DB_connection_data.h
 *.txt

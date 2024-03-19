@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Installer>
+    <Name>IsobLab4</Name>
+    <Version>1.0.0</Version>
+    <Title>IsobLab4 installer</Title>
+    <Publisher>VerySafeApps Inc.</Publisher>
+    <StartMenuDir>IsobLab4</StartMenuDir>
+    <TargetDir>@HomeDir@/IsobLab4</TargetDir>
+</Installer>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package>
+    <DisplayName>IsobLab4</DisplayName>
+    <Description>IsobLab4 installation.</Description>
+    <Version>0.1.0-1</Version>
+    <ReleaseDate>2024-03-17</ReleaseDate>
+    <Licenses>
+        <License name="Very good license" file="license.txt" />
+    </Licenses>
+    <Default>script</Default>
+    <Script>key.qs</Script>
+    <UserInterfaces>
+        <UserInterface>key.ui</UserInterface>
+    </UserInterfaces>
+</Package>
