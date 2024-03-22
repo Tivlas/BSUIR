@@ -10,6 +10,8 @@ DELETE FROM groups_logs;
 
 DELETE FROM students_logs;
 
+DELETE from reports_logs;
+
 INSERT INTO uni (
     uni_name,
     creation_date
@@ -52,9 +54,10 @@ SELECT *
 FROM uni
 ORDER BY uni_id;
 
-CALL func_package.roll_back(to_timestamp('22-MAR-24 07.35.38.246000000 PM'));
+CALL func_package.roll_back(to_timestamp('22-MAR-24 09.07.46.960000000 PM'));
 
 CALL func_package.roll_back(1200000);
 
-CALL func_package.report(to_timestamp('1/1/1 1:1:1',
-    'YYYY/MM/DD HH:MI:SS'))
+
+CALL func_package.report();
+CALL func_package.report(to_timestamp('22-MAR-24 09.07.46.926000000 PM'))

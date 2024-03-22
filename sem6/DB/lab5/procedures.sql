@@ -99,6 +99,8 @@ BEGIN
     DELETE FROM students_logs
     WHERE
         change_date >= v_cur;
+
+    cur_state_timestamp_pkg.set_time(date_time);
 END;
  ------------------------------------------------------------------------------------------------------------
 CREATE OR REPLACE PROCEDURE create_report(t_begin IN TIMESTAMP, t_end IN TIMESTAMP) AS
@@ -106,6 +108,7 @@ CREATE OR REPLACE PROCEDURE create_report(t_begin IN TIMESTAMP, t_end IN TIMESTA
     i_count  NUMBER;
     u_count  NUMBER;
     d_count  NUMBER;
+    v_t_end TIMESTAMP := LEAST(t_end, cur_state_timestamp_pkg.cur_state_time);
 BEGIN
     v_result := '<table>
                       <tr>
@@ -117,18 +120,16 @@ BEGIN
                       ';
     SELECT COUNT( * ) INTO u_count
     FROM uni_logs
-    WHERE change_date BETWEEN t_begin AND t_end
+    WHERE change_date BETWEEN t_begin AND v_t_end
         AND change_type = 'UPDATE';
     SELECT COUNT( * ) INTO i_count
     FROM uni_logs
-    WHERE change_date BETWEEN t_begin AND t_end
+    WHERE change_date BETWEEN t_begin AND v_t_end
         AND change_type = 'INSERT';
     SELECT COUNT( * ) INTO d_count
     FROM uni_logs
-    WHERE change_date BETWEEN t_begin AND t_end
+    WHERE change_date BETWEEN t_begin AND v_t_end
         AND change_type = 'DELETE';
-    i_count  := i_count - u_count;
-    d_count  := d_count - u_count;
     v_result := v_result || '<tr>
                                <td>uni</td>
                                <td>' || i_count || '</td>
@@ -138,18 +139,16 @@ BEGIN
                               ';
     SELECT COUNT( * ) INTO u_count
     FROM groups_logs
-    WHERE change_date BETWEEN t_begin AND t_end
+    WHERE change_date BETWEEN t_begin AND v_t_end
         AND change_type = 'UPDATE';
     SELECT COUNT( * ) INTO i_count
     FROM groups_logs
-    WHERE change_date BETWEEN t_begin AND t_end
+    WHERE change_date BETWEEN t_begin AND v_t_end
         AND change_type = 'INSERT';
     SELECT COUNT( * ) INTO d_count
     FROM groups_logs
-    WHERE change_date BETWEEN t_begin AND t_end
+    WHERE change_date BETWEEN t_begin AND v_t_end
         AND change_type = 'DELETE';
-    i_count  := i_count - u_count;
-    d_count  := d_count - u_count;
     v_result := v_result || '<tr>
                                <td>groups</td>
                                <td>' || i_count || '</td>
@@ -159,18 +158,16 @@ BEGIN
                               ';
     SELECT COUNT( * ) INTO u_count
     FROM students_logs
-    WHERE change_date BETWEEN t_begin AND t_end
+    WHERE change_date BETWEEN t_begin AND v_t_end
         AND change_type = 'UPDATE';
     SELECT COUNT( * ) INTO i_count
     FROM students_logs
-    WHERE change_date BETWEEN t_begin AND t_end
+    WHERE change_date BETWEEN t_begin AND v_t_end
         AND change_type = 'INSERT';
     SELECT COUNT( * ) INTO d_count
     FROM students_logs
-    WHERE change_date BETWEEN t_begin AND t_end
+    WHERE change_date BETWEEN t_begin AND v_t_end
         AND change_type = 'DELETE';
-    i_count  := i_count - u_count;
-    d_count  := d_count - u_count;
     v_result := v_result || '<tr>
                                <td>students</td>
                                <td>' || i_count || '</td>
