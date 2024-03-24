@@ -20,7 +20,7 @@ user_actions::user_actions(size_t level, QWidget *parent) :
     ui->dirPath->setMaxLength(100);
 
     MyTextEdit* mte = new MyTextEdit(ui->frame_4);
-    delete ui->textEdit;
+    ui->textEdit = mte;
     mte->setObjectName("textEdit");
     mte->setEnabled(true);
     mte->setGeometry(QRect(20, 20, 311, 401));
