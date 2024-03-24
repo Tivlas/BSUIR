@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <format>
 #include <fstream>
+#include <functional>
 #include <iostream>
 #include <numeric>
 #include <random>
@@ -178,11 +179,11 @@ std::string generateRandomName(int length) {
     return randomName;
 }
 
-std::string get_cmp_sign(int left_val, int right_val) {
-    if (left_val == right_val) {
+std::string getCmpSign(int lhs, int rhs) {
+    if (lhs == rhs) {
         std::vector<std::string> cmp = {"==", ">=", "<="};
         return cmp[distribution(generator) % cmp.size()];
-    } else if (left_val > right_val) {
+    } else if (lhs > rhs) {
         std::vector<std::string> cmp = {"!=", ">=", ">"};
         return cmp[distribution(generator) % cmp.size()];
     } else {
@@ -191,78 +192,63 @@ std::string get_cmp_sign(int left_val, int right_val) {
     }
 }
 
-std::string get_incorrect_cmp_sign(int left_val, int right_val) {
-    if (left_val == right_val) {
+std::string getOppositeCmpSign(int lhs, int rhs) {
+    if (lhs == rhs) {
         return "!=";
-    } else if (left_val > right_val) {
+    } else if (lhs > rhs) {
         return "<";
     } else {
         return ">";
     }
 }
 
-std::string generate_branches(const std::string &var, int val, size_t lvl, size_t max_lvl, bool is_true,
-                              const std::string &code, bool &was_pasted, std::vector<bool> path) {
-    if (lvl > max_lvl) {
+std::string generateIfElse(const std::string &varName, int varValue, size_t level, size_t maxLevel, bool isTrue,
+                           const std::string &code, bool &wasInserted, std::vector<bool> path);
+
+void generateIfElseHelper(std::function<std::string(int, int)> getCmpSignFunc, bool isTrue, const std::string &varName,
+                          int varValue, size_t level, size_t maxLevel, const std::string &code, bool &wasInserted,
+                          const std::vector<bool> &path, std::string &result, const std::vector<bool> &ifPath,
+                          const std::vector<bool> &elsePath) {
+    bool isNextTrue = distribution(generator) % 2;
+    int ifVal = distribution(generator);
+    result += std::string(level * 4, ' ') + "if (" + varName + getCmpSignFunc(varValue, ifVal) + std::to_string(ifVal) +
+              ") {\n";
+    auto newVarName = generateRandomName(10);
+    auto newVarValue = distribution(generator);
+    result += std::string((level + 1) * 4, ' ') + "int " + newVarName + " = " + std::to_string(newVarValue) + ";\n";
+    result += generateIfElse(newVarName, newVarValue, level + 1, maxLevel, isNextTrue, code, wasInserted, ifPath);
+
+    if (isTrue == false) result += std::string(level * 4, ' ') + "} else {\n";
+
+    if (level == maxLevel && !wasInserted &&
+        static_cast<size_t>(std::count(path.begin(), path.end(), true)) == path.size()) {
+        result += std::string(level * 4, ' ') + code + '\n';
+        wasInserted = true;
+    }
+
+    if (isTrue) result += std::string(level * 4, ' ') + "} else {\n";
+
+    newVarName = generateRandomName(10);
+    newVarValue = distribution(generator);
+    result += std::string((level + 1) * 4, ' ') + "int " + newVarName + " = " + std::to_string(newVarValue) + ";\n";
+    isNextTrue = distribution(generator) % 2;
+    result += generateIfElse(newVarName, newVarValue, level + 1, maxLevel, isNextTrue, code, wasInserted, elsePath);
+    result += std::string(level * 4, ' ') + "}\n";
+}
+
+std::string generateIfElse(const std::string &varName, int varValue, size_t level, size_t maxLevel, bool isTrue,
+                           const std::string &code, bool &wasInserted, std::vector<bool> path) {
+    if (level > maxLevel) {
         return "";
     }
-
-    std::string out;
-    auto path_if = path, path_else = path;
-    path_if.push_back(is_true);
-    path_else.push_back(!is_true);
-
-    if (is_true) {
-        bool is_next_true = distribution(generator) % 2;
-
-        int if_val = distribution(generator);
-
-        out += std::string(lvl * 4, ' ') + "if (" + var + get_cmp_sign(val, if_val) + std::to_string(if_val) + ") {\n";
-        auto vr = generateRandomName(10);
-        auto _val = distribution(generator);
-        out += std::string((lvl + 1) * 4, ' ') + "int " + vr + " = " + std::to_string(_val) + ";\n";
-        out += generate_branches(vr, _val, lvl + 1, max_lvl, is_next_true, code, was_pasted, path_if);
-
-        if (lvl == max_lvl && !was_pasted &&
-            static_cast<size_t>(std::count(path.begin(), path.end(), true)) == path.size()) {
-            out += std::string(lvl * 4, ' ') + code + '\n';
-            was_pasted = true;
-        }
-
-        out += std::string(lvl * 4, ' ') + "} else {\n";
-        vr = generateRandomName(10);
-        _val = distribution(generator);
-        out += std::string((lvl + 1) * 4, ' ') + "int " + vr + " = " + std::to_string(_val) + ";\n";
-        is_next_true = distribution(generator) % 2;
-        out += generate_branches(vr, _val, lvl + 1, max_lvl, is_next_true, code, was_pasted, path_else);
-        out += std::string(lvl * 4, ' ') + "}\n";
-    } else {
-        bool is_next_true = distribution(generator) % 2;
-
-        int if_val = distribution(generator);
-
-        out += std::string(lvl * 4, ' ') + "if (" + var + get_incorrect_cmp_sign(val, if_val) + std::to_string(if_val) +
-               ") {\n";
-        auto vr = generateRandomName(10);
-        auto _val = distribution(generator);
-        out += std::string((lvl + 1) * 4, ' ') + "int " + vr + " = " + std::to_string(_val) + ";\n";
-        out += generate_branches(vr, _val, lvl + 1, max_lvl, is_next_true, code, was_pasted, path_if);
-
-        out += std::string(lvl * 4, ' ') + "} else {\n";
-        if (lvl == max_lvl && !was_pasted &&
-            static_cast<size_t>(std::count(path.begin(), path.end(), true)) == path.size()) {
-            out += std::string(lvl * 4, ' ') + code + '\n';
-            was_pasted = true;
-        }
-        vr = generateRandomName(10);
-        _val = distribution(generator);
-        out += std::string((lvl + 1) * 4, ' ') + "int " + vr + " = " + std::to_string(_val) + ";\n";
-        is_next_true = distribution(generator) % 2;
-        out += generate_branches(vr, _val, lvl + 1, max_lvl, is_next_true, code, was_pasted, path_else);
-        out += std::string(lvl * 4, ' ') + "}\n";
-    }
-
-    return out;
+    std::string result;
+    auto ifPath = path, elsePath = path;
+    ifPath.push_back(isTrue);
+    elsePath.push_back(!isTrue);
+    std::function<std::string(int, int)> getCmpSignFunc = (isTrue ? getCmpSign : getOppositeCmpSign);
+    generateIfElseHelper(getCmpSignFunc, isTrue, varName, varValue, level, maxLevel, code, wasInserted, path, result,
+                         ifPath, elsePath);
+    return result;
 }
 
 std::string renameVars(const std::string &code) {
@@ -317,8 +303,8 @@ std::string insertIfElse(const std::string &code) {
         code, pattern,
         [&](const boost::smatch &match) {
             auto code = match.str(2);
-            bool was_pasted = false;
-            code = generate_branches("a", 100, 0, 2, true, code, was_pasted, {});
+            bool wasInserted = false;
+            code = generateIfElse("a", 100, 0, 2, true, code, wasInserted, {});
             return match.str(1) + "  int a = 0xaB1f * 0xBc94 - 0x7e0db1EC;" + code + match.str(3);
         },
         boost::match_default | boost::format_all);
