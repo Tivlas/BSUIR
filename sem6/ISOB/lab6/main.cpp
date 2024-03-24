@@ -18,7 +18,7 @@ std::unordered_set<std::string> NOT_NAMES = {
     "main",
     "include",
     "QSqlDatabase",
-    "QString",
+    "std::string",
     "std",
     "optional",
     "DB",
@@ -69,6 +69,7 @@ std::unordered_set<std::string> NOT_NAMES = {
     "connect",
     "QObject",
     "setEnabled",
+    "QString",
     "QRect",
     "startsWith",
     "QStringList",
@@ -173,7 +174,7 @@ std::string generateRandomName(int length) {
             randomName += possibleChars[distribution(generator) % possibleChars.size()];
         }
         if (!std::isalpha(randomName[0]) && randomName[0] != '_') {
-            randomName[0] = 'C';
+            randomName[0] = possibleChars[distribution(generator) % 52];
         }
     } while (VAR_NAMES.contains(randomName));
     return randomName;
@@ -202,6 +203,31 @@ std::string getOppositeCmpSign(int lhs, int rhs) {
     }
 }
 
+std::string generateExpr(bool nested = false, int level = 0, int maxLevel = 3) {
+    if (!nested || level > maxLevel) {
+        auto val = distribution(generator);
+        return std::to_string(val % 12345);
+    } else {
+        bool nested1 = distribution(generator) % 2;
+        bool nested2 = distribution(generator) % 2;
+        std::vector<std::string> operators = {"+", "-", "*"};
+        return "(" + generateExpr(nested1, level + 1) + " " + operators[distribution(generator) % operators.size()] +
+               " " + generateExpr(nested2, level + 1) + ")";
+    }
+}
+
+std::string generateAssignment(std::string var) {
+    std::vector<std::string> types = {"int", "long long", "unsigned long long", "short"};
+    return types[distribution(generator) % types.size()] + " " + var + " = " + generateExpr(1);
+}
+
+std::string generateDeadCode() {
+    std::string result;
+    result += generateExpr() + ";\n";
+    result += generateAssignment(generateRandomName(5)) + ";\n";
+    return result;
+}
+
 std::string generateIfElse(const std::string &varName, int varValue, size_t level, size_t maxLevel, bool isTrue,
                            const std::string &code, bool &wasInserted, std::vector<bool> path);
 
@@ -211,29 +237,31 @@ void generateIfElseHelper(std::function<std::string(int, int)> getCmpSignFunc, b
                           const std::vector<bool> &elsePath) {
     bool isNextTrue = distribution(generator) % 2;
     int ifVal = distribution(generator);
-    result += std::string(level * 4, ' ') + "if (" + varName + getCmpSignFunc(varValue, ifVal) + std::to_string(ifVal) +
-              ") {\n";
+    result += "if (" + varName + getCmpSignFunc(varValue, ifVal) + std::to_string(ifVal) + ") {\n";
     auto newVarName = generateRandomName(10);
     auto newVarValue = distribution(generator);
-    result += std::string((level + 1) * 4, ' ') + "int " + newVarName + " = " + std::to_string(newVarValue) + ";\n";
+    result += "int " + newVarName + " = " + std::to_string(newVarValue) + ";\n";
+    result += generateDeadCode();
     result += generateIfElse(newVarName, newVarValue, level + 1, maxLevel, isNextTrue, code, wasInserted, ifPath);
 
-    if (isTrue == false) result += std::string(level * 4, ' ') + "} else {\n";
+    if (isTrue == false) result += "} else {\n";
 
     if (level == maxLevel && !wasInserted &&
         static_cast<size_t>(std::count(path.begin(), path.end(), true)) == path.size()) {
-        result += std::string(level * 4, ' ') + code + '\n';
+        result += code + '\n';
         wasInserted = true;
+    } else {
+        result += "if (" + generateExpr() + "* (0xaBe4F - 0xaBe4F) * " + generateExpr() + ") {" + code + "}\n";
     }
 
-    if (isTrue) result += std::string(level * 4, ' ') + "} else {\n";
+    if (isTrue) result += "} else {\n";
 
     newVarName = generateRandomName(10);
     newVarValue = distribution(generator);
     result += std::string((level + 1) * 4, ' ') + "int " + newVarName + " = " + std::to_string(newVarValue) + ";\n";
     isNextTrue = distribution(generator) % 2;
     result += generateIfElse(newVarName, newVarValue, level + 1, maxLevel, isNextTrue, code, wasInserted, elsePath);
-    result += std::string(level * 4, ' ') + "}\n";
+    result += "}\n";
 }
 
 std::string generateIfElse(const std::string &varName, int varValue, size_t level, size_t maxLevel, bool isTrue,
@@ -298,13 +326,14 @@ std::string replaceNumbers(const std::string &code) {
 }
 
 std::string insertIfElse(const std::string &code) {
-    boost::regex pattern(R"((?<!\w\s)(\{)([^{}]+)(\}))");
+    boost::regex pattern(R"((?<!\w\s|=\s)(\{)([^{}]+)(\}))");
     std::string result = boost::regex_replace(
         code, pattern,
         [&](const boost::smatch &match) {
             auto code = match.str(2);
             bool wasInserted = false;
-            code = generateIfElse("a", 100, 0, 2, true, code, wasInserted, {});
+            code = generateIfElse("a", distribution(generator) % 10000, 0, 4, distribution(generator) % 2, code,
+                                  wasInserted, {});
             return match.str(1) + "  int a = 0xaB1f * 0xBc94 - 0x7e0db1EC;" + code + match.str(3);
         },
         boost::match_default | boost::format_all);
