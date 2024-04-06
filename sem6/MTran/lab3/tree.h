@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "token.h"
+#include "scope.h"
 
 template <typename T>
 using V = std::vector<T>;
@@ -104,7 +105,7 @@ struct BadExpr : Expr {
 struct IdentExpr : Expr {
     pos_t NamePos;  // identifier position
     std::string Name;
-    // TODO *Object ??? to store additional info
+    SP<Object> Obj;
 
     IdentExpr(pos_t pos, std::string name) : NamePos(pos), Name(name) {}
 

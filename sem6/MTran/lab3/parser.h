@@ -70,7 +70,6 @@ class parser {
     pos_t expectClosing(token_type tok, std::string context);
     void expectSemi();
     bool atComma(std::string context, token_type follow);
-    void assert(bool cond, std::string msg);
     void advance(const std::unordered_map<token_type, bool> to);
     SP<IdentExpr> parseIdent();
     V<SP<IdentExpr>> parseIdentList();
@@ -110,7 +109,6 @@ class parser {
     SP<Expr> parseElement();
     V<SP<Expr>> parseElementList();
     SP<Expr> parseLiteralValue(SP<Expr> typ);
-    SP<Expr> unparen(SP<Expr> x);
     SP<Expr> parsePrimaryExpr(SP<Expr> x);
     SP<Expr> parseUnaryExpr();
     SP<Expr> parseBinaryExpr(SP<Expr> x, int prec1);
@@ -152,6 +150,9 @@ class parser {
     ~parser() {}
     void parseFile();
     void printErrors() const;
+    V<SP<Decl>> getDecls() const { return decls_; }
+
+    V<Error> getErrors() const { return errors_; }
 
     std::string getTreeStr() const {
         if (!errors_.empty()) {
@@ -283,7 +284,7 @@ bool parser::atComma(std::string context, token_type follow) {
     return false;
 }
 
-void parser::assert(bool cond, std::string msg) {
+void assert(bool cond, std::string msg) {
     if (!cond) {
         throw std::runtime_error("internal parser error: " + msg);
     }
@@ -1248,7 +1249,7 @@ SP<Expr> parser::parseLiteralValue(SP<Expr> typ) {
     return std::make_shared<CompositeLitExpr>(typ, lbrace, elts, rbrace);
 }
 
-SP<Expr> parser::unparen(SP<Expr> x) {
+SP<Expr> unparen(SP<Expr> x) {
     auto pair = isOfType<ParenExpr>(x.get());
     if (pair.second) {
         x = unparen(pair.first->X);
