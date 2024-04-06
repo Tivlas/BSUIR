@@ -3,6 +3,8 @@
 
 int main() {
     std::filesystem::path path = "f.txt";
-    semantic sem(path);
+    
+    auto sem = std::make_shared<semantic>(path);
+    sem->analyze();
     return 0;
 }

@@ -35,7 +35,7 @@ struct Object {
     std::any Data;
     std::any Type;
 
-    pos_t Pos() const { throw std::runtime_error("Not implemented"); }
+    pos_t Pos() const { return {}; }
 
     Object() {}
     Object(ObjKind kind, std::string name) : Kind(kind), Name(name) {}

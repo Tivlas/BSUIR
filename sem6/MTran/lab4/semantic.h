@@ -50,7 +50,7 @@ class semantic : public Visitor, public std::enable_shared_from_this<semantic> {
     // END RESOLVER
 
     void error(pos_t pos, std::string msg);
-
+    void resolveFile();
    public:
     semantic(const std::filesystem::path&);
     void analyze();
@@ -479,4 +479,38 @@ void semantic::walkBody(SP<BlockStmt> body) {
     openLabelScope();
     walkStmts(body->List);
     closeLabelScope();
+}
+
+void semantic::resolveFile() {
+    pkgScope_ = std::make_shared<Scope>(nullptr);
+    topScope_ = std::make_shared<Scope>(nullptr);
+    depth_ = 1;
+
+    for (auto decl: decls_) {
+        Walk(shared_from_this(), decl);
+    }
+
+    closeScope();
+    assert(topScope_ == nullptr, "unbalanced scopes");
+    assert(labelScope_ == nullptr, "unbalanced label scopes");
+
+    // TODO rest code
+    size_t i = 0; 
+    for (auto ident: unresolved_) {
+        assert(ident->Obj == unresolved, "object already resolved");
+        ident->Obj = pkgScope_->Lookup(ident->Name);
+        if (ident->Obj == nullptr) {
+            unresolved_[i] = ident;
+            i++;
+        }
+        //errors_.push_back({ident->Pos(), "unknown var"});
+    }
+}
+
+void semantic::analyze() {
+    resolveFile();
+
+    for (auto err: errors_) {
+        std::cout << err.pos.ToString() + "---" + err.msg << "\n";
+    }
 }

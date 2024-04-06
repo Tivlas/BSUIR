@@ -8,7 +8,7 @@ struct Visitor {
     virtual SP<Visitor> Visit(SP<Node> n) = 0;
 };
 
-using inspectorFunc = std::function<bool(SP<Node>)>;
+/* using inspectorFunc = std::function<bool(SP<Node>)>;
 
 struct Inspector : Visitor, std::enable_shared_from_this<Inspector> {
     inspectorFunc f;
@@ -20,11 +20,11 @@ struct Inspector : Visitor, std::enable_shared_from_this<Inspector> {
             return shared_from_this();
         }
     }
-};
+}; */
 
 void Walk(SP<Visitor> v, SP<Node> n);
 
-void Inspect(SP<Node> node, SP<Inspector> f) { Walk(f, node); }
+// void Inspect(SP<Node> node, SP<Inspector> f) { Walk(f, node); }
 
 void walkIdentList(SP<Visitor> v, V<SP<IdentExpr>> list) {
     for (auto x : list) {
