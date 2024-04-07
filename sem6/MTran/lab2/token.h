@@ -20,6 +20,7 @@ enum class token_type : uint8_t {
     literal_end,  // END
     // Operators
     operators_beg,   // BEG
+    numeric_operators_beg,
     ADD,             // +
     SUB,             // -
     MUL,             // *
@@ -31,6 +32,7 @@ enum class token_type : uint8_t {
     SHL,             // <<
     SHR,             // >>
     AND_NOT,         // &^
+    numeric_operators_end,
     ADD_ASSIGN,      // +=
     SUB_ASSIGN,      // -=
     MUL_ASSIGN,      // *=
@@ -41,19 +43,23 @@ enum class token_type : uint8_t {
     XOR_ASSIGN,      // ^=
     SHL_ASSIGN,      // <<=
     SHR_ASSIGN,      // >>=
+    ASSIGN,          // =
     AND_NOT_ASSIGN,  // &^=
+    logical_operators_beg,
     LAND,            // &&
     LOR,             // ||
+    logical_operators_end,
     INC,             // ++
     DEC,             // --
+    compare_operators_beg,
     EQL,             // ==
     LSS,             // <
     GTR,             // >
-    ASSIGN,          // =
     NOT,             // !
     NEQ,             // !=
     LEQ,             // <=
     GEQ,             // >=
+    compare_operators_end,
     DEFINE,          // :=
     ELLIPSIS,        // ...
     LPAREN,          // (

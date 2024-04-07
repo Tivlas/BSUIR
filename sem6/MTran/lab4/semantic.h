@@ -1,7 +1,7 @@
 #pragma once
 #include "error.h"
 #include "parser.h"
-#include "scope.h"
+#include "types.h"
 #include "walk.h"
 
 template <typename T>
@@ -32,7 +32,7 @@ class semantic : public Visitor, public std::enable_shared_from_this<semantic> {
     void openLabelScope();
     void closeLabelScope();
 
-    void declare(std::any decl, std::any data, SP<Scope> scope, ObjKind kind,
+    void declare(SP<Node> decl, SP<Expr> type, SP<Scope> scope, ObjKind kind,
                  V<SP<IdentExpr>> idents);
     void shortVarDecl(SP<AssignStmt> decl);
     void resolve(SP<IdentExpr> ident, bool collectUnresolved);
@@ -47,10 +47,17 @@ class semantic : public Visitor, public std::enable_shared_from_this<semantic> {
     void walkFieldList(SP<FieldList> list, ObjKind kind);
     void walkTParams(SP<FieldList> list);
     void walkBody(SP<BlockStmt> body);
+    bool checkDeclarationLeftType(SP<Expr> type);
+    bool checkExprType(SP<Expr> expr, SP<Expr> typeToBeEqualTo);
+    SP<Expr> validateExprAndReturnType(SP<Expr> expr);
+    SP<Expr> callExprType(SP<Expr> call);
+    bool isUnknown(SP<IdentExpr> ident);
+    void compareCallArgs(V<SP<Expr>> callArgs, SP<FieldList> realArgs);
     // END RESOLVER
 
     void error(pos_t pos, std::string msg);
     void resolveFile();
+
    public:
     semantic(const std::filesystem::path&);
     void analyze();
@@ -58,6 +65,7 @@ class semantic : public Visitor, public std::enable_shared_from_this<semantic> {
 
 semantic::semantic(const std::filesystem::path& path) : parser(path) {
     parser.parseFile();
+    std::cout << parser.getTreeStr() << "\n";
     errors_ = std::move(parser.getErrors());
     decls_ = std::move(parser.getDecls());
 }
@@ -97,7 +105,7 @@ void semantic::closeLabelScope() {
     labelScope_ = labelScope_->Outer;
 }
 
-void semantic::declare(std::any decl, std::any data, SP<Scope> scope, ObjKind kind,
+void semantic::declare(SP<Node> decl, SP<Expr> type, SP<Scope> scope, ObjKind kind,
                        V<SP<IdentExpr>> idents) {
     for (auto ident : idents) {
         if (ident->Obj != nullptr) {
@@ -107,9 +115,9 @@ void semantic::declare(std::any decl, std::any data, SP<Scope> scope, ObjKind ki
         auto obj = std::make_shared<Object>(kind, ident->Name);
 
         obj->Decl = decl;
-        obj->Data = data;
+        obj->Type = type;
 
-        if (decl.type() != typeid(SP<IdentExpr>)) {
+        if (isOfType<IdentExpr>(decl.get()).second == false) {
             ident->Obj = obj;
         }
         if (ident->Name != "_") {
@@ -119,7 +127,7 @@ void semantic::declare(std::any decl, std::any data, SP<Scope> scope, ObjKind ki
                     prevDecl = "\n\tprevious declaration at " + pos.ToString();
                 }
                 errors_.push_back(
-                    {ident->Pos(), ident->Name + "redeclared in this block" + prevDecl});
+                    {ident->Pos(), ident->Name + " redeclared in this block" + prevDecl});
             }
         }
     }
@@ -127,11 +135,16 @@ void semantic::declare(std::any decl, std::any data, SP<Scope> scope, ObjKind ki
 
 void semantic::shortVarDecl(SP<AssignStmt> decl) {
     int n = 0;
+    if (decl->Lhs.size() != decl->Rhs.size())
+        throw std::runtime_error(decl->Pos().ToString() + " different number of values");
+    size_t idx = 0;
     for (auto x : decl->Lhs) {
         if (auto [ident, isIdent] = isOfType<IdentExpr>(x.get()); isIdent) {
             assert(ident->Obj == nullptr, "identifier already declared or resolved");
             auto obj = std::make_shared<Object>(Var, ident->Name);
             obj->Decl = decl;
+            obj->Type = validateExprAndReturnType(decl->Rhs[idx]);
+            idx++;
             ident->Obj = obj;
             if (ident->Name != "_") {
                 if (auto alt = topScope_->Insert(obj); alt != nullptr) {
@@ -159,16 +172,11 @@ void semantic::resolve(SP<IdentExpr> ident, bool collectUnresolved) {
     for (auto s = topScope_; s != nullptr; s = s->Outer) {
         if (auto obj = s->Lookup(ident->Name); obj != nullptr) {
             assert(obj->Name != "", "obj with no name");
-            if (obj->Decl.type() != typeid(SP<IdentExpr>)) {
+            if (isOfType<IdentExpr>(obj->Decl.get()).second == false) {
                 ident->Obj = obj;
             }
             return;
         }
-    }
-
-    if (collectUnresolved) {
-        ident->Obj = unresolved;
-        unresolved_.push_back(ident);
     }
 }
 
@@ -197,6 +205,8 @@ SP<Visitor> semantic::Visit(SP<Node> node) {
     const auto get = node.get();
     if (auto [n, is] = isOfType<IdentExpr>(get); is) {
         resolve(shared(n), true);
+    } else if (auto [n, is] = isOfType<CallExpr>(get); is) {
+        validateExprAndReturnType(shared(n));
     } else if (auto [n, is] = isOfType<FuncLitExpr>(get); is) {
         openScope(n->Pos());
         walkFuncType(n->Type);
@@ -338,26 +348,40 @@ SP<Visitor> semantic::Visit(SP<Node> node) {
             case token_type::VAR: {
                 for (size_t i = 0; i < n->Specs.size(); i++) {
                     auto spec = isOfType<ValueSpec>(n->Specs[i].get()).first;
+                    if (spec->Names.size() != spec->Values.size()) {
+                        throw std::runtime_error(spec->Pos().ToString() +
+                                                 " different number of values in declaration");
+                    }
                     auto kind = Con;
                     if (n->Tok == token_type::VAR) {
                         kind = Var;
                     }
                     walkExprs(spec->Values);
                     if (spec->Type != nullptr) {
-                        Walk(shared_from_this(), spec->Type);
+                        if (checkDeclarationLeftType(spec->Type) == false) {
+                            throw std::runtime_error(spec->Pos().ToString() + " invalid type");
+                        }
+                        for (auto e : spec->Values) {
+                            if (checkExprType(e, spec->Type) == false) {
+                                throw std::runtime_error(e->Pos().ToString() + " invalid type");
+                            }
+                        }
+                        declare(shared(spec), spec->Type, topScope_, kind, spec->Names);
+                    } else {
+                        size_t idx = 0;
+                        for (auto name : spec->Names) {
+                            declare(shared(spec), validateExprAndReturnType(spec->Values[idx]),
+                                    topScope_, kind, {name});
+                            idx++;
+                        }
                     }
-                    declare(shared(spec), i, topScope_, kind, spec->Names);
                 }
                 break;
             }
             case token_type::TYPE: {
                 for (size_t i = 0; i < n->Specs.size(); i++) {
                     auto spec = isOfType<TypeSpec>(n->Specs[i].get()).first;
-                    declare(shared(spec), nullptr, topScope_, Typ, {spec->Name});
-                    if (spec->TypeParams != nullptr) {
-                        openScope(spec->Pos());
-                        walkTParams(spec->TypeParams);
-                    }
+                    declare(shared(spec), spec->Name, topScope_, Typ, {spec->Name});
                     Walk(shared_from_this(), spec->Type);
                     if (spec->TypeParams != nullptr) closeScope();
                 }
@@ -380,13 +404,187 @@ SP<Visitor> semantic::Visit(SP<Node> node) {
 
         walkBody(n->Body);
         if (n->Recv == nullptr && n->Name->Name != "init") {
-            declare(shared(n), nullptr, pkgScope_, Fun, {n->Name});
+            declare(shared(n), n->Type, pkgScope_, Fun, {n->Name});
         }
         closeScope();
     } else {
         return shared_from_this();
     }
 
+    return nullptr;
+}
+
+bool semantic::checkDeclarationLeftType(SP<Expr> type) {
+    if (auto [ident, is] = isOfType<IdentExpr>(type.get()); is) {
+        if (BUILT_IN_TYPES.contains(ident->Name)) {
+            return true;
+        }
+        for (auto sc = topScope_; sc != nullptr; sc = sc->Outer) {
+            auto obj = sc->Lookup(ident->Name);
+            if (obj != nullptr && obj->Kind == Typ) return true;
+        }
+    }
+    return false;
+}
+
+bool semantic::checkExprType(SP<Expr> expr, SP<Expr> typeToBeEqualTo) {
+    auto typ = validateExprAndReturnType(expr);
+    if (typ == nullptr) return false;
+    return *typ == *typeToBeEqualTo;
+}
+
+void semantic::compareCallArgs(V<SP<Expr>> callArgs, SP<FieldList> realArgs) {
+    size_t len = 0;
+    for (auto f : realArgs->List) {
+        len += f->Names.size();
+    }
+    if (len != callArgs.size())
+        throw std::runtime_error(callArgs[0]->Pos().ToString() +
+                                 " invalid args number in func call");
+    size_t idx = 0;
+    for (auto f : realArgs->List) {
+        for (auto name : f->Names) {
+            if (checkExprType(callArgs[idx], f->Type) == false)
+                throw std::runtime_error(callArgs[0]->Pos().ToString() +
+                                         " invalid args types in func call");
+            idx++;
+        }
+    }
+}
+
+SP<IdentExpr> getFuncName(SP<CallExpr> call) {
+    if (auto [ident, is] = isOfType<IdentExpr>(call->Fun.get()); is) {
+        return shared(ident);
+    } else if (auto [sel, is] = isOfType<SelectorExpr>(call->Fun.get()); is) {
+        return sel->Sel;
+    }
+    return nullptr;
+}
+
+SP<Expr> semantic::callExprType(SP<Expr> call) {
+    if (auto [ptr, is] = isOfType<CallExpr>(call.get()); is) {
+        auto typ = callExprType(ptr->Fun);
+        auto ident = getFuncName(shared(ptr));
+        for (auto sc = pkgScope_; sc != nullptr; sc = sc->Outer) {
+            auto obj = sc->Lookup(ident->Name);
+            if (obj != nullptr && obj->Kind == Fun) {
+                auto decl = obj->Decl;
+                if (auto [funcDecl, is] = isOfType<FuncDecl>(decl.get()); is) {
+                    auto funcType = funcDecl->Type;
+                    auto params = funcType->Params;
+                    compareCallArgs(ptr->Args, params);
+                }
+            }
+        }
+        return typ;
+    } else if (auto [ptr, is] = isOfType<SelectorExpr>(call.get()); is) {
+        return callExprType(ptr->Sel);
+    } else if (auto [ident, is] = isOfType<IdentExpr>(call.get()); is) {
+        for (auto sc = pkgScope_; sc != nullptr; sc = sc->Outer) {
+            auto obj = sc->Lookup(ident->Name);
+            if (obj != nullptr && obj->Kind == Fun) {
+                auto decl = obj->Decl;
+                if (auto [funcDecl, is] = isOfType<FuncDecl>(decl.get()); is) {
+                    auto funcType = funcDecl->Type;
+                    auto results = funcType->Results;
+                    if (results == nullptr || results->List.empty()) return nullptr;
+                    auto res = results->List[0];
+                    return res->Type;
+                }
+            }
+        }
+    }
+    return nullptr;
+}
+
+bool semantic::isUnknown(SP<IdentExpr> ident) {
+    for (auto sc = topScope_; sc != nullptr; sc = sc->Outer) {
+        auto obj = sc->Lookup(ident->Name);
+        if (obj != nullptr && (obj->Kind == Var || obj->Kind == Con)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+SP<Expr> semantic::validateExprAndReturnType(SP<Expr> expr) {
+    const auto get = expr.get();
+    if (auto [ptr, is] = isOfType<ParenExpr>(get); is) {
+        return validateExprAndReturnType(ptr->X);
+    } else if (auto [ptr, is] = isOfType<BinaryExpr>(get); is) {
+        auto l = validateExprAndReturnType(ptr->X);
+        auto r = validateExprAndReturnType(ptr->Y);
+        if (*l != *r) throw std::runtime_error(l->Pos().ToString() + " invalid types");
+
+        auto typ = isOfType<IdentExpr>(l.get()).first;  // TODO check
+        if (ptr->Op == token_type::ADD && typ->Name == "string") {
+            return l;
+        } else if (ptr->Op > token_type::logical_operators_beg &&
+                   ptr->Op < token_type::logical_operators_end && typ->Name != "bool") {
+            throw std::runtime_error(ptr->Pos().ToString() +
+                                     " cannot use logical operators with not bool type");
+        } else if (ptr->Op > token_type::numeric_operators_beg &&
+                   ptr->Op < token_type::numeric_operators_end &&
+                   !NUMERIC_TYPES.contains(typ->Name)) {
+            throw std::runtime_error(ptr->Pos().ToString() +
+                                     " cannot use numeric operator with non numeric type");
+        } else if (ptr->Op > token_type::compare_operators_beg &&
+                   ptr->Op < token_type::compare_operators_end) {
+            if (BUILT_IN_TYPES.contains(typ->Name)) {
+                return std::make_shared<IdentExpr>(ptr->Pos(), "bool");
+            }
+            throw std::runtime_error(ptr->Pos().ToString() +
+                                     " cannot use comparison operator with non built-in type");
+        }
+        return l;
+    } else if (auto [ptr, is] = isOfType<UnaryExpr>(get); is) {
+        auto typ = validateExprAndReturnType(ptr->X);
+        auto t = isOfType<IdentExpr>(typ.get()).first;  // TODO check
+        if (ptr->Op == token_type::NOT) {
+            if (t->Name == "bool") return std::make_shared<IdentExpr>(ptr->Pos(), "bool");
+            throw std::runtime_error(ptr->Pos().ToString() + " cannot use ! on not bool type");
+        } else if ((ptr->Op == token_type::INC || ptr->Op == token_type::DEC ||
+                    ptr->Op == token_type::ADD || ptr->Op == token_type::SUB) &&
+                   !NUMERIC_TYPES.contains(t->Name)) {
+            throw std::runtime_error(ptr->Pos().ToString() +
+                                     " cannot use \'++ -- + -\' on not numeric type");
+        }
+        return typ;
+    } else if (auto [ptr, is] = isOfType<CallExpr>(get); is) {
+        return callExprType(expr);
+    } else if (auto [ptr, is] = isOfType<CompositeLitExpr>(get); is) {
+        return ptr->Type;
+    } else if (auto [ptr, is] = isOfType<BasicLitExpr>(get); is) {
+        switch (ptr->Kind) {
+            case token_type::INT: {
+                return std::make_shared<IdentExpr>(ptr->Pos(), "int");
+            }
+            case token_type::STRING: {
+                return std::make_shared<IdentExpr>(ptr->Pos(), "string");
+            }
+            case token_type::CHAR: {
+                return std::make_shared<IdentExpr>(ptr->Pos(), "rune");
+            }
+            case token_type::FLOAT: {
+                return std::make_shared<IdentExpr>(ptr->Pos(), "float64");
+            }
+            case token_type::IMAG: {
+                return std::make_shared<IdentExpr>(ptr->Pos(), "complex64");
+            }
+
+            default:
+                return nullptr;
+        }
+    } else if (auto [ptr, is] = isOfType<IdentExpr>(get); is) {
+        if (isUnknown(shared(ptr)))
+            throw std::runtime_error(ptr->Pos().ToString() + " unknown ident " + ptr->Name);
+        if (ptr->Name == "false" || ptr->Name == "true")
+            return std::make_shared<IdentExpr>(ptr->Pos(), "bool");
+        for (auto sc = topScope_; sc != nullptr; sc = sc->Outer) {
+            auto obj = sc->Lookup(ptr->Name);
+            if (obj != nullptr && (obj->Kind == Var || obj->Kind == Con)) return obj->Type;
+        }
+    }
     return nullptr;
 }
 
@@ -413,7 +611,7 @@ void semantic::declareList(SP<FieldList> list, ObjKind kind) {
         return;
     }
     for (auto f : list->List) {
-        declare(f, nullptr, topScope_, kind, f->Names);
+        declare(f, f->Type, topScope_, kind, f->Names);
     }
 }
 
@@ -486,7 +684,7 @@ void semantic::resolveFile() {
     topScope_ = std::make_shared<Scope>(nullptr);
     depth_ = 1;
 
-    for (auto decl: decls_) {
+    for (auto decl : decls_) {
         Walk(shared_from_this(), decl);
     }
 
@@ -495,22 +693,22 @@ void semantic::resolveFile() {
     assert(labelScope_ == nullptr, "unbalanced label scopes");
 
     // TODO rest code
-    size_t i = 0; 
-    for (auto ident: unresolved_) {
+    size_t i = 0;
+    for (auto ident : unresolved_) {
         assert(ident->Obj == unresolved, "object already resolved");
         ident->Obj = pkgScope_->Lookup(ident->Name);
         if (ident->Obj == nullptr) {
             unresolved_[i] = ident;
             i++;
         }
-        //errors_.push_back({ident->Pos(), "unknown var"});
+        // errors_.push_back({ident->Pos(), "unknown var"});
     }
 }
 
 void semantic::analyze() {
     resolveFile();
 
-    for (auto err: errors_) {
+    for (auto err : errors_) {
         std::cout << err.pos.ToString() + "---" + err.msg << "\n";
     }
 }

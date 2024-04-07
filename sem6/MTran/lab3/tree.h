@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "token.h"
-#include "scope.h"
 
 template <typename T>
 using V = std::vector<T>;
@@ -13,6 +12,9 @@ template <typename T>
 using SP = std::shared_ptr<T>;
 
 using pos_t = Token::token_position;
+
+struct Object;
+struct Scope;
 
 pos_t operator+(const pos_t& pos, int n) {
     auto tmp = pos;
@@ -116,7 +118,7 @@ struct IdentExpr : Expr {
     virtual bool operator==(const Node& rhs) const override {
         if (sameType(*this, rhs)) {
             auto& casted = dynamic_cast<const IdentExpr&>(rhs);
-            return NamePos == casted.NamePos && Name == casted.Name;
+            return Name == casted.Name;
         }
         return false;
     }
@@ -1501,8 +1503,6 @@ struct RangeStmt : Stmt {
             res += Value->Print(shiftSize + 4);
         }
         res += std::string(shiftSize + 2, shiftChar) + type_string_map.at(Tok) + '\n';
-        // res += std::string(shiftSize + 2, shiftChar) + "Range pos " +
-        // Range.ToString() + '\n';
         if (X != nullptr) {
             res += X->Print(shiftSize + 4);
         }
@@ -1817,3 +1817,51 @@ struct FuncDecl : Decl {
 };
 
 // end Declarations
+
+enum ObjKind : int {
+    Bad,  // for error handling
+    Pkg,  // package
+    Con,  // constant
+    Typ,  // type
+    Var,  // variable
+    Fun,  // function or method
+    Lbl,
+};
+
+std::unordered_map<ObjKind, std::string> ObjKindStrings = {
+    {Bad, "bad"}, {Pkg, "package"}, {Con, "const"}, {Typ, "type"},
+    {Var, "var"}, {Fun, "func"},    {Lbl, "label"},
+};
+
+struct Object {
+    ObjKind Kind;
+    std::string Name;
+    SP<Node> Decl;
+    SP<Expr> Type;
+
+    pos_t Pos() const { return {}; }
+
+    Object() {}
+    Object(ObjKind kind, std::string name) : Kind(kind), Name(name) {}
+};
+
+struct Scope {
+    SP<Scope> Outer;
+    std::unordered_map<std::string, SP<Object>> Objects;
+
+    Scope(SP<Scope> outer) : Outer(outer) {}
+
+    SP<Object> Lookup(std::string name) {
+        if (Objects.find(name) == Objects.end()) return nullptr;
+        return Objects[name];
+    }
+
+    SP<Object> Insert(SP<Object> obj) {
+        SP<Object> alt = nullptr;
+        if (Objects.find(obj->Name) == Objects.end()) {
+            Objects[obj->Name] = obj;
+            return nullptr;
+        }
+        return Objects[obj->Name];
+    }
+};

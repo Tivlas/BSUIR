@@ -1,5 +1,14 @@
 package main
 
+const CON = 4;
+
+func F(a, b int) int {
+    id = "a"
+}
+
 func main() {
-    a++
+    var g int = F(3, 4)
+    gg := F("a", 4)
+    var a, b = 1, "as"
+    var c int = CON
 }
