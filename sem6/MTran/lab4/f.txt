@@ -1,14 +1,16 @@
 package main
 
-const CON = 4;
+type S struct {
+    s string
+}
 
-func F(a, b int) int {
-    id = "a"
+func (s *S) F1(a int) int {
+
 }
 
 func main() {
-    var g int = F(3, 4)
-    gg := F("a", 4)
-    var a, b = 1, "as"
-    var c int = CON
+    s := S{}
+    s.s = "a"
+    a := 3
+    a = s.F2(1)
 }

@@ -53,6 +53,9 @@ class semantic : public Visitor, public std::enable_shared_from_this<semantic> {
     SP<Expr> callExprType(SP<Expr> call);
     bool isUnknown(SP<IdentExpr> ident);
     void compareCallArgs(V<SP<Expr>> callArgs, SP<FieldList> realArgs);
+    SP<IdentExpr> getFuncName(SP<CallExpr> call);
+    bool checkConstChange(SP<Expr> expr);
+    SP<Expr> checkSelectorFieldAndReturnItsType(SP<SelectorExpr> n);
     // END RESOLVER
 
     void error(pos_t pos, std::string msg);
@@ -201,6 +204,43 @@ void semantic::walkStmts(V<SP<Stmt>> list) {
     }
 }
 
+bool semantic::checkConstChange(SP<Expr> expr) {
+    if (auto [ident, is] = isOfType<IdentExpr>(expr.get()); is) {
+        for (auto sc = topScope_; sc != nullptr; sc = sc->Outer) {
+            auto obj = sc->Lookup(ident->Name);
+            if (obj != nullptr && obj->Kind == Con) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+SP<Expr> semantic::checkSelectorFieldAndReturnItsType(SP<SelectorExpr> n) {
+    auto typ = validateExprAndReturnType(n->X);
+    auto typIdent = isOfType<IdentExpr>(typ.get()).first;
+    for (auto sc = topScope_; sc != nullptr; sc = sc->Outer) {
+        auto obj = sc->Lookup(typIdent->Name);
+        if (obj != nullptr && obj->Kind == Typ) {
+            auto decl = obj->Decl;
+            auto typeSpec = isOfType<TypeSpec>(decl.get()).first;
+            auto sDecl = isOfType<StructTypeExpr>(typeSpec->Type.get()).first;
+            if (sDecl == nullptr || sDecl->Fields == nullptr) {
+                throw std::runtime_error(n->Pos().ToString() + " no such field");
+            }
+            for (auto field : sDecl->Fields->List) {
+                for (auto name : field->Names) {
+                    if (n->Sel->Name == name->Name) {
+                        return field->Type;
+                    }
+                }
+            }
+            throw std::runtime_error(n->Pos().ToString() + " no such field");
+        }
+    }
+    return nullptr;
+}
+
 SP<Visitor> semantic::Visit(SP<Node> node) {
     const auto get = node.get();
     if (auto [n, is] = isOfType<IdentExpr>(get); is) {
@@ -213,6 +253,7 @@ SP<Visitor> semantic::Visit(SP<Node> node) {
         walkBody(n->Body);
         closeScope();
     } else if (auto [n, is] = isOfType<SelectorExpr>(get); is) {
+        checkSelectorFieldAndReturnItsType(shared(n));
         Walk(shared_from_this(), n->X);
     } else if (auto [n, is] = isOfType<StructTypeExpr>(get); is) {
         openScope(n->Pos());
@@ -245,12 +286,34 @@ SP<Visitor> semantic::Visit(SP<Node> node) {
     } else if (auto [n, is] = isOfType<LabeledStmt>(get); is) {
         declare(shared(n), nullptr, labelScope_, Lbl, {n->Label});
         Walk(shared_from_this(), n->Stmt_);
+    } else if (auto [n, is] = isOfType<IncDecStmt>(get); is) {
+        validateExprAndReturnType(n->X);
+        if (checkConstChange(n->X)) {
+            throw std::runtime_error(n->Pos().ToString() +
+                                     " ++ and -- are not allowed on const value");
+        }
+        Walk(shared_from_this(), n->X);
     } else if (auto [n, is] = isOfType<AssignStmt>(get); is) {
         walkExprs(n->Rhs);
         if (n->Tok == token_type::DEFINE) {
             shortVarDecl(shared(n));
         } else {
             walkExprs(n->Lhs);
+        }
+        if (n->Lhs.size() != n->Rhs.size()) {
+            throw std::runtime_error(n->Pos().ToString() +
+                                     " diffenert number of values in assignment");
+        }
+        for (size_t i = 0; i < n->Lhs.size(); i++) {
+            auto lExpr = n->Lhs[i];
+            if (checkConstChange(lExpr)) {
+                throw std::runtime_error(n->Pos().ToString() + " assigning to const value");
+            }
+            auto rType = validateExprAndReturnType(n->Rhs[i]);
+            if (checkExprType(lExpr, rType) == false) {
+                throw std::runtime_error(n->Pos().ToString() +
+                                         " diffenert types of values in assignment");
+            }
         }
     } else if (auto [n, is] = isOfType<BranchStmt>(get); is) {
         if (n->Tok != token_type::FALLTHROUGH && n->Label != nullptr) {
@@ -403,9 +466,7 @@ SP<Visitor> semantic::Visit(SP<Node> node) {
         declareList(n->Type->Results, Var);
 
         walkBody(n->Body);
-        if (n->Recv == nullptr && n->Name->Name != "init") {
-            declare(shared(n), n->Type, pkgScope_, Fun, {n->Name});
-        }
+        declare(shared(n), n->Type, pkgScope_, Fun, {n->Name});
         closeScope();
     } else {
         return shared_from_this();
@@ -427,6 +488,7 @@ bool semantic::checkDeclarationLeftType(SP<Expr> type) {
     return false;
 }
 
+// First arg will be validated, do not validate it manually before calling this method
 bool semantic::checkExprType(SP<Expr> expr, SP<Expr> typeToBeEqualTo) {
     auto typ = validateExprAndReturnType(expr);
     if (typ == nullptr) return false;
@@ -452,7 +514,7 @@ void semantic::compareCallArgs(V<SP<Expr>> callArgs, SP<FieldList> realArgs) {
     }
 }
 
-SP<IdentExpr> getFuncName(SP<CallExpr> call) {
+SP<IdentExpr> semantic::getFuncName(SP<CallExpr> call) {
     if (auto [ident, is] = isOfType<IdentExpr>(call->Fun.get()); is) {
         return shared(ident);
     } else if (auto [sel, is] = isOfType<SelectorExpr>(call->Fun.get()); is) {
@@ -463,21 +525,64 @@ SP<IdentExpr> getFuncName(SP<CallExpr> call) {
 
 SP<Expr> semantic::callExprType(SP<Expr> call) {
     if (auto [ptr, is] = isOfType<CallExpr>(call.get()); is) {
+        bool isMethod = isOfType<SelectorExpr>(ptr->Fun.get()).second;
         auto typ = callExprType(ptr->Fun);
         auto ident = getFuncName(shared(ptr));
+        bool found = false;
         for (auto sc = pkgScope_; sc != nullptr; sc = sc->Outer) {
             auto obj = sc->Lookup(ident->Name);
             if (obj != nullptr && obj->Kind == Fun) {
+                found = true;
                 auto decl = obj->Decl;
                 if (auto [funcDecl, is] = isOfType<FuncDecl>(decl.get()); is) {
                     auto funcType = funcDecl->Type;
                     auto params = funcType->Params;
+                    if (isMethod && funcDecl->Recv == nullptr) {
+                        throw std::runtime_error(ptr->Pos().ToString() + " no such method");
+                    }
+                    if (!isMethod && funcDecl->Recv != nullptr) {
+                        throw std::runtime_error(ptr->Pos().ToString() + " no such function");
+                    }
                     compareCallArgs(ptr->Args, params);
                 }
             }
         }
+        if (!found) {
+            throw std::runtime_error(ptr->Pos().ToString() + " no such function or method");
+        }
         return typ;
     } else if (auto [ptr, is] = isOfType<SelectorExpr>(call.get()); is) {
+        auto typ = validateExprAndReturnType(ptr->X);
+        auto typIdent = isOfType<IdentExpr>(typ.get()).first;
+        bool found = false;
+        for (auto sc = pkgScope_; sc != nullptr; sc = sc->Outer) {
+            auto obj = sc->Lookup(ptr->Sel->Name);
+            if (obj != nullptr && obj->Kind == Fun) {
+                found = true;
+                auto decl = obj->Decl;
+                auto funcDecl = isOfType<FuncDecl>(decl.get()).first;
+                if (funcDecl->Recv != nullptr) {
+                    auto recv = funcDecl->Recv;
+                    for (auto f : recv->List) {
+                        if (auto [starE, is] = isOfType<StarExpr>(f->Type.get()); is) {
+                            auto recvType = isOfType<IdentExpr>(starE->X.get()).first;
+                            if (recvType->Name != typIdent->Name) {
+                                throw std::runtime_error(ptr->Pos().ToString() + " no such method");
+                            }
+                        } else if (auto [ident, is] = isOfType<IdentExpr>(f->Type.get()); is) {
+                            if (ident->Name != typIdent->Name) {
+                                throw std::runtime_error(ptr->Pos().ToString() + " no such method");
+                            }
+                        }
+                    }
+                } else {
+                    throw std::runtime_error(ptr->Pos().ToString() + " no such method");
+                }
+            }
+        }
+        if (!found) {
+            throw std::runtime_error(ptr->Pos().ToString() + " no such function or method");
+        }
         return callExprType(ptr->Sel);
     } else if (auto [ident, is] = isOfType<IdentExpr>(call.get()); is) {
         for (auto sc = pkgScope_; sc != nullptr; sc = sc->Outer) {
@@ -552,6 +657,8 @@ SP<Expr> semantic::validateExprAndReturnType(SP<Expr> expr) {
         return typ;
     } else if (auto [ptr, is] = isOfType<CallExpr>(get); is) {
         return callExprType(expr);
+    } else if (auto [ptr, is] = isOfType<SelectorExpr>(get); is) {
+        return checkSelectorFieldAndReturnItsType(shared(ptr));
     } else if (auto [ptr, is] = isOfType<CompositeLitExpr>(get); is) {
         return ptr->Type;
     } else if (auto [ptr, is] = isOfType<BasicLitExpr>(get); is) {
