@@ -299,20 +299,20 @@ SP<Visitor> semantic::Visit(SP<Node> node) {
             shortVarDecl(shared(n));
         } else {
             walkExprs(n->Lhs);
-        }
-        if (n->Lhs.size() != n->Rhs.size()) {
-            throw std::runtime_error(n->Pos().ToString() +
-                                     " diffenert number of values in assignment");
-        }
-        for (size_t i = 0; i < n->Lhs.size(); i++) {
-            auto lExpr = n->Lhs[i];
-            if (checkConstChange(lExpr)) {
-                throw std::runtime_error(n->Pos().ToString() + " assigning to const value");
-            }
-            auto rType = validateExprAndReturnType(n->Rhs[i]);
-            if (checkExprType(lExpr, rType) == false) {
+            if (n->Lhs.size() != n->Rhs.size()) {
                 throw std::runtime_error(n->Pos().ToString() +
-                                         " diffenert types of values in assignment");
+                                         " diffenert number of values in assignment");
+            }
+            for (size_t i = 0; i < n->Lhs.size(); i++) {
+                auto lExpr = n->Lhs[i];
+                if (checkConstChange(lExpr)) {
+                    throw std::runtime_error(n->Pos().ToString() + " assigning to const value");
+                }
+                auto rType = validateExprAndReturnType(n->Rhs[i]);
+                if (checkExprType(lExpr, rType) == false) {
+                    throw std::runtime_error(n->Pos().ToString() +
+                                             " diffenert types of values in assignment");
+                }
             }
         }
     } else if (auto [n, is] = isOfType<BranchStmt>(get); is) {

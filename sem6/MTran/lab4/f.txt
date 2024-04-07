@@ -8,9 +8,11 @@ func (s *S) F1(a int) int {
 
 }
 
+func F2(a string) int {
+
+}
+
 func main() {
-    s := S{}
-    s.s = "a"
-    a := 3
-    a = s.F2(1)
+    a := [3]int{1, 2, 3}
+    var b [3]int = a
 }
