@@ -138,7 +138,7 @@ void semantic::declare(SP<Node> decl, SP<Expr> type, SP<Scope> scope, ObjKind ki
 
 void semantic::shortVarDecl(SP<AssignStmt> decl) {
     int n = 0;
-    if (decl->Lhs.size() != decl->Rhs.size())
+    if (decl->Lhs.size() != decl->Rhs.size() && decl->Rhs.size() != 0)
         throw std::runtime_error(decl->Pos().ToString() + " different number of values");
     size_t idx = 0;
     for (auto x : decl->Lhs) {
@@ -247,7 +247,9 @@ SP<Visitor> semantic::Visit(SP<Node> node) {
         resolve(shared(n), true);
     } else if (auto [n, is] = isOfType<CallExpr>(get); is) {
         validateExprAndReturnType(shared(n));
-    } else if (auto [n, is] = isOfType<FuncLitExpr>(get); is) {
+    } else if (auto [n, is] = isOfType<ExprStmt>(get); is) {
+        validateExprAndReturnType(n->X);
+    }  else if (auto [n, is] = isOfType<FuncLitExpr>(get); is) {
         openScope(n->Pos());
         walkFuncType(n->Type);
         walkBody(n->Body);
@@ -411,7 +413,7 @@ SP<Visitor> semantic::Visit(SP<Node> node) {
             case token_type::VAR: {
                 for (size_t i = 0; i < n->Specs.size(); i++) {
                     auto spec = isOfType<ValueSpec>(n->Specs[i].get()).first;
-                    if (spec->Names.size() != spec->Values.size()) {
+                    if (spec->Names.size() != spec->Values.size() && spec->Values.size() != 0) {
                         throw std::runtime_error(spec->Pos().ToString() +
                                                  " different number of values in declaration");
                     }

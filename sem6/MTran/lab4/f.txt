@@ -5,14 +5,18 @@ type S struct {
 }
 
 func (s *S) F1(a int) int {
-
+    return 3
 }
 
 func F2(a string) int {
-
+    undef
+    return 3
 }
 
 func main() {
-    a := [3]int{1, 2, 3}
-    var b [3]int = a
+    s := S{}
+    a := s.s
+    INT := 3
+    var b string = INT 
+    b = F2(a)
 }
